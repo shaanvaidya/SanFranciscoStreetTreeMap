@@ -5,4 +5,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: '/SanFranciscoStreetTreeMap/',
+  server: {
+    host: true, // so it binds to your local IP
+    allowedHosts: true // ⬅️ allow all hostnames like ngrok
+  }
 })
