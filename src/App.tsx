@@ -87,7 +87,7 @@ function App() {
       // Add the GeoJSON source
       map.current.addSource('trees', {
         type: 'geojson',
-        data: '/SanFranciscoStreetTreeMap/trees.geojson'
+        data: 'https://d3mh3mxgqea5sd.cloudfront.net/trees.geojson'
       })
 
       // Add source for user location
@@ -147,7 +147,7 @@ function App() {
       })
 
       // Extract unique species and neighborhoods, and count occurrences
-      fetch('/SanFranciscoStreetTreeMap/trees.geojson')
+      fetch('https://d3mh3mxgqea5sd.cloudfront.net/trees.geojson')
         .then(response => response.json())
         .then((data: GeoJSONResponse) => {
           // Get unique species and neighborhoods
