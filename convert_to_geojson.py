@@ -134,7 +134,7 @@ def convert_to_geojson():
     
     # Save to file with minimal whitespace
     print("Saving GeoJSON file...")
-    with open('public/trees.geojson', 'w') as f:
+    with open('trees.geojson', 'w') as f:
         json.dump(geojson, f, separators=(',', ':'))  # Use minimal separators
     
     print(f"Converted {len(features)} trees to GeoJSON format")
