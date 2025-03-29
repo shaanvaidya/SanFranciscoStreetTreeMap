@@ -76,7 +76,7 @@ function App() {
       // Add the GeoJSON source
       map.current.addSource('trees', {
         type: 'geojson',
-        data: '/trees.geojson'
+        data: '/SanFranciscoStreetTreeMap/trees.geojson'
       })
 
       // Add source for user location
@@ -136,7 +136,7 @@ function App() {
       })
 
       // Extract unique species and count occurrences
-      fetch('/trees.geojson')
+      fetch('/SanFranciscoStreetTreeMap/trees.geojson')
         .then(response => response.json())
         .then((data: GeoJSONResponse) => {
           // Get unique species
@@ -264,6 +264,17 @@ function App() {
       if (!map.current) return
 
       try {
+        // Wait for style to be loaded
+        if (!map.current.isStyleLoaded()) {
+          if (retryCount < maxRetries) {
+            retryCount++
+            setTimeout(applyFilter, Math.pow(2, retryCount) * 100)
+            return
+          }
+          console.error('Style failed to load after maximum retries')
+          return
+        }
+
         if (!selectedSpecies) {
           map.current.setFilter('tree-points', null)
           return
