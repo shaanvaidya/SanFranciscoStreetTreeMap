@@ -363,7 +363,8 @@ function App() {
         })
       },
       (error) => {
-        console.error('Error getting location:', error)
+        console.error('Error getting location:', error);
+        alert(`Location error (${error.code}): ${error.message}`);
       }
     )
   }
@@ -494,12 +495,14 @@ function App() {
           onClick={handleLocationClick}
           sx={{
             position: 'absolute',
-            bottom: 40,
+            bottom: { xs: 120, sm: 40 },
             right: 20,
             backgroundColor: 'white',
             boxShadow: 2,
-            '&:hover': { backgroundColor: '#f5f5f5' },
-            zIndex: 1
+            zIndex: 1000, // ensure it's always on top
+            width: 48,
+            height: 48,
+            '&:hover': { backgroundColor: '#f5f5f5' }
           }}
         >
           <MyLocation />
