@@ -25,6 +25,7 @@ interface TreeInfo {
   color: string
   latitude: number
   longitude: number
+  neighborhood_name: string | null
 }
 
 interface GeoJSONFeature {
@@ -40,6 +41,7 @@ interface GeoJSONFeature {
     color: string
     latitude: number
     longitude: number
+    neighborhood_name: string | null
   }
 }
 
@@ -54,10 +56,14 @@ function App() {
   const [selectedTree, setSelectedTree] = useState<TreeInfo | null>(null)
   const [species, setSpecies] = useState<string[]>([])
   const [selectedSpecies, setSelectedSpecies] = useState<string | null>(null)
+  const [neighborhoods, setNeighborhoods] = useState<string[]>([])
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null)
   const [zoom, setZoom] = useState(12)
   const [selectedTreeId, setSelectedTreeId] = useState<number | null>(null)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
   const [speciesCounts, setSpeciesCounts] = useState<Record<string, number>>({})
+  const [neighborhoodCounts, setNeighborhoodCounts] = useState<Record<string, number>>({})
+  const [error, setError] = useState<string | null>(null)
 
   // Initialize map
   useEffect(() => {
@@ -135,25 +141,39 @@ function App() {
         }
       })
 
-      // Extract unique species and count occurrences
+      // Extract unique species and neighborhoods, and count occurrences
       fetch('/SanFranciscoStreetTreeMap/trees.geojson')
         .then(response => response.json())
         .then((data: GeoJSONResponse) => {
-          // Get unique species
-          const uniqueSpecies = Array.from(
-            new Set(
-              data.features.map(feature => feature.properties.species)
-            )
-          ).sort()
-          setSpecies(uniqueSpecies)
+          // Get unique species and neighborhoods
+          const uniqueSpecies = new Set<string>()
+          const uniqueNeighborhoods = new Set<string>()
+          const speciesCounts: Record<string, number> = {}
+          const neighborhoodCounts: Record<string, number> = {}
 
-          // Count occurrences of each species
-          const counts: Record<string, number> = {}
           data.features.forEach(feature => {
             const species = feature.properties.species
-            counts[species] = (counts[species] || 0) + 1
+            const neighborhood = feature.properties.neighborhood_name
+
+            if (species) {
+              uniqueSpecies.add(species)
+              speciesCounts[species] = (speciesCounts[species] || 0) + 1
+            }
+
+            if (neighborhood) {
+              uniqueNeighborhoods.add(neighborhood)
+              neighborhoodCounts[neighborhood] = (neighborhoodCounts[neighborhood] || 0) + 1
+            }
           })
-          setSpeciesCounts(counts)
+
+          setSpecies(Array.from(uniqueSpecies).sort())
+          setNeighborhoods(Array.from(uniqueNeighborhoods).sort())
+          setSpeciesCounts(speciesCounts)
+          setNeighborhoodCounts(neighborhoodCounts)
+        })
+        .catch(error => {
+          console.error('Error loading tree data:', error)
+          setError('Failed to load tree data. Please try again later.')
         })
 
       // Add click event
@@ -177,7 +197,8 @@ function App() {
           neighborhood: props.neighborhood,
           color: props.color,
           latitude: props.latitude,
-          longitude: props.longitude
+          longitude: props.longitude,
+          neighborhood_name: props.neighborhood_name
         })
 
         // Animate to the tree location
@@ -255,60 +276,37 @@ function App() {
 
   // Handle species filter changes
   useEffect(() => {
-    if (!map.current) return
-
-    let retryCount = 0
-    const maxRetries = 5
+    if (!map.current || !map.current.isStyleLoaded()) return
 
     const applyFilter = () => {
-      if (!map.current) return
+      if (!map.current || !map.current.isStyleLoaded()) return
 
       try {
-        // Wait for style to be loaded
-        if (!map.current.isStyleLoaded()) {
-          if (retryCount < maxRetries) {
-            retryCount++
-            setTimeout(applyFilter, Math.pow(2, retryCount) * 100)
-            return
-          }
-          console.error('Style failed to load after maximum retries')
-          return
+        const filters = []
+
+        if (selectedSpecies) {
+          filters.push(['==', ['get', 'species'], selectedSpecies])
         }
 
-        if (!selectedSpecies) {
+        if (selectedNeighborhood) {
+          filters.push(['==', ['get', 'neighborhood_name'], selectedNeighborhood])
+        }
+
+        if (filters.length === 0) {
           map.current.setFilter('tree-points', null)
-          return
+        } else if (filters.length === 1) {
+          map.current.setFilter('tree-points', filters[0])
+        } else {
+          map.current.setFilter('tree-points', ['all', ...filters])
         }
-
-        map.current.setFilter('tree-points', [
-          '==',
-          ['get', 'species'],
-          selectedSpecies
-        ])
       } catch (error) {
         console.error('Error applying filter:', error)
-        // Retry with exponential backoff if the filter fails
-        if (retryCount < maxRetries) {
-          retryCount++
-          setTimeout(applyFilter, Math.pow(2, retryCount) * 100)
-        }
       }
     }
 
     // Apply filter immediately
     applyFilter()
-
-    // Cleanup function to remove filter when component unmounts or species changes
-    return () => {
-      if (map.current) {
-        try {
-          map.current.setFilter('tree-points', null)
-        } catch (error) {
-          console.error('Error removing filter:', error)
-        }
-      }
-    }
-  }, [selectedSpecies])
+  }, [selectedSpecies, selectedNeighborhood])
 
   // Add this effect to update the highlight filter when selectedTreeId changes
   useEffect(() => {
@@ -366,55 +364,107 @@ function App() {
       <Box sx={{ height: '100vh', width: '100vw', position: 'relative' }}>
         <Box ref={mapContainer} sx={{ height: '100%', width: '100%' }} />
 
-        {/* Species Filter */}
+        {/* Filters Container */}
         <Box sx={{
           position: 'absolute',
           top: 20,
           left: 20,
           right: 20,
-          width: { xs: 'auto', sm: 300 },
-          backgroundColor: 'white',
-          borderRadius: 1,
-          boxShadow: 2,
+          display: 'flex',
+          gap: 2,
           zIndex: 1
         }}>
-          <Autocomplete
-            options={species}
-            value={selectedSpecies}
-            onChange={(_, newValue) => setSelectedSpecies(newValue)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                {option} ({speciesCounts[option]?.toLocaleString()} trees)
-              </li>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Filter by Species"
-                variant="outlined"
-                size="small"
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {selectedSpecies && (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: '#666',
-                            mr: 1
-                          }}
-                        >
-                          {speciesCounts[selectedSpecies]?.toLocaleString()} trees
-                        </Typography>
-                      )}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
-            )}
-          />
+          {/* Species Filter */}
+          <Box sx={{
+            width: { xs: '100%', sm: 300 },
+            backgroundColor: 'white',
+            borderRadius: 1,
+            boxShadow: 2
+          }}>
+            <Autocomplete
+              options={species}
+              value={selectedSpecies}
+              onChange={(_, newValue) => setSelectedSpecies(newValue)}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  {option} ({speciesCounts[option]?.toLocaleString()} trees)
+                </li>
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Filter by Species"
+                  variant="outlined"
+                  size="small"
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {selectedSpecies && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: '#666',
+                              mr: 1
+                            }}
+                          >
+                            {speciesCounts[selectedSpecies]?.toLocaleString()} trees
+                          </Typography>
+                        )}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+            />
+          </Box>
+
+          {/* Neighborhood Filter */}
+          <Box sx={{
+            width: { xs: '100%', sm: 300 },
+            backgroundColor: 'white',
+            borderRadius: 1,
+            boxShadow: 2
+          }}>
+            <Autocomplete
+              options={neighborhoods}
+              value={selectedNeighborhood}
+              onChange={(_, newValue) => setSelectedNeighborhood(newValue)}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  {option} ({neighborhoodCounts[option]?.toLocaleString()} trees)
+                </li>
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Filter by Neighborhood"
+                  variant="outlined"
+                  size="small"
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {selectedNeighborhood && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: '#666',
+                              mr: 1
+                            }}
+                          >
+                            {neighborhoodCounts[selectedNeighborhood]?.toLocaleString()} trees
+                          </Typography>
+                        )}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+            />
+          </Box>
         </Box>
 
         {/* Location Button */}
@@ -531,7 +581,7 @@ function App() {
                       display: 'inline-block',
                       boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
                     }} />
-                    {selectedTree.neighborhood || 'Unknown Neighborhood'}
+                    {selectedTree.neighborhood_name || 'Unknown Neighborhood'}
                   </Typography>
                 </Box>
                 <IconButton

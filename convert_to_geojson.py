@@ -76,6 +76,10 @@ def convert_to_geojson():
     # Read the cleaned CSV file
     print("Reading cleaned CSV file...")
     df = pd.read_csv('cleaned_street_trees.csv')
+
+    # Load neighborhood mapping
+    with open('neighborhood_mapping.json', 'r') as f:
+        neighborhood_mapping = json.load(f)
     
     # Convert to GeoJSON
     print("Converting to GeoJSON...")
@@ -93,6 +97,7 @@ def convert_to_geojson():
         latitude = clean_numeric(row['Latitude'])
         longitude = clean_numeric(row['Longitude'])
         dbh = clean_numeric(row['DBH'])
+        neighborhood_name = neighborhood_mapping.get(str(float(neighborhood_code)), 'Unknown')
         
         # Skip if coordinates are invalid
         if latitude is None or longitude is None:
@@ -115,7 +120,8 @@ def convert_to_geojson():
                 "neighborhood": str(neighborhood_code) if pd.notna(neighborhood_code) else None,
                 "color": color,
                 "latitude": latitude,
-                "longitude": longitude
+                "longitude": longitude,
+                "neighborhood_name": str(neighborhood_name) if neighborhood_name is not None else None
             }
         }
         features.append(feature)
