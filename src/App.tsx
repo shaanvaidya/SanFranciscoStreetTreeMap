@@ -29,6 +29,11 @@ interface TreeInfo {
 }
 
 interface GeoJSONFeature {
+  type: string
+  geometry: {
+    type: string
+    coordinates: [number, number]
+  }
   properties: {
     id: number
     species: string
@@ -180,7 +185,7 @@ function App() {
       map.current.on('click', 'tree-points', (e) => {
         if (!e.features?.[0]?.properties) return
 
-        const props = e.features[0].properties as TreeInfo
+        const props = e.features[0].properties
 
         // Set the selected tree ID for highlighting
         setSelectedTreeId(props.id)
@@ -274,12 +279,12 @@ function App() {
     }
   }, [])
 
-  // Handle species filter changes
+  // Handle species and neighborhood filter changes
   useEffect(() => {
-    if (!map.current || !map.current.isStyleLoaded()) return
+    if (!map.current) return
 
     const applyFilter = () => {
-      if (!map.current || !map.current.isStyleLoaded()) return
+      if (!map.current) return
 
       try {
         const filters = []
@@ -306,6 +311,17 @@ function App() {
 
     // Apply filter immediately
     applyFilter()
+
+    // Cleanup function to remove filter when component unmounts or filters change
+    return () => {
+      if (map.current) {
+        try {
+          map.current.setFilter('tree-points', null)
+        } catch (error) {
+          console.error('Error removing filter:', error)
+        }
+      }
+    }
   }, [selectedSpecies, selectedNeighborhood])
 
   // Add this effect to update the highlight filter when selectedTreeId changes
@@ -385,11 +401,14 @@ function App() {
               options={species}
               value={selectedSpecies}
               onChange={(_, newValue) => setSelectedSpecies(newValue)}
-              renderOption={(props, option) => (
-                <li {...props}>
-                  {option} ({speciesCounts[option]?.toLocaleString()} trees)
-                </li>
-              )}
+              renderOption={(props, option) => {
+                const { key, ...otherProps } = props;
+                return (
+                  <li key={key} {...otherProps}>
+                    {option} ({speciesCounts[option]?.toLocaleString()} trees)
+                  </li>
+                );
+              }}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -431,11 +450,14 @@ function App() {
               options={neighborhoods}
               value={selectedNeighborhood}
               onChange={(_, newValue) => setSelectedNeighborhood(newValue)}
-              renderOption={(props, option) => (
-                <li {...props}>
-                  {option} ({neighborhoodCounts[option]?.toLocaleString()} trees)
-                </li>
-              )}
+              renderOption={(props, option) => {
+                const { key, ...otherProps } = props;
+                return (
+                  <li key={key} {...otherProps}>
+                    {option} ({neighborhoodCounts[option]?.toLocaleString()} trees)
+                  </li>
+                );
+              }}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -582,6 +604,31 @@ function App() {
                       boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
                     }} />
                     {selectedTree.neighborhood_name || 'Unknown Neighborhood'}
+                    {selectedTree.neighborhood_name && (
+                      <Typography
+                        component="button"
+                        onClick={() => setSelectedNeighborhood(selectedTree.neighborhood_name)}
+                        sx={{
+                          color: '#2e7d32',
+                          textDecoration: 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          fontWeight: 500,
+                          fontSize: '0.875rem',
+                          ml: 1,
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          },
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Filter by this neighborhood
+                      </Typography>
+                    )}
                   </Typography>
                 </Box>
                 <IconButton

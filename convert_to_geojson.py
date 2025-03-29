@@ -93,21 +93,21 @@ def convert_to_geojson():
         neighborhood_code = row['Analysis Neighborhoods']
         color = get_color_for_neighborhood(neighborhood_code)
         
-        # Clean numeric values
-        latitude = clean_numeric(row['Latitude'])
-        longitude = clean_numeric(row['Longitude'])
+        # Clean and round numeric values
+        lat = round(clean_numeric(row['Latitude']), 6)  # Round to 6 decimal places
+        lng = round(clean_numeric(row['Longitude']), 6)  # Round to 6 decimal places
         dbh = clean_numeric(row['DBH'])
-        neighborhood_name = neighborhood_mapping.get(str(float(neighborhood_code)), 'Unknown')
+        nhood = neighborhood_mapping.get(str(float(neighborhood_code)), 'Unknown')
         
         # Skip if coordinates are invalid
-        if latitude is None or longitude is None:
+        if lat is None or lng is None:
             continue
         
         feature = {
             "type": "Feature",
             "geometry": {
                 "type": "Point",
-                "coordinates": [longitude, latitude]
+                "coordinates": [lng, lat]
             },
             "properties": {
                 "id": int(row['Tree ID']) if pd.notna(row['Tree ID']) else None,
@@ -119,9 +119,9 @@ def convert_to_geojson():
                 "legalStatus": str(row['Legal Status']) if pd.notna(row['Legal Status']) else None,
                 "neighborhood": str(neighborhood_code) if pd.notna(neighborhood_code) else None,
                 "color": color,
-                "latitude": latitude,
-                "longitude": longitude,
-                "neighborhood_name": str(neighborhood_name) if neighborhood_name is not None else None
+                "latitude": lat,
+                "longitude": lng,
+                "neighborhood_name": str(nhood) if nhood is not None else None
             }
         }
         features.append(feature)
@@ -132,10 +132,10 @@ def convert_to_geojson():
         "features": features
     }
     
-    # Save to file
+    # Save to file with minimal whitespace
     print("Saving GeoJSON file...")
     with open('public/trees.geojson', 'w') as f:
-        json.dump(geojson, f)
+        json.dump(geojson, f, separators=(',', ':'))  # Use minimal separators
     
     print(f"Converted {len(features)} trees to GeoJSON format")
 
