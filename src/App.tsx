@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
-import { Box, CssBaseline, Drawer, IconButton, TextField, Autocomplete, Typography } from '@mui/material'
+import { Box, CssBaseline, Drawer, IconButton, TextField, Autocomplete, Typography, Button, Chip } from '@mui/material'
 import { MyLocation, Close } from '@mui/icons-material'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { Feature, FeatureCollection, Point, GeoJsonProperties } from 'geojson';
@@ -9,10 +9,11 @@ import type { Feature, FeatureCollection, Point, GeoJsonProperties } from 'geojs
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2hhYW52YWlkeWEiLCJhIjoiY20zc2FzeWtyMGV6dzJqb2oyNjcxc2k2dCJ9.kqxE189voII-7Ua8TFpVgw'
 
 const theme = createTheme({
-  palette: {
-    mode: 'light',
+  palette: { mode: 'light' },
+  typography: {
+    fontFamily: '"Manrope", "Helvetica", "Arial", sans-serif',
   },
-})
+});
 
 interface TreeInfo {
   id: number
@@ -284,7 +285,9 @@ function App() {
     features: []
   });
   const [allTrees, setAllTrees] = useState<TreeInfo[]>([]);
-
+  const [addressQuery, setAddressQuery] = useState('');
+  const [addressResults, setAddressResults] = useState<any[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Initialize map
   useEffect(() => {
@@ -602,6 +605,31 @@ function App() {
     };
   }, [selectedSpecies, selectedNeighborhood, allTrees]);
 
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (!addressQuery) {
+        setAddressResults([]);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+            addressQuery
+          )}.json?access_token=${mapboxgl.accessToken}&autocomplete=true&limit=5&bbox=-123.1738,37.6398,-122.2818,37.9298`
+        );
+        const data = await response.json();
+        setAddressResults(data.features || []);
+      } catch (err) {
+        console.error('Error fetching address suggestions:', err);
+      }
+    };
+
+    const debounce = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(debounce);
+  }, [addressQuery]);
+
+
   // Add this effect to update the highlight filter when selectedTreeId changes
   useEffect(() => {
     if (!map.current || !map.current.getLayer('highlighted-trees')) return;
@@ -662,115 +690,162 @@ function App() {
       <CssBaseline />
       <Box sx={{ height: '100vh', width: '100vw', position: 'relative' }}>
         <Box ref={mapContainer} sx={{ height: '100%', width: '100%' }} />
+        <Button
+          onClick={() => setShowFilters(!showFilters)}
+          variant="contained"
+          size="small"
+          sx={{
+            display: { xs: 'block', sm: 'block' },
+            position: 'absolute',
+            top: 20,
+            left: 20,
+            zIndex: 2,
+            backgroundColor: '#2e7d32', // ✅ Green background
+            color: 'white',
+            '&:hover': {
+              backgroundColor: '#27662c', // ✅ Slightly darker green on hover
+            }
+          }}
+        >
+          {showFilters ? 'Hide Filters' : 'Show Filters'}
+        </Button>
+        {showFilters && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 60,
+              left: 20,
+              right: 20,
+              maxWidth: { xs: '100%', sm: 300 },
+              p: { xs: 2, sm: 1.5 },
+              backgroundColor: 'rgba(248, 249, 250, 0.9)', // light blur-glass look
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              borderRadius: 2,
+              boxShadow: 3,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+              zIndex: 2,
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Tree Filters
+            </Typography>
 
-        {/* Filters Container */}
-        <Box sx={{
-          position: 'absolute',
-          top: 20,
-          left: 20,
-          right: 20,
-          display: 'flex',
-          gap: 2,
-          zIndex: 1
-        }}>
-          {/* Species Filter */}
-          <Box sx={{
-            width: { xs: '100%', sm: 300 },
-            backgroundColor: 'white',
-            borderRadius: 1,
-            boxShadow: 2
-          }}>
+            {/* Species Filter */}
             <Autocomplete
               options={species}
               value={selectedSpecies}
               onChange={(_, newValue) => setSelectedSpecies(newValue)}
-              renderOption={(props, option) => {
-                const { key, ...otherProps } = props;
-                return (
-                  <li key={key} {...otherProps}>
-                    {option} ({speciesCounts[option]?.toLocaleString()} trees)
-                  </li>
-                );
-              }}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                    <span>{option}</span>
+                    <Chip label={`${speciesCounts[option]?.toLocaleString() || 0}`} size="small" />
+                  </Box>
+                </li>
+              )}
               renderInput={(params) => (
                 <TextField
                   {...params}
                   label="Filter by Species"
                   variant="outlined"
                   size="small"
-                  InputProps={{
-                    ...params.InputProps,
-                    endAdornment: (
-                      <>
-                        {selectedSpecies && (
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: '#666',
-                              mr: 1
-                            }}
-                          >
-                            {speciesCounts[selectedSpecies]?.toLocaleString()} trees
-                          </Typography>
-                        )}
-                        {params.InputProps.endAdornment}
-                      </>
-                    ),
-                  }}
                 />
               )}
             />
-          </Box>
 
-          {/* Neighborhood Filter */}
-          <Box sx={{
-            width: { xs: '100%', sm: 300 },
-            backgroundColor: 'white',
-            borderRadius: 1,
-            boxShadow: 2
-          }}>
+            {/* Neighborhood Filter */}
             <Autocomplete
               options={neighborhoods}
               value={selectedNeighborhood}
               onChange={(_, newValue) => setSelectedNeighborhood(newValue)}
-              renderOption={(props, option) => {
-                const { key, ...otherProps } = props;
-                return (
-                  <li key={key} {...otherProps}>
-                    {option} ({neighborhoodCounts[option]?.toLocaleString()} trees)
-                  </li>
-                );
-              }}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                    <span>{option}</span>
+                    <Chip label={`${neighborhoodCounts[option]?.toLocaleString() || 0}`} size="small" />
+                  </Box>
+                </li>
+              )}
               renderInput={(params) => (
                 <TextField
                   {...params}
                   label="Filter by Neighborhood"
                   variant="outlined"
                   size="small"
-                  InputProps={{
-                    ...params.InputProps,
-                    endAdornment: (
-                      <>
-                        {selectedNeighborhood && (
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: '#666',
-                              mr: 1
-                            }}
-                          >
-                            {neighborhoodCounts[selectedNeighborhood]?.toLocaleString()} trees
-                          </Typography>
-                        )}
-                        {params.InputProps.endAdornment}
-                      </>
-                    ),
-                  }}
                 />
               )}
             />
+
+            {/* Go to Address */}
+            <Box sx={{ position: 'relative' }}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Go to Address"
+                variant="outlined"
+                value={addressQuery}
+                onChange={(e) => setAddressQuery(e.target.value)}
+              />
+              {addressResults.length > 0 && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    backgroundColor: 'white',
+                    boxShadow: 2,
+                    borderRadius: 1,
+                    maxHeight: 200,
+                    overflowY: 'auto',
+                    zIndex: 3
+                  }}
+                >
+                  {addressResults.map((result) => (
+                    <Box
+                      key={result.id}
+                      sx={{
+                        px: 2,
+                        py: 1,
+                        cursor: 'pointer',
+                        '&:hover': { backgroundColor: '#f0f0f0' }
+                      }}
+                      onClick={() => {
+                        const [lng, lat] = result.center;
+                        map.current?.flyTo({ center: [lng, lat], zoom: 16 });
+                        setAddressQuery(result.place_name);
+                        setAddressResults([]);
+                      }}
+                    >
+                      {result.place_name}
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
+
+
+
+            {/* Clear All Button */}
+            <Button
+              onClick={() => {
+                setSelectedSpecies(null);
+                setSelectedNeighborhood(null);
+                setAddressQuery('');
+              }}
+              variant="outlined"
+              size="small"
+              fullWidth
+              disabled={!selectedSpecies && !selectedNeighborhood && !addressQuery}
+            >
+              Clear All
+            </Button>
           </Box>
-        </Box>
+        )}
+
 
         {/* Location Button */}
         <IconButton
@@ -802,7 +877,9 @@ function App() {
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
             // backgroundColor: '#f8f9fa',
-            boxShadow: '0 0 30px rgba(0,0,0,0.1)',
+            // boxShadow: '0 0 30px rgba(0,0,0,0.1)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)', // Instead of 0.05
+            borderLeft: '1px solid #e0e0e0',
             zIndex: 1000,
             display: 'flex',
             flexDirection: 'column',
