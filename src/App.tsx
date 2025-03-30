@@ -6,7 +6,6 @@ import { MyLocation, Close } from '@mui/icons-material'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { Feature, FeatureCollection, Point, GeoJsonProperties } from 'geojson';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { FilterList } from '@mui/icons-material'; // Import the filter icon
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2hhYW52YWlkeWEiLCJhIjoiY20zc2FzeWtyMGV6dzJqb2oyNjcxc2k2dCJ9.kqxE189voII-7Ua8TFpVgw'
 
@@ -62,7 +61,7 @@ interface GeoJSONResponse {
 const subtitleStyle = {
   color: '#2e7d32',
   mb: 0.5,
-  textTransform: 'uppercase',
+  // textTransform: 'uppercase',
   letterSpacing: '0.5px',
   fontWeight: 600
 };
@@ -93,7 +92,8 @@ const TreeDetails = ({
   <Box sx={{
     transition: 'transform 0.3s ease-in-out',
     transform: selectedTree ? 'translateX(0)' : 'translateX(100%)',
-    p: 3, height: '100%', display: 'flex', flexDirection: 'column'
+    p: 3, height: '100%', display: 'flex', flexDirection: 'column',
+    overflowY: 'auto', // Allow scrolling of the entire sidebar
   }}>
     <Box
       sx={{
@@ -109,8 +109,11 @@ const TreeDetails = ({
         <Typography variant="h5" sx={{ fontWeight: 700, color: '#2e7d32', mb: 0.5, fontSize: { xs: '1.25rem', sm: '1.5rem' }, }}>
           {selectedTree.species}
         </Typography>
+        <Typography variant="body2" sx={{ color: '#444', mb: 0.5 }}>
+          #{selectedTree.id} {/* Show Tree ID here */}
+        </Typography>
         <Typography variant="subtitle2" sx={{ color: '#666', mb: 0.5, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
-          {speciesCounts[selectedTree.species]?.toLocaleString()} trees in San Francisco
+          {speciesCounts[selectedTree.species]?.toLocaleString()} such trees in San Francisco
         </Typography>
         <Typography
           component="button"
@@ -133,7 +136,7 @@ const TreeDetails = ({
             },
           }}
         >
-          Filter by this species
+          View all trees of this species
         </Typography>
         <Typography
           variant="subtitle1"
@@ -177,14 +180,14 @@ const TreeDetails = ({
                 cursor: 'pointer'
               }}
             >
-              Filter by this neighborhood
+              View all trees in this neighborhood
             </Typography>
           )}
         </Typography>
       </Box>
       <IconButton
         onClick={handleDrawerClose}
-        sx={{ color: '#2e7d32', '&:hover': { backgroundColor: 'rgba(46, 125, 50, 0.08)' } }}
+        sx={{ color: '#2e7d32', '&:hover': { backgroundColor: 'rgba(46, 125, 50, 0.08)' }, position: 'absolute', top: 0, right: 0 }}
       >
         <Close />
       </IconButton>
@@ -193,7 +196,7 @@ const TreeDetails = ({
     <Box
       sx={{
         flex: 1,
-        overflowY: 'auto',
+        // overflowY: 'auto',
         '&::-webkit-scrollbar': { width: '6px' },
         '&::-webkit-scrollbar-track': { background: '#f1f1f1' },
         '&::-webkit-scrollbar-thumb': { background: '#2e7d32', borderRadius: '3px' }
@@ -215,7 +218,7 @@ const TreeDetails = ({
       >
         <Box>
           <Typography variant="subtitle2" sx={subtitleStyle}>
-            Nearest Location
+            Closest Address
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Typography
