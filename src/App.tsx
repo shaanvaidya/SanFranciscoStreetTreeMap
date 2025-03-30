@@ -688,8 +688,36 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 56,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          px: 2,
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          borderBottom: '1px solid #e0e0e0',
+          zIndex: 3
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 700,
+            color: '#2e7d32'
+          }}
+        >
+          San Francisco Street Tree Map
+        </Typography>
+      </Box>
       <Box sx={{ height: '100vh', width: '100vw', position: 'relative' }}>
-        <Box ref={mapContainer} sx={{ height: '100%', width: '100%' }} />
+        <Box ref={mapContainer} sx={{ position: 'absolute', top: 56, bottom: 0, width: '100%' }} />
         <Button
           onClick={() => setShowFilters(!showFilters)}
           variant="contained"
@@ -697,7 +725,7 @@ function App() {
           sx={{
             display: { xs: 'block', sm: 'block' },
             position: 'absolute',
-            top: 20,
+            top: 70,
             left: 20,
             zIndex: 2,
             backgroundColor: '#2e7d32', // ✅ Green background
@@ -713,7 +741,7 @@ function App() {
           <Box
             sx={{
               position: 'absolute',
-              top: 60,
+              top: 110,
               left: 20,
               right: 20,
               maxWidth: { xs: '100%', sm: 300 },
