@@ -87,7 +87,11 @@ const TreeDetails = ({
   setSelectedNeighborhood: (val: string) => void
   handleDrawerClose: () => void
 }) => (
-  <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+  <Box sx={{
+    transition: 'transform 0.3s ease-in-out',
+    transform: selectedTree ? 'translateX(0)' : 'translateX(100%)',
+    p: 3, height: '100%', display: 'flex', flexDirection: 'column'
+  }}>
     <Box
       sx={{
         display: 'flex',
@@ -374,7 +378,7 @@ function App() {
       });
 
       // Extract unique species and neighborhoods, and count occurrences
-      fetch('src/trees-lookup.json')
+      fetch('/trees-lookup.json')
         .then(response => response.json())
         .then((data: TreeInfo[]) => {
           setAllTrees(data);
@@ -781,61 +785,44 @@ function App() {
         >
           <MyLocation />
         </IconButton>
-        {selectedTree && (
-          <>
-            {/* Mobile bottom sheet */}
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: { xs: '45vh', sm: '100%' },
-                backgroundColor: '#f8f9fa',
-                borderTopLeftRadius: 12,
-                borderTopRightRadius: 12,
-                boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
-                zIndex: 1000,
-                display: { xs: 'flex', sm: 'none' },
-                flexDirection: 'column'
-              }}
-            >
-              <TreeDetails
-                selectedTree={selectedTree}
-                speciesCounts={speciesCounts}
-                setSelectedSpecies={setSelectedSpecies}
-                setSelectedNeighborhood={setSelectedNeighborhood}
-                handleDrawerClose={handleDrawerClose}
-              />
-            </Box>
-
-            {/* Desktop drawer */}
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                height: '100%',
-                width: 400,
-                backgroundColor: '#f8f9fa',
-                boxShadow: '0 0 20px rgba(0,0,0,0.1)',
-                zIndex: 1000,
-                display: { xs: 'none', sm: 'flex' },
-                flexDirection: 'column'
-              }}
-            >
-              <TreeDetails
-                selectedTree={selectedTree}
-                speciesCounts={speciesCounts}
-                setSelectedSpecies={setSelectedSpecies}
-                setSelectedNeighborhood={setSelectedNeighborhood}
-                handleDrawerClose={handleDrawerClose}
-              />
-            </Box>
-          </>
-        )}
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: { xs: 0, sm: 'auto' },
+            top: { xs: 'auto', sm: 0 },
+            left: { xs: 0, sm: 'auto' },
+            right: 0,
+            width: { xs: '100%', sm: 400 },
+            height: { xs: '40%', sm: '100%' },
+            backgroundColor: '#f8f9fa',
+            boxShadow: '0 0 20px rgba(0,0,0,0.1)',
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            p: 3,
+            borderTopLeftRadius: { xs: 16, sm: 0 },
+            borderTopRightRadius: { xs: 16, sm: 0 },
+            transform: {
+              xs: selectedTree ? 'translateY(0)' : 'translateY(100%)',
+              sm: selectedTree ? 'translateX(0)' : 'translateX(100%)'
+            },
+            transition: 'transform 0.3s ease',
+            pointerEvents: selectedTree ? 'auto' : 'none',
+            opacity: selectedTree ? 1 : 0
+          }}
+        >
+          {selectedTree && (
+            <TreeDetails
+              selectedTree={selectedTree}
+              speciesCounts={speciesCounts}
+              setSelectedSpecies={setSelectedSpecies}
+              setSelectedNeighborhood={setSelectedNeighborhood}
+              handleDrawerClose={handleDrawerClose}
+            />
+          )}
+        </Box>
       </Box>
-    </ThemeProvider>
+    </ThemeProvider >
   )
 }
 
