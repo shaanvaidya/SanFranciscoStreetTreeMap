@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { Box, CssBaseline, Drawer, IconButton, TextField, Autocomplete, Typography } from '@mui/material'
 import { MyLocation, Close } from '@mui/icons-material'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import type { Feature, FeatureCollection, Point, GeoJsonProperties } from 'geojson';
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2hhYW52YWlkeWEiLCJhIjoiY20zc2FzeWtyMGV6dzJqb2oyNjcxc2k2dCJ9.kqxE189voII-7Ua8TFpVgw'
 
@@ -69,6 +70,12 @@ function App() {
   const [speciesCounts, setSpeciesCounts] = useState<Record<string, number>>({})
   const [neighborhoodCounts, setNeighborhoodCounts] = useState<Record<string, number>>({})
   const [error, setError] = useState<string | null>(null)
+  const [filteredGeoJSON, setFilteredGeoJSON] = useState<FeatureCollection<Point>>({
+    type: 'FeatureCollection',
+    features: []
+  });
+  const [allTrees, setAllTrees] = useState<TreeInfo[]>([]);
+
 
   // Initialize map
   useEffect(() => {
@@ -86,8 +93,8 @@ function App() {
 
       // Add the GeoJSON source
       map.current.addSource('trees', {
-        type: 'geojson',
-        data: 'https://d3mh3mxgqea5sd.cloudfront.net/trees.geojson'
+        type: 'vector',
+        url: 'mapbox://shaanvaidya.4hee68hi'
       })
 
       // Add source for user location
@@ -119,6 +126,7 @@ function App() {
         id: 'tree-points',
         type: 'circle',
         source: 'trees',
+        'source-layer': 'trees',
         paint: {
           'circle-radius': [
             'interpolate',
@@ -146,40 +154,55 @@ function App() {
         }
       })
 
+      map.current.addSource('filtered-trees', {
+        type: 'geojson',
+        data: filteredGeoJSON
+      });
+
+      map.current.addLayer({
+        id: 'filtered-tree-points',
+        type: 'circle',
+        source: 'filtered-trees',
+        paint: {
+          'circle-radius': 6,
+          'circle-color': ['get', 'color'], // ✅ dynamic color from tree data
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#fff',
+          'circle-opacity': 0.9
+        }
+      });
+
       // Extract unique species and neighborhoods, and count occurrences
-      fetch('https://d3mh3mxgqea5sd.cloudfront.net/trees.geojson')
+      fetch('src/trees-lookup.json')
         .then(response => response.json())
-        .then((data: GeoJSONResponse) => {
-          // Get unique species and neighborhoods
-          const uniqueSpecies = new Set<string>()
-          const uniqueNeighborhoods = new Set<string>()
-          const speciesCounts: Record<string, number> = {}
-          const neighborhoodCounts: Record<string, number> = {}
+        .then((data: TreeInfo[]) => {
+          setAllTrees(data);
+          const uniqueSpecies = new Set<string>();
+          const uniqueNeighborhoods = new Set<string>();
+          const speciesCounts: Record<string, number> = {};
+          const neighborhoodCounts: Record<string, number> = {};
 
-          data.features.forEach(feature => {
-            const species = feature.properties.species
-            const neighborhood = feature.properties.neighborhood_name
-
-            if (species) {
-              uniqueSpecies.add(species)
-              speciesCounts[species] = (speciesCounts[species] || 0) + 1
+          data.forEach(tree => {
+            if (tree.species) {
+              uniqueSpecies.add(tree.species);
+              speciesCounts[tree.species] = (speciesCounts[tree.species] || 0) + 1;
             }
 
-            if (neighborhood) {
-              uniqueNeighborhoods.add(neighborhood)
-              neighborhoodCounts[neighborhood] = (neighborhoodCounts[neighborhood] || 0) + 1
+            if (tree.neighborhood_name) {
+              uniqueNeighborhoods.add(tree.neighborhood_name);
+              neighborhoodCounts[tree.neighborhood_name] = (neighborhoodCounts[tree.neighborhood_name] || 0) + 1;
             }
-          })
+          });
 
-          setSpecies(Array.from(uniqueSpecies).sort())
-          setNeighborhoods(Array.from(uniqueNeighborhoods).sort())
-          setSpeciesCounts(speciesCounts)
-          setNeighborhoodCounts(neighborhoodCounts)
+          setSpecies(Array.from(uniqueSpecies).sort());
+          setNeighborhoods(Array.from(uniqueNeighborhoods).sort());
+          setSpeciesCounts(speciesCounts);
+          setNeighborhoodCounts(neighborhoodCounts);
         })
         .catch(error => {
-          console.error('Error loading tree data:', error)
-          setError('Failed to load tree data. Please try again later.')
-        })
+          console.error('Error loading tree metadata:', error);
+          setError('Failed to load tree metadata. Please try again later.');
+        });
 
       // Add click event
       map.current.on('click', 'tree-points', (e) => {
@@ -215,11 +238,12 @@ function App() {
         })
       })
 
-      // Add a layer for highlighted trees
+      // // Add a layer for highlighted trees
       map.current.addLayer({
         id: 'highlighted-trees',
         type: 'circle',
         source: 'trees',
+        'source-layer': 'trees',
         paint: {
           'circle-radius': [
             'interpolate',
@@ -284,7 +308,7 @@ function App() {
     if (!map.current) return
 
     const applyFilter = () => {
-      if (!map.current) return
+      if (!map.current || !map.current.isStyleLoaded()) return;
 
       try {
         const filters = []
@@ -297,12 +321,53 @@ function App() {
           filters.push(['==', ['get', 'neighborhood_name'], selectedNeighborhood])
         }
 
+        const hasActiveFilter = !!selectedSpecies || !!selectedNeighborhood;
+
         if (filters.length === 0) {
           map.current.setFilter('tree-points', null)
         } else if (filters.length === 1) {
           map.current.setFilter('tree-points', filters[0])
         } else {
           map.current.setFilter('tree-points', ['all', ...filters])
+        }
+
+        const filteredTrees = hasActiveFilter
+          ? allTrees.filter(tree => {
+            return (
+              (!selectedSpecies || tree.species === selectedSpecies) &&
+              (!selectedNeighborhood || tree.neighborhood_name === selectedNeighborhood)
+            );
+          }).slice(0, 500)
+          : [];
+
+        const features: Feature<Point, GeoJsonProperties>[] = filteredTrees.map(tree => ({
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [tree.longitude, tree.latitude]
+          },
+          properties: { ...tree }
+        }));
+
+        const featureCollection: FeatureCollection<Point, GeoJsonProperties> = {
+          type: "FeatureCollection",
+          features
+        };
+
+        setFilteredGeoJSON(featureCollection);
+
+        const source = map.current.getSource('filtered-trees');
+        if (source && 'setData' in source) {
+          source.setData(featureCollection);
+        }
+
+        // ✅ Set overlay visibility only if there's an active filter
+        if (map.current.getLayer('filtered-tree-points')) {
+          map.current.setLayoutProperty(
+            'filtered-tree-points',
+            'visibility',
+            hasActiveFilter ? 'visible' : 'none'
+          );
         }
       } catch (error) {
         console.error('Error applying filter:', error)
@@ -314,22 +379,31 @@ function App() {
 
     // Cleanup function to remove filter when component unmounts or filters change
     return () => {
-      if (map.current) {
+      if (map.current && map.current.isStyleLoaded()) {
         try {
-          map.current.setFilter('tree-points', null)
+          if (map.current.getLayer('tree-points')) {
+            map.current.setFilter('tree-points', null);
+          }
+          if (map.current.getLayer('filtered-tree-points')) {
+            map.current.setLayoutProperty('filtered-tree-points', 'visibility', 'none');
+          }
         } catch (error) {
-          console.error('Error removing filter:', error)
+          console.error('Error removing filter:', error);
         }
       }
-    }
-  }, [selectedSpecies, selectedNeighborhood])
+    };
+  }, [selectedSpecies, selectedNeighborhood, allTrees]);
 
   // Add this effect to update the highlight filter when selectedTreeId changes
   useEffect(() => {
-    if (!map.current || !map.current.isStyleLoaded()) return
+    if (!map.current || !map.current.getLayer('highlighted-trees')) return;
 
-    map.current.setFilter('highlighted-trees', ['==', ['get', 'id'], selectedTreeId || -1])
-  }, [selectedTreeId])
+    map.current.setFilter('highlighted-trees', [
+      '==',
+      ['get', 'id'],
+      selectedTreeId ?? -1
+    ]);
+  }, [selectedTreeId]);
 
   const handleLocationClick = () => {
     if (!map.current) return
@@ -517,14 +591,18 @@ function App() {
           ModalProps={{
             disableScrollLock: true,
             disableEnforceFocus: true,
+            keepMounted: true,
             sx: {
               '& .MuiBackdrop-root': {
-                backgroundColor: 'transparent'
+                backgroundColor: 'transparent',
               }
             }
           }}
           PaperProps={{
             sx: {
+              pointerEvents: 'auto',
+              touchAction: 'manipulation', // ✅ enables pinch-zoom gestures to pass through
+              userSelect: 'none',
               width: { xs: '100%', sm: 400 },
               backgroundColor: '#f8f9fa',
               boxShadow: '0 0 20px rgba(0,0,0,0.1)'
