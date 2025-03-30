@@ -103,28 +103,31 @@ const TreeDetails = ({
       }}
     >
       <Box>
-        <Typography variant="h5" sx={{ fontWeight: 700, color: '#2e7d32', mb: 0.5 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, color: '#2e7d32', mb: 0.5, fontSize: { xs: '1.25rem', sm: '1.5rem' }, }}>
           {selectedTree.species}
         </Typography>
-        <Typography variant="subtitle2" sx={{ color: '#666', mb: 0.5 }}>
+        <Typography variant="subtitle2" sx={{ color: '#666', mb: 0.5, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
           {speciesCounts[selectedTree.species]?.toLocaleString()} trees in San Francisco
         </Typography>
         <Typography
           component="button"
           onClick={() => setSelectedSpecies(selectedTree.species)}
           sx={{
+            mt: 0.5,
             color: '#2e7d32',
-            textDecoration: 'none',
+            fontWeight: 500,
+            fontSize: '0.85rem',
             display: 'flex',
             alignItems: 'center',
             gap: 0.5,
-            fontWeight: 500,
-            fontSize: '0.875rem',
-            '&:hover': { textDecoration: 'underline' },
             background: 'none',
             border: 'none',
             padding: 0,
-            cursor: 'pointer'
+            cursor: 'pointer',
+            textDecoration: 'none',
+            '&:hover': {
+              textDecoration: 'underline',
+            },
           }}
         >
           Filter by this species
@@ -198,11 +201,12 @@ const TreeDetails = ({
           display: 'grid',
           gap: 2,
           '& > div': {
-            backgroundColor: '#ffffff',
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(4px)',
             p: 2,
-            borderRadius: 1,
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-            border: '1px solid #e0e0e0'
+            borderRadius: 2,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+            border: '1px solid #ddd'
           }
         }}
       >
@@ -378,7 +382,7 @@ function App() {
       });
 
       // Extract unique species and neighborhoods, and count occurrences
-      fetch('/trees-lookup.json')
+      fetch('public/trees-lookup.json')
         .then(response => response.json())
         .then((data: TreeInfo[]) => {
           setAllTrees(data);
@@ -794,8 +798,11 @@ function App() {
             right: 0,
             width: { xs: '100%', sm: 400 },
             height: { xs: '40%', sm: '100%' },
-            backgroundColor: '#f8f9fa',
-            boxShadow: '0 0 20px rgba(0,0,0,0.1)',
+            backgroundColor: 'rgba(248, 249, 250, 0.9)', // light blur-glass look
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            // backgroundColor: '#f8f9fa',
+            boxShadow: '0 0 30px rgba(0,0,0,0.1)',
             zIndex: 1000,
             display: 'flex',
             flexDirection: 'column',
