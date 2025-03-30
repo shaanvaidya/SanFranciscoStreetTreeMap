@@ -385,7 +385,7 @@ function App() {
       });
 
       // Extract unique species and neighborhoods, and count occurrences
-      fetch('/trees-lookup.json')
+      fetch('trees-lookup.json')
         .then(response => response.json())
         .then((data: TreeInfo[]) => {
           setAllTrees(data);
