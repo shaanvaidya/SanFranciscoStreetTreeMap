@@ -5,6 +5,7 @@ import { Box, CssBaseline, Drawer, IconButton, TextField, Autocomplete, Typograp
 import { MyLocation, Close } from '@mui/icons-material'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { Feature, FeatureCollection, Point, GeoJsonProperties } from 'geojson';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2hhYW52YWlkeWEiLCJhIjoiY20zc2FzeWtyMGV6dzJqb2oyNjcxc2k2dCJ9.kqxE189voII-7Ua8TFpVgw'
 
@@ -215,9 +216,24 @@ const TreeDetails = ({
           <Typography variant="subtitle2" sx={subtitleStyle}>
             Nearest Location
           </Typography>
-          <Typography variant="body1" sx={bodyStyle}>
-            {selectedTree.address}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <Typography
+              variant="body1"
+              sx={{ fontWeight: 500, color: '#000000', mr: 1 }}
+            >
+              {selectedTree.address}
+            </Typography>
+            <IconButton
+              size="small"
+              onClick={() => navigator.clipboard.writeText(selectedTree.address)}
+              sx={{
+                color: '#2e7d32',
+                '&:hover': { backgroundColor: 'rgba(46,125,50,0.1)' },
+              }}
+            >
+              <ContentCopyIcon fontSize="small" />
+            </IconButton>
+          </Box>
           <Typography
             component="a"
             href={`https://www.google.com/maps?q=${selectedTree.latitude},${selectedTree.longitude}`}
@@ -317,6 +333,32 @@ function App() {
           features: []
         }
       })
+
+      map.current.loadImage('https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png', (error, image) => {
+        if (error || !image) return;
+        if (!map.current?.hasImage('custom-marker')) {
+          map.current?.addImage('custom-marker', image);
+        }
+
+        map.current?.addLayer({
+          id: 'searched-location-pin',
+          type: 'symbol',
+          source: 'searched-location',
+          layout: {
+            'icon-image': 'custom-marker',
+            'icon-size': 0.5,
+            'icon-anchor': 'bottom',
+          }
+        });
+      });
+
+      map.current.addSource('searched-location', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: []
+        }
+      });
 
       // Add layer for user location
       map.current.addLayer({
@@ -442,12 +484,17 @@ function App() {
         })
 
         // Animate to the tree location
+        const offsetLat = -0.0005; // ~50 meters; tweak as needed
+        const isMobile = window.innerWidth < 600;
+
         map.current?.flyTo({
-          center: [props.longitude, props.latitude],
-          zoom: 16,
+          center: isMobile
+            ? [props.longitude, props.latitude + offsetLat]
+            : [props.longitude, props.latitude],
+          zoom: 18,
           duration: 1000,
           essential: true
-        })
+        });
       })
 
       // // Add a layer for highlighted trees
@@ -699,7 +746,7 @@ function App() {
           alignItems: 'center',
           justifyContent: 'space-between',
           px: 2,
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          backgroundColor: 'rgba(248, 249, 250, 0.9)',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           borderBottom: '1px solid #e0e0e0',
@@ -745,7 +792,7 @@ function App() {
               left: 20,
               right: 20,
               maxWidth: { xs: '100%', sm: 300 },
-              p: { xs: 2, sm: 1.5 },
+              p: { xs: 2, sm: 1 },
               backgroundColor: 'rgba(248, 249, 250, 0.9)', // light blur-glass look
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
@@ -753,13 +800,10 @@ function App() {
               boxShadow: 3,
               display: 'flex',
               flexDirection: 'column',
-              gap: 2,
+              gap: 1,
               zIndex: 2,
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Tree Filters
-            </Typography>
 
             {/* Species Filter */}
             <Autocomplete
@@ -843,7 +887,24 @@ function App() {
                       }}
                       onClick={() => {
                         const [lng, lat] = result.center;
-                        map.current?.flyTo({ center: [lng, lat], zoom: 16 });
+                        // Update the searched location pin
+                        const source = map.current?.getSource('searched-location');
+                        if (source && 'setData' in source) {
+                          source.setData({
+                            type: 'FeatureCollection',
+                            features: [
+                              {
+                                type: 'Feature',
+                                geometry: {
+                                  type: 'Point',
+                                  coordinates: [lng, lat]
+                                },
+                                properties: {}
+                              }
+                            ]
+                          });
+                        }
+                        map.current?.flyTo({ center: [lng, lat], zoom: 17 });
                         setAddressQuery(result.place_name);
                         setAddressResults([]);
                       }}
@@ -863,6 +924,13 @@ function App() {
                 setSelectedSpecies(null);
                 setSelectedNeighborhood(null);
                 setAddressQuery('');
+                const searchedSource = map.current?.getSource('searched-location');
+                if (searchedSource && 'setData' in searchedSource) {
+                  searchedSource.setData({
+                    type: 'FeatureCollection',
+                    features: []
+                  });
+                }
               }}
               variant="outlined"
               size="small"
@@ -900,7 +968,7 @@ function App() {
             left: { xs: 0, sm: 'auto' },
             right: 0,
             width: { xs: '100%', sm: 400 },
-            height: { xs: '40%', sm: '100%' },
+            height: { xs: '50%', sm: '100%' },
             backgroundColor: 'rgba(248, 249, 250, 0.9)', // light blur-glass look
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
