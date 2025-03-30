@@ -108,7 +108,7 @@ const TreeDetails = ({
       }}
     >
       <Box>
-        <Typography variant="body2" sx={{ color: '#444', mb: 0.5 }}>
+        <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
           #{selectedTree.id} {/* Show Tree ID here */}
         </Typography>
         <Typography variant="h5" sx={{ fontWeight: 700, color: '#2e7d32', mb: 0.5, fontSize: { xs: '1.25rem', sm: '2.0rem' }, }}>
@@ -194,7 +194,7 @@ const TreeDetails = ({
       </Box>
       <IconButton
         onClick={handleDrawerClose}
-        sx={{ color: '#2e7d32', '&:hover': { backgroundColor: 'rgba(46, 125, 50, 0.08)' }, position: 'absolute', top: 0, right: 0 }}
+        sx={{ color: '#2e7d32', '&:hover': { backgroundColor: 'rgba(46, 125, 50, 0.08)' }, position: 'absolute', top: 10, right: 10 }}
       >
         <Close />
       </IconButton>
@@ -1014,7 +1014,7 @@ function App() {
             zIndex: 1000,
             display: 'flex',
             flexDirection: 'column',
-            p: 3,
+            p: { xs: 0, sm: 3 },
             borderTopLeftRadius: { xs: 16, sm: 0 },
             borderTopRightRadius: { xs: 16, sm: 0 },
             transform: {
