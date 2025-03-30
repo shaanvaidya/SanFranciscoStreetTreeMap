@@ -56,6 +56,24 @@ interface GeoJSONResponse {
   features: GeoJSONFeature[]
 }
 
+const subtitleStyle = {
+  color: '#2e7d32',
+  mb: 0.5,
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  fontWeight: 600
+};
+
+const bodyStyle = {
+  fontWeight: 500,
+  color: '#000000'
+};
+
+const infoStyle = {
+  color: '#444',
+  mb: 0.5
+};
+
 function App() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
@@ -308,7 +326,7 @@ function App() {
     if (!map.current) return
 
     const applyFilter = () => {
-      if (!map.current || !map.current.isStyleLoaded()) return;
+      if (!map.current) return;
 
       try {
         const filters = []
@@ -360,7 +378,6 @@ function App() {
         if (source && 'setData' in source) {
           source.setData(featureCollection);
         }
-
         // ✅ Set overlay visibility only if there's an active filter
         if (map.current.getLayer('filtered-tree-points')) {
           map.current.setLayoutProperty(
@@ -375,7 +392,7 @@ function App() {
     }
 
     // Apply filter immediately
-    applyFilter()
+    applyFilter();
 
     // Cleanup function to remove filter when component unmounts or filters change
     return () => {
@@ -582,164 +599,139 @@ function App() {
           <MyLocation />
         </IconButton>
 
-        {/* Tree Info Drawer */}
-        <Drawer
-          anchor="right"
-          open={!!selectedTree}
-          onClose={handleDrawerClose}
-          elevation={0}
-          ModalProps={{
-            disableScrollLock: true,
-            disableEnforceFocus: true,
-            keepMounted: true,
-            sx: {
-              '& .MuiBackdrop-root': {
-                backgroundColor: 'transparent',
-              }
-            }
-          }}
-          PaperProps={{
-            sx: {
-              pointerEvents: 'auto',
-              touchAction: 'manipulation', // ✅ enables pinch-zoom gestures to pass through
-              userSelect: 'none',
+        {selectedTree && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              height: '100%',
               width: { xs: '100%', sm: 400 },
               backgroundColor: '#f8f9fa',
-              boxShadow: '0 0 20px rgba(0,0,0,0.1)'
-            }
-          }}
-        >
-          {selectedTree && (
-            <Box sx={{
-              p: 3,
-              height: '100%',
+              boxShadow: '0 0 20px rgba(0,0,0,0.1)',
+              zIndex: 1000,
               display: 'flex',
               flexDirection: 'column',
-              backgroundColor: '#f8f9fa'
-            }}>
-              <Box sx={{
+              p: 3,
+            }}
+          >
+            {/* Header */}
+            <Box
+              sx={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 mb: 3,
                 pb: 2,
                 borderBottom: '2px solid #2e7d32'
-              }}>
-                <Box>
-                  <Typography
-                    variant="h5"
-                    component="h2"
-                    sx={{
-                      fontWeight: 700,
-                      color: '#2e7d32',
-                      mb: 0.5
-                    }}
-                  >
-                    {selectedTree.species}
-                  </Typography>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{
-                      color: '#666',
-                      mb: 0.5
-                    }}
-                  >
-                    {speciesCounts[selectedTree.species]?.toLocaleString()} trees in San Francisco
-                  </Typography>
-                  <Typography
-                    component="button"
-                    onClick={() => setSelectedSpecies(selectedTree.species)}
-                    sx={{
-                      color: '#2e7d32',
-                      textDecoration: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      fontWeight: 500,
-                      fontSize: '0.875rem',
-                      '&:hover': {
-                        textDecoration: 'underline'
-                      },
-                      background: 'none',
-                      border: 'none',
-                      padding: 0,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Filter by this species
-                  </Typography>
-                  <Typography variant="subtitle1" sx={{
+              }}
+            >
+              <Box>
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  sx={{ fontWeight: 700, color: '#2e7d32', mb: 0.5 }}
+                >
+                  {selectedTree.species}
+                </Typography>
+                <Typography variant="subtitle2" sx={{ color: '#666', mb: 0.5 }}>
+                  {speciesCounts[selectedTree.species]?.toLocaleString()} trees in San Francisco
+                </Typography>
+                <Typography
+                  component="button"
+                  onClick={() => setSelectedSpecies(selectedTree.species)}
+                  sx={{
+                    color: '#2e7d32',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
+                    '&:hover': { textDecoration: 'underline' },
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Filter by this species
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
                     color: '#444',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1,
                     fontWeight: 500,
                     mt: 0.5
-                  }}>
-                    <span style={{
+                  }}
+                >
+                  <span
+                    style={{
                       width: 12,
                       height: 12,
                       borderRadius: '50%',
                       backgroundColor: selectedTree.color,
                       display: 'inline-block',
                       boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                    }} />
-                    {selectedTree.neighborhood_name || 'Unknown Neighborhood'}
-                    {selectedTree.neighborhood_name && (
-                      <Typography
-                        component="button"
-                        onClick={() => setSelectedNeighborhood(selectedTree.neighborhood_name)}
-                        sx={{
-                          color: '#2e7d32',
-                          textDecoration: 'none',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          fontWeight: 500,
-                          fontSize: '0.875rem',
-                          ml: 1,
-                          '&:hover': {
-                            textDecoration: 'underline'
-                          },
-                          background: 'none',
-                          border: 'none',
-                          padding: 0,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Filter by this neighborhood
-                      </Typography>
-                    )}
-                  </Typography>
-                </Box>
-                <IconButton
-                  onClick={handleDrawerClose}
-                  sx={{
-                    color: '#2e7d32',
-                    '&:hover': {
-                      backgroundColor: 'rgba(46, 125, 50, 0.08)'
-                    }
-                  }}
-                >
-                  <Close />
-                </IconButton>
+                    }}
+                  />
+                  {selectedTree.neighborhood_name || 'Unknown Neighborhood'}
+                  {selectedTree.neighborhood_name && (
+                    <Typography
+                      component="button"
+                      onClick={() => setSelectedNeighborhood(selectedTree.neighborhood_name)}
+                      sx={{
+                        color: '#2e7d32',
+                        textDecoration: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        fontWeight: 500,
+                        fontSize: '0.875rem',
+                        ml: 1,
+                        '&:hover': {
+                          textDecoration: 'underline'
+                        },
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Filter by this neighborhood
+                    </Typography>
+                  )}
+                </Typography>
               </Box>
+              <IconButton
+                onClick={handleDrawerClose}
+                sx={{
+                  color: '#2e7d32',
+                  '&:hover': { backgroundColor: 'rgba(46, 125, 50, 0.08)' }
+                }}
+              >
+                <Close />
+              </IconButton>
+            </Box>
 
-              <Box sx={{
+            {/* Scrollable content */}
+            <Box
+              sx={{
                 flex: 1,
                 overflowY: 'auto',
-                '&::-webkit-scrollbar': {
-                  width: '6px',
-                },
-                '&::-webkit-scrollbar-track': {
-                  background: '#f1f1f1',
-                },
+                '&::-webkit-scrollbar': { width: '6px' },
+                '&::-webkit-scrollbar-track': { background: '#f1f1f1' },
                 '&::-webkit-scrollbar-thumb': {
                   background: '#2e7d32',
-                  borderRadius: '3px',
-                },
-              }}>
-                <Box sx={{
+                  borderRadius: '3px'
+                }
+              }}
+            >
+              <Box
+                sx={{
                   display: 'grid',
                   gap: 2,
                   '& > div': {
@@ -749,81 +741,62 @@ function App() {
                     boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
                     border: '1px solid #e0e0e0'
                   }
-                }}>
-                  <Box>
-                    <Typography variant="subtitle2" sx={{
+                }}
+              >
+                <Box>
+                  <Typography variant="subtitle2" sx={subtitleStyle}>
+                    Nearest Location
+                  </Typography>
+                  <Typography variant="body1" sx={bodyStyle}>
+                    {selectedTree.address}
+                  </Typography>
+                  <Typography
+                    component="a"
+                    href={`https://www.google.com/maps?q=${selectedTree.latitude},${selectedTree.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
                       color: '#2e7d32',
-                      mb: 0.5,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      fontWeight: 600
-                    }}>
-                      Nearest Location
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500, mb: 1, color: '#000000' }}>
-                      {selectedTree.address}
-                    </Typography>
-                    <Typography
-                      component="a"
-                      href={`https://www.google.com/maps?q=${selectedTree.latitude},${selectedTree.longitude}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      sx={{
-                        color: '#2e7d32',
-                        textDecoration: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        fontWeight: 500,
-                        '&:hover': {
-                          textDecoration: 'underline'
-                        }
-                      }}
-                    >
-                      View on Google Maps
-                    </Typography>
-                  </Box>
+                      textDecoration: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      fontWeight: 500,
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    View on Google Maps
+                  </Typography>
+                </Box>
 
-                  <Box>
-                    <Typography variant="subtitle2" sx={{
-                      color: '#2e7d32',
-                      mb: 0.5,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      fontWeight: 600
-                    }}>
-                      Trunk Size
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500, color: '#000000' }}>
-                      {selectedTree.dbh ? `${selectedTree.dbh} inches` : 'N/A'}
-                    </Typography>
-                  </Box>
+                <Box>
+                  <Typography variant="subtitle2" sx={subtitleStyle}>
+                    Trunk Size
+                  </Typography>
+                  <Typography variant="body1" sx={bodyStyle}>
+                    {selectedTree.dbh ? `${selectedTree.dbh} inches` : 'N/A'}
+                  </Typography>
+                </Box>
 
-                  <Box>
-                    <Typography variant="subtitle2" sx={{
-                      color: '#2e7d32',
-                      mb: 0.5,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      fontWeight: 600
-                    }}>
-                      Additional Information
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#444', mb: 0.5 }}>
-                      Planted: {selectedTree.plantDate ? new Date(selectedTree.plantDate).toLocaleDateString() : 'N/A'}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#444', mb: 0.5 }}>
-                      Site Info: {selectedTree.siteInfo || 'N/A'}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#444' }}>
-                      Legal Status: {selectedTree.legalStatus || 'N/A'}
-                    </Typography>
-                  </Box>
+                <Box>
+                  <Typography variant="subtitle2" sx={subtitleStyle}>
+                    Additional Information
+                  </Typography>
+                  <Typography variant="body2" sx={infoStyle}>
+                    Planted: {selectedTree.plantDate ? new Date(selectedTree.plantDate).toLocaleDateString() : 'N/A'}
+                  </Typography>
+                  <Typography variant="body2" sx={infoStyle}>
+                    Site Info: {selectedTree.siteInfo || 'N/A'}
+                  </Typography>
+                  <Typography variant="body2" sx={infoStyle}>
+                    Legal Status: {selectedTree.legalStatus || 'N/A'}
+                  </Typography>
                 </Box>
               </Box>
             </Box>
-          )}
-        </Drawer>
+          </Box>
+        )}
+
       </Box>
     </ThemeProvider>
   )
