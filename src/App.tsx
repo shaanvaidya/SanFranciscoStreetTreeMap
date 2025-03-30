@@ -6,6 +6,7 @@ import { MyLocation, Close } from '@mui/icons-material'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { Feature, FeatureCollection, Point, GeoJsonProperties } from 'geojson';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { FilterList } from '@mui/icons-material'; // Import the filter icon
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2hhYW52YWlkeWEiLCJhIjoiY20zc2FzeWtyMGV6dzJqb2oyNjcxc2k2dCJ9.kqxE189voII-7Ua8TFpVgw'
 
@@ -784,6 +785,25 @@ function App() {
         >
           {showFilters ? 'Hide Filters' : 'Show Filters'}
         </Button>
+        {/* Conditionally show applied filters if filters are hidden */}
+        {!showFilters && (selectedSpecies || selectedNeighborhood || addressQuery) && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 70,
+              left: 'calc(20px + 140px)', // Adjust to place the badge next to the "Show Filters" button
+              backgroundColor: 'rgba(29, 120, 80, 0.2)', // Transparent dark green
+              color: 'gray',
+              padding: '5px 10px',
+              borderRadius: '15px',
+              fontSize: '14px',
+            }}
+          >
+            {selectedSpecies ? `Species: ${selectedSpecies}` : ''}
+            {selectedNeighborhood ? `, Neighborhood: ${selectedNeighborhood}` : ''}
+            {addressQuery ? `, Address: ${addressQuery}` : ''}
+          </Box>
+        )}
         {showFilters && (
           <Box
             sx={{
