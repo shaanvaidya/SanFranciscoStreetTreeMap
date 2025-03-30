@@ -29,6 +29,8 @@ interface TreeInfo {
   latitude: number
   longitude: number
   neighborhood_name: string | null
+  common_name: string
+  scientific_name: string
 }
 
 interface GeoJSONFeature {
@@ -106,12 +108,16 @@ const TreeDetails = ({
       }}
     >
       <Box>
-        <Typography variant="h5" sx={{ fontWeight: 700, color: '#2e7d32', mb: 0.5, fontSize: { xs: '1.25rem', sm: '1.5rem' }, }}>
-          {selectedTree.species}
-        </Typography>
         <Typography variant="body2" sx={{ color: '#444', mb: 0.5 }}>
           #{selectedTree.id} {/* Show Tree ID here */}
         </Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700, color: '#2e7d32', mb: 0.5, fontSize: { xs: '1.25rem', sm: '2.0rem' }, }}>
+          {selectedTree.common_name}
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#2e7d32', mb: 0.5, fontSize: { xs: '1.0rem', sm: '1.2rem' } }}>
+          {selectedTree.scientific_name}
+        </Typography>
+
         <Typography variant="subtitle2" sx={{ color: '#666', mb: 0.5, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
           {speciesCounts[selectedTree.species]?.toLocaleString()} such trees in San Francisco
         </Typography>
@@ -122,7 +128,7 @@ const TreeDetails = ({
             mt: 0.5,
             color: '#2e7d32',
             fontWeight: 500,
-            fontSize: '0.85rem',
+            fontSize: { xs: '0.8rem', sm: '0.9rem' },
             display: 'flex',
             alignItems: 'center',
             gap: 0.5,
@@ -139,14 +145,15 @@ const TreeDetails = ({
           View all trees of this species
         </Typography>
         <Typography
-          variant="subtitle1"
+          variant="body2"
           sx={{
             color: '#444',
             display: 'flex',
             alignItems: 'center',
             gap: 1,
             fontWeight: 500,
-            mt: 0.5
+            fontSize: { xs: '0.8rem', sm: '0.9rem' },
+            mt: 0.5,
           }}
         >
           <span
@@ -171,7 +178,7 @@ const TreeDetails = ({
                 alignItems: 'center',
                 gap: 0.5,
                 fontWeight: 500,
-                fontSize: '0.875rem',
+                fontSize: { xs: '0.8rem', sm: '0.9rem' },
                 ml: 1,
                 '&:hover': { textDecoration: 'underline' },
                 background: 'none',
@@ -472,6 +479,9 @@ function App() {
         setSelectedTreeId(props.id)
 
         // Set the selected tree for the sidebar
+        const scientificName = props.species.split('(')[1].replace(')', '')
+        const commonName = props.species.split('(')[0]
+        console.log(scientificName, commonName)
         setSelectedTree({
           id: props.id,
           species: props.species,
@@ -484,7 +494,9 @@ function App() {
           color: props.color,
           latitude: props.latitude,
           longitude: props.longitude,
-          neighborhood_name: props.neighborhood_name
+          neighborhood_name: props.neighborhood_name,
+          common_name: commonName,
+          scientific_name: scientificName
         })
 
         // Animate to the tree location
@@ -521,7 +533,7 @@ function App() {
           ],
           'circle-color': ['get', 'color'],
           'circle-opacity': 1,
-          'circle-stroke-width': 3,
+          'circle-stroke-width': 5,
           'circle-stroke-color': '#000000',
           'circle-stroke-opacity': 1,
           'circle-pitch-alignment': 'map'
@@ -990,7 +1002,7 @@ function App() {
             top: { xs: 'auto', sm: 0 },
             left: { xs: 0, sm: 'auto' },
             right: 0,
-            width: { xs: '100%', sm: 400 },
+            width: { xs: '100%', sm: 500 },
             height: { xs: '50%', sm: '100%' },
             backgroundColor: 'rgba(248, 249, 250, 0.9)', // light blur-glass look
             backdropFilter: 'blur(10px)',
