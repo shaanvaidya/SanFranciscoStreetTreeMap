@@ -6,6 +6,7 @@ import { MyLocation, Close } from '@mui/icons-material'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { Feature, FeatureCollection, Point, GeoJsonProperties } from 'geojson';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import BugReportIcon from '@mui/icons-material/BugReport'
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2hhYW52YWlkeWEiLCJhIjoiY20zc2FzeWtyMGV6dzJqb2oyNjcxc2k2dCJ9.kqxE189voII-7Ua8TFpVgw'
 
@@ -788,6 +789,36 @@ function App() {
         >
           San Francisco Street Tree Map
         </Typography>
+        <Button
+          component="a"
+          href="https://github.com/shaanvaidya/SanFranciscoStreetTreeMap/issues/new?title=Feedback:+&body=Please+describe+your+request+or+bug+here."
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="outlined"
+          size="small"
+          sx={{
+            display: { xs: 'none', sm: 'inline-flex' },
+            color: '#2e7d32',
+            borderColor: '#2e7d32',
+            ml: 2
+          }}
+        >
+          <BugReportIcon />Give Feedback
+        </Button>
+
+        {/* Just icon on mobile */}
+        <IconButton
+          component="a"
+          href="https://github.com/shaanvaidya/SanFranciscoStreetTreeMap/issues/new?title=Feedback:+&body=Please+describe+your+request+or+bug+here."
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{
+            display: { xs: 'inline-flex', sm: 'none' },
+            color: '#2e7d32'
+          }}
+        >
+          <BugReportIcon />
+        </IconButton>
       </Box>
       <Box sx={{ height: '100vh', width: '100vw', position: 'relative' }}>
         <Box ref={mapContainer} sx={{ position: 'absolute', top: 56, bottom: 0, width: '100%' }} />
