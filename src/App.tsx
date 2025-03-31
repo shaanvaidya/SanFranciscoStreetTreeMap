@@ -287,6 +287,22 @@ const TreeDetails = ({
             Legal Status: {selectedTree.legalStatus || 'N/A'}
           </Typography>
         </Box>
+        <Box>
+          <Typography variant="subtitle2" sx={subtitleStyle}>
+            Street View
+          </Typography>
+          <Box sx={{ mt: 2, borderRadius: 2, overflow: 'hidden', height: 350 }}>
+            <iframe
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              loading="lazy"
+              allowFullScreen
+              src={`https://www.google.com/maps/embed/v1/streetview?key=AIzaSyDA-b6A5qwlxK2_YnNilM0XRIvMttvD7o4&location=${selectedTree.latitude},${selectedTree.longitude}&heading=0&pitch=0&fov=80`}
+            ></iframe>
+          </Box>
+        </Box>
+
       </Box>
     </Box>
   </Box>
