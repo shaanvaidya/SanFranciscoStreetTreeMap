@@ -545,7 +545,7 @@ function App() {
           'circle-color': ['get', 'color'],
           'circle-opacity': 1,
           'circle-stroke-width': 5,
-          'circle-stroke-color': '#000000',
+          'circle-stroke-color': 'rgba(51, 51, 0, 1)',
           'circle-stroke-opacity': 1,
           'circle-pitch-alignment': 'map'
         },
