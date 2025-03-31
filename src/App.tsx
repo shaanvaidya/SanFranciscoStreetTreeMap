@@ -266,16 +266,10 @@ const TreeDetails = ({
 
         <Box>
           <Typography variant="subtitle2" sx={subtitleStyle}>
-            Trunk Size
-          </Typography>
-          <Typography variant="body1" sx={bodyStyle}>
-            {selectedTree.dbh ? `${selectedTree.dbh} inches` : 'N/A'}
-          </Typography>
-        </Box>
-
-        <Box>
-          <Typography variant="subtitle2" sx={subtitleStyle}>
             Additional Information
+          </Typography>
+          <Typography variant="body2" sx={infoStyle}>
+            Trunk Size: {selectedTree.dbh ? `${selectedTree.dbh} inches` : 'N/A'}
           </Typography>
           <Typography variant="body2" sx={infoStyle}>
             Planted: {selectedTree.plantDate ? new Date(selectedTree.plantDate).toLocaleDateString() : 'N/A'}
