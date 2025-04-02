@@ -1,0 +1,981 @@
+{
+    "Fraxinus": [
+        "Shamel Ash: Evergreen Ash (Fraxinus uhdei)",
+        "Modesto Ash (Fraxinus velutina)",
+        "Holotricha Ash (Fraxinus holotricha)",
+        "Ash (Fraxinus oxycarpa)",
+        "American Autumn Purple Ash (Fraxinus americana 'Autumn Purple')",
+        "American Ash (Fraxinus americana)",
+        "Modesto Ash Tree 'Modesto' (Fraxinus velutina 'Modesto')",
+        "Ash Spp (Fraxinus spp)",
+        "Flowering Ash (Fraxinus ornus)",
+        "Raywood Ash (Fraxinus oxycarpa 'Raywood')",
+        "Tomlinson Ash (Fraxinus uhdei 'Tomlinson')",
+        "Moraine Ash (Fraxinus x Moraine)",
+        "Narrow-leaved Ash (Fraxinus angustifolia)"
+    ],
+    "Cupressocyparis": [
+        "Leyland Cypress (Cupressocyparis leylandii)"
+    ],
+    "Magnolia": [
+        "Robusta Magnolia (Magnolia sargentiana 'Robusta')",
+        "Majestic Beauty Magnolia (Magnolia grandiflora 'Majestic Beauty')",
+        "Southern Magnolia (Magnolia grandiflora)",
+        "Saucer Magnolia (Magnolia x soulangiana)",
+        "White Champaca (Magnolia x alba)",
+        "Magnolia (Magnolia spp)",
+        "Samuel Sommer Magnolia (Magnolia grandiflora 'Samuel Sommer')",
+        "Silvercloud Magnolia (Magnolia doltsopa 'Silvercloud')",
+        "Jack Fogg Michelia (Magnolia x foggii 'Jack Fogg')",
+        "D.D. Blanchard Southern Magnolia (Magnolia grandiflora 'D.D. Blanchard')",
+        "Timeless Beauty Southern Magnolia (Magnolia grandiflora 'Timeless Beauty')",
+        "Chinese Magnolia (Magnolia x soulangiana 'Rustica Rubra')",
+        "Saint Mary Magnolia (Magnolia grandiflora 'Saint Mary')",
+        "Little Gem Magnolia (Magnolia grandiflora 'Little Gem')",
+        "Russet Magnolia (Magnolia grandiflora 'Russet')",
+        "Champa (Magnolia champaca)",
+        "Himalayan Magnolia (Magnolia doltsopa)"
+    ],
+    "Ulmus": [
+        "Frontier Elm 'Frontier' (Ulmus carpinifolia 'Frontier')",
+        "English Elm (Ulmus procera)",
+        "Weeping Chinese Elm (Ulmus parvifolia 'Sempervirens')",
+        "Prospector Elm (Ulmus 'Prospector')",
+        "True Green Chinese Elm (Ulmus parvifolia 'True Green')",
+        "American Elm (Ulmus americana)",
+        "Frontier Elm (Ulmus 'Frontier')",
+        "Elm Spp (Ulmus spp)",
+        "Chinese Elm 'Athena' (Ulmus parvifolia 'Athena')",
+        "Scotch Elm (Ulmus glabra)",
+        "Chinese Elm (Ulmus parvifolia)",
+        "Siberian Elm (Ulmus pumila)",
+        "Drake's Chinese Elm (Ulmus parvifolia 'Drake')",
+        "Emerald Sunshine Elm (Ulmus propinqua 'Emerald Sunshine')"
+    ],
+    "Tristaniopsis": [
+        "Swamp Myrtle (Tristaniopsis laurina)",
+        "Small-leaf Tristania 'Elegant' (Tristaniopsis laurina 'Elegant')"
+    ],
+    "Lophostemon": [
+        "Brisbane Box (Lophostemon confertus)"
+    ],
+    "Arbutus": [
+        "Hybrid Strawberry Tree (Arbutus 'Marina')",
+        "Strawberry Tree (Arbutus unedo)",
+        "Dwarf strawberry tree (Arbutus unedo 'Compacta')",
+        "Pacific Madrone (Arbutus menziesii)"
+    ],
+    "Tilia": [
+        "Silver Linden (Tilia tomentosa)",
+        "Redmond Linden (Tilia americana 'Redmond')",
+        "Littleleaf Linden (Tilia cordata)",
+        "Basswood Linden (Tilia americana)",
+        "Linden (Tilia spp)"
+    ],
+    "Platanus": [
+        "Yarwood Sycamore (Platanus x hispanica 'Yarwood')",
+        "California Sycamore (Platanus racemosa)",
+        "American sycamore (Platanus occidentalis)",
+        "Eastern Plane Tree (Platanus orientalis)",
+        "Columbia Hybrid Plane Tree (Platanus x hispanica 'Columbia')",
+        "Bloodgood London Plane (Platanus x hispanica 'Bloodgood')",
+        "Sycamore: London Plane (Platanus x hispanica)"
+    ],
+    "Lagunaria": [
+        "Primrose Tree (Lagunaria patersonii)"
+    ],
+    "Podocarpus": [
+        "Long-Leafed Yellow-Wood (Podocarpus henkelii)",
+        "Fern Pine (Podocarpus gracilor)",
+        "Yew Pine (Podocarpus macrophyllus)"
+    ],
+    "Metrosideros": [
+        "Northern Rata Tree (Metrosideros robusta)",
+        "New Zealand Xmas Tree (Metrosideros excelsa)",
+        "New Zealand Xmas Tree 'Aurea' (Metrosideros excelsa 'Aurea')"
+    ],
+    "": [
+        "Crab Apple (Malus)",
+        "Tree (Tree)",
+        "Lilac Tree (Syringa)",
+        "Unknown (Unknown)",
+        "Shrub (Shrub)"
+    ],
+    "Ficus": [
+        "Laurel Fig (Ficus nitida)",
+        "Pot Belly Fig (Ficus microcarpa 'Retusa')",
+        "Port Jackson Fig (Ficus rubiginosa)",
+        "Black Mission Fig (Ficus carica 'Black Mission')",
+        "Banyan Fig (Ficus retusa nitida)",
+        "Morton Bay Fig (Ficus macrophylla)",
+        "Ficus Spp. (Ficus Spp.)",
+        "Edible Fig (Ficus carica)",
+        "Indian Laurel Fig Tree 'Green Gem' (Ficus microcarpa nitida 'Green Gem')",
+        "Chinese Banyan (Ficus microcarpa)",
+        "Brown Turkey Fig (Ficus carica 'Brown Turkey')"
+    ],
+    "Pinus": [
+        "Eastern white pine (Pinus strobus)",
+        "Canary Island Pine (Pinus canariensis)",
+        "Maritime Pine (Pinus pinaster)",
+        "Pine Spp (Pinus Spp)",
+        "Japanese Black Pine (Pinus thunbergii)",
+        "Bishop Pine (Pinus muricata)",
+        "Monterey Pine (Pinus radiata)",
+        "Coulter pine (Pinus coulteri)",
+        "Thunderhead Pine (Pinus thunbergii 'Thunderhead')",
+        "Italian Stone Pine (Pinus pinea)",
+        "Scots Pine (Pinus sylvestris)",
+        "Torrey Pine (Pinus torreyana)",
+        "Shore Pine (Pinus contorta)",
+        "Allepo Pine (Pinus halepensis)"
+    ],
+    "Cupressus": [
+        "Cypress species (Cupressus spp)",
+        "Monterey Cypress (Cupressus macrocarpa)",
+        "Arizona Cypress (Cupressus arizonica)",
+        "Italian Cypress (Cupressus sempervirens)"
+    ],
+    "Syagrus": [
+        "Queen Palm (Syagrus romanzoffianum)"
+    ],
+    "Lyonothamnus": [
+        "Santa Cruz Ironwood (Lyonothamnus floribundus subsp. asplenifolius)"
+    ],
+    "Eriobotrya": [
+        "Bronze Loquat (Eriobotrya deflexa)",
+        "Coppertone Loquat (Eriobotrya deflexa 'Coppertone')",
+        "Edible Loquat (Eriobotrya japonica)"
+    ],
+    "Melaleuca": [
+        "Cajeput (Melaleuca quinquenervia)",
+        "Melaleuca spp (Melaleuca spp)",
+        "Pink Melaleuca (Melaleuca nesophila)",
+        "Weeping Tea Tree (Melaleuca leucadendron)",
+        "Paperbark Tree (Melaleuca styphelliodes)",
+        "Heath Melaleuca (Melaleuca ericifolia)",
+        "Flaxleaf Paperbark (Melaleuca linariifolia)"
+    ],
+    "Eucalyptus": [
+        "Blue Gum (Eucalyptus globulus)",
+        "Woollybutt (Eucalyptus longifolia)",
+        "Red Ironbark (Eucalyptus sideroxylon)",
+        "Bushy Yate (Eucalyptus lehmanni)",
+        "Cider Gum (Eucalyptus gunnii)",
+        "Ash-colored Eucalyptus (Eucalyptus cinerea)",
+        "Peppermint Box (Eucalyptus odorata)",
+        "Eucalyptus (Eucalyptus Spp)",
+        "Lemon scented eucalyptus (Eucalyptus citriodora)",
+        "Nichol's Willow-Leafed Peppermint (Eucalyptus nicholii)",
+        "Silver Dollar Eucalyptus (Eucalyptus polyanthemos)",
+        "Swamp Gum: Flooded Gum (Eucalyptus rudis)",
+        "River Red Gum (Eucalyptus camaldulensis)",
+        "Coral Gum (Eucalyptus torquata)",
+        "Yellow Box (Eucalyptus melliodora)",
+        "Manna Gum (Eucalyptus viminalis)",
+        "Yellow Gum (Eucalyptus leucoxylon mac 'Rosea')",
+        "Swamp mahogany (Eucalyptus robusta)",
+        "Flooded Box: Coolibah (Eucalyptus microtheca)",
+        "Camden Wollybutt (Eucalyptus macarthuri)",
+        "Simmond's Peppermint (Eucalyptus simmondsi)",
+        "Silver Mountain Gum Tree (Eucalyptus pulverulenta)",
+        "Sidney Blue Gum (Eucalyptus saligna)"
+    ],
+    "Ginkgo": [
+        "Ginkgo: Autumn Gold (Ginkgo biloba 'Autumn Gold')",
+        "Maidenhair Tree (Ginkgo biloba)",
+        "Fairmont Ginkgo (Ginkgo biloba 'Fairmont')",
+        "Ginkgo: Saratoga (Ginkgo biloba 'Saratoga')",
+        "Princeton Sentry Maidenhair (Ginkgo biloba 'Princeton Sentry')",
+        "Autumn Sentinel Ginkgo (Ginkgo biloba 'Autumn Sentinel')"
+    ],
+    "Pittosporum": [
+        "Karo Tree (Pittosporum crassifolium)",
+        "Tawhiwhi Pittosporum (Pittosporum tenuifolium)",
+        "Pittosporum spp (Pittosporum spp)",
+        "Victorian Box (Pittosporum undulatum)",
+        "Japanese Mockorange (Pittosporum tobira)",
+        "Tarata (Pittosporum eugenioides)"
+    ],
+    "Cedrus": [
+        "Blue Atlas Cedar (Cedrus atlantica Glauca)",
+        "Lebanon cedar (Cedrus libani)",
+        "Deodar Cedar (Cedrus deodara)",
+        "Atlas Cedar (Cedrus atlantica)"
+    ],
+    "Ceanothus": [
+        "Blueblossom Ceanothus (Ceanothus thyrsiflorus)",
+        "California lilac (Ceanothus Sps)",
+        "California Lilac 'Ray Hartman' (Ceanothus 'Ray Hartman')"
+    ],
+    "Liriodendron": [
+        "Tulip Tree (Liriodendron tulipifera)"
+    ],
+    "Olea": [
+        "Majestic Beauty Fruitless Olive (Olea europaea 'Majestic Beauty')",
+        "Wilson Olive Semi-fruitless (Olea europaea 'Wilsonii')",
+        "Fruitless Olive (Olea europaea 'Fruitless')",
+        "Majestic Beauty Olive Tree (Olea Majestic Beauty)",
+        "Olive Tree (Olea europaea)",
+        "Olive (Olea europaea 'Swan Hill')"
+    ],
+    "Jacaranda": [
+        "Jacaranda (Jacaranda mimosifolia)"
+    ],
+    "Crataegus": [
+        "Washington Hawthorn (Crataegus phaenopyrum)",
+        "Paul's Scarlet Hawthorn (Crataegus laevigata 'Paul's Scarlet')",
+        "English Hawthorn (Crataegus laevigata)"
+    ],
+    "Zelkova": [
+        "Sawleaf Zelkova (Zelkova serrata)",
+        "Village Green Zelkova (Zelkova serrata 'Village Green')"
+    ],
+    "Quercus": [
+        "Cork Oak (Quercus suber)",
+        "White oak (Quercus alba)",
+        "Interior Live Oak (Quercus wislizenii)",
+        "Hungarian Oak (Quercus frainetto 'Trump')",
+        "Pin Oak (Quercus palustris)",
+        "Scarlet Oak (Quercus coccinea)",
+        "California Black Oak (Quercus keloggii)",
+        "Holly Oak (Quercus ilex)",
+        "Coast Live Oak (Quercus agrifolia)",
+        "Southern Live Oak (Quercus virginiana)",
+        "Oak (Quercus spp)",
+        "Red Oak (Quercus rubra)",
+        "English Oak (Quercus robur)",
+        "Blue Oak (Quercus douglasii)",
+        "Engelmann oak (Quercus engelmannii)",
+        "Island oak (Quercus tomentella)",
+        "Valley Oak (Quercus lobata)"
+    ],
+    "Leptospermum": [
+        "Lemon Scented Tea Tree (Leptospermum petersonii)",
+        "New Zealand White Tea Tree (Leptospermum scoparium 'Snow White')",
+        "Helene Strybing New Zealand Tea Tree (Leptospermum scoparium  'Helene Strybing')",
+        "Australian Tea Tree (Leptospermum laevigatum)",
+        "New Zealand Tea Tree (Leptospermum scoparium)",
+        "New Zealand Ruby Glow Tea Tree (Leptospermum scoparium 'Ruby Glow')",
+        "Tea Tree (Leptospermum quinquenervia)"
+    ],
+    "Rhus": [
+        "African Sumac (Rhus lancea)",
+        "Staghorn sumac (Rhus typhina)"
+    ],
+    "Pyrus": [
+        "Aristocrat Callery Pear (Pyrus calleryana 'Aristocrat')",
+        "Ornamental Pear: Bradford (Pyrus calleryana 'Bradford')",
+        "Asian Pear 'Sainseiki' (Pyrus pyrifolia 'Sainseiki')",
+        "Ornamental Pear (Pyrus calleryana)",
+        "Ornamental Pear Tree 'Capital' (Pyrus calleryana 'Capital')",
+        "New Bradford Pear (Pyrus calleryana 'New Bradford')",
+        "Ornamental Pear Tree 'Chanticleer' (Pyrus calleryana 'Chanticleer')",
+        "Ornamental Pear Tree 'Redspire' (Pyrus calleryana 'Redspire')",
+        "Asian Pear '20th Century' (Pyrus pyrifolia '20th Century')",
+        "Pear Tree (Pyrus spp)",
+        "Evergreen Pear (Pyrus kawakamii)",
+        "Ornamental Pear Tree 'Cleveland' (Pyrus calleryana 'Cleveland')",
+        "Bartlett Pear (Pyrus x 'Bartlett')"
+    ],
+    "Callistemon": [
+        "White flowering bottlebrush (Callistemon salignus)",
+        "Purple bottlebrush (Callistemon 'Jeffers')",
+        "Lemon Bottlebrush (Callistemon citrinus)",
+        "Weeping Bottlebrush (Callistemon viminalis)"
+    ],
+    "Acer": [
+        "Japanese Maple (Acer japonicum)",
+        "Red Maple (Acer rubrum)",
+        "Japanese Maple (Acer palmatum)",
+        "Hedge Maple (Acer campestre)",
+        "Maple (Acer spp)",
+        "Trident Maple (Acer buergeranum)",
+        "Freeman Maple (Acer x freemanii)",
+        "Red October Glory Maple (Acer rubrum 'October Glory')",
+        "Coral Bark Maple (Acer palmatum 'Sango Kaku')",
+        "Vine Maple (Acer circinatum)",
+        "Evergreen Maple (Acer paxii)",
+        "Bloodgood Japanese Maple (Acer palmatum 'Bloodgood')",
+        "Big Leaf Maple (Acer macrophyllum)",
+        "Sugar Maple (Acer saccharum)",
+        "Manchurian snakebark maple (Acer tegmentosum)",
+        "Norway Maple (Acer platanoides)",
+        "Box Elder (Acer negundo)",
+        "Armstrong Red Maple (Acer rubrum 'Armstrong')",
+        "Red Swamp Maple (Acer rubrum 'Red Sunset')",
+        "Norway maple (Acer platanoides 'Crimson King')",
+        "Red Maple Tree 'Autumn Glory' (Acer rubrum 'Autumn Glory')",
+        "Silver Maple (Acer saccharinum)",
+        "Autumn Blaze Freeman Maple (Acer x freemanii 'Autumn Blaze')",
+        "Sycamore Maple (Acer pseudoplatanus)",
+        "Hybrid Maple (Acer x 'Autumn Blaze')",
+        "Amur Maple (Acer ginnela)"
+    ],
+    "Washingtonia": [
+        "California Fan Palm (Washingtonia filifera)",
+        "Mexican Fan Palm (Washingtonia robusta)",
+        "Washingtonia \u00d7 filibusta (Washingtonia \u00d7 filibusta)"
+    ],
+    "Acacia": [
+        "Purple-leaf Acacia (Acacia baileyana 'Purpurea')",
+        "Willow wattle (Acacia iteaphylla)",
+        "Cyclops wattle (Acacia cyclops)",
+        "River Wattle (Acacia cognata)",
+        "Silver Wattle (Acacia dealbata)",
+        "Shoestring Acacia (Acacia stenophylla)",
+        "Golden Wattle (Acacia longifolia)",
+        "Acacia: Silver Wattle (Acacia decurrens)",
+        "Bailey's Acacia (Acacia baileyana)",
+        "Hairy wattle (Acacia vestita)",
+        "Blackwood Acacia (Acacia melanoxylon)",
+        "Acacia Spp (Acacia spp)"
+    ],
+    "Prunus": [
+        "Purple-Leaf Plum 'Thundercloud' (Prunus cerasifera 'Thundercloud')",
+        "Flowering Plum (Prunus spp)",
+        "Peach (Prunus persica)",
+        "Purple-Leaf Plum (Prunus cerasifera 'Atropurpurea')",
+        "Weeping Double Pink Flowering Cherry (Prunus serrulata 'Double Pink Weeping')",
+        "Daybreak Yoshino Cherry (Prunus x yedoensis 'Akebono')",
+        "Mt. Fuji Cherry Tree (Prunus serrulata 'Mt. Fuji')",
+        "Flowering Plum (Prunus blireiana)",
+        "Royal Burgundy Flowering Cherry Tree (Prunus serrulata 'Royal Burgundy')",
+        "Catalina Cherry (Prunus lyonii)",
+        "Flowering Cherry Tree 'Amanagawa' (Prunus serrulata 'Amanagawa')",
+        "Birchbark Cherry (Prunus serrula)",
+        "Higan Cherry (Prunus subhirtella 'autumnalis')",
+        "Weeping Cherry (Prunus subhirtella 'Pendula')",
+        "Ornamental Cherry (Prunus serrulata)",
+        "Portugese Cherry Laurel (Prunus lusitanica)",
+        "Sargent Cherry (Prunus sargentii)",
+        "Mariposa Plum (Prunus domestica 'Mariposa')",
+        "Almond (Prunus amygdalus)",
+        "Kwanzan Flowering Cherry (Prunus serrulata 'Kwanzan')",
+        "Taiwan Flowering Cherry (Prunus campanulata)",
+        "Sargent Cherry Tree 'Columnaris' (Prunus sargentii 'Columnaris')",
+        "Purple Leaf Plum Krauter Vesuvius (Prunus cerasifera 'Krauter vesuvius')",
+        "English laurel (Prunus laurocerasus)",
+        "Flowering Nectarine Tree (Prunus persica nectarina)",
+        "Green Gage Plum (Prunus domestica 'Green Gage')",
+        "Almond Tree (Prunus spp)",
+        "Holly-leaved Cherry (Prunus ilicifoia)",
+        "Carolina Cherry Laurel (Prunus caroliniana)",
+        "Santa Rosa Plum (Prunus domestica 'Santa Rosa')",
+        "Apricot (Prunus armeniaca)",
+        "Cherry Plum (Prunus cerasifera)",
+        "Flowering Cherry (Prunus x 'Amanogawa')",
+        "Cherry Plum (Prunus spp 'Purpurea')",
+        "Cherry (Prunus spp)",
+        "Yoshino Cherry (Prunus x yedoensis)",
+        "'Akebono' Cherry (Prunus serrulata 'Akebono')"
+    ],
+    "Hymenosporum": [
+        "Sweet Shade (Hymenosporum flavum)",
+        "Sweetshade (Hymenosporum flavum)"
+    ],
+    "Geijera": [
+        "Geijera (Geijera spp)",
+        "Australian Willow (Geijera parviflora)"
+    ],
+    "Chiranthodendron": [
+        "Monkey Hand Tree (Chiranthodendron pentadactylon)"
+    ],
+    "Afrocarpus": [
+        "Fern Pine (Afrocarpus gracilior)"
+    ],
+    "Juniperus": [
+        "Juniper Tree 'Pathfinder' (Juniperus scopulorum 'Pat)",
+        "California juniper (Juniperus californica)",
+        "Juniper (Juniperus chinensis)",
+        "Southern red cedar (Juniperus silicicola)"
+    ],
+    "Yucca": [
+        "Spanish Dagger (Yucca gloriosa)",
+        "Spanish bayonet (Yucca aloifolia)",
+        "Yucca (Yucca spp)",
+        "Giant Yucca (Yucca elephantipes)"
+    ],
+    "Citrus": [
+        "Kaffir lime (Citrus x hystrix)",
+        "Lisbon Lemon Tree (Citrus \u00d7 limon 'Lisbon')",
+        "Improved Meyer Lemon (Citrus \u00d7 meyeri 'Improved')",
+        "Lemon: Orange: Lime (Citrus spp)",
+        "Seedless Lime (Citrus aurantifolia 'Bearss')"
+    ],
+    "x": [
+        "x Chitalpa (x Chitalpa tashkentensis)",
+        "Hybrid Monkey Hand Tree (x Chiranthofremontia lenzii)"
+    ],
+    "Schinus": [
+        "Brazilian Pepper (Schinus terebinthifolius)",
+        "Chilean pepper tree (Schinus polygamus)",
+        "California Pepper (Schinus molle)"
+    ],
+    "Pistacia": [
+        "Chinese Pistache (Pistacia chinensis)"
+    ],
+    "Cotoneaster": [
+        "Cotoneaster (Cotoneaster SPP)"
+    ],
+    "Corymbia": [
+        "Spotted Gum (Corymbia maculata)",
+        "Marri (Corymbia calophylla)",
+        "Lemon Scented Gum (Corymbia citriodora)",
+        "Red Flowering Gum (Corymbia ficifolia)"
+    ],
+    "Potential": [
+        "Potential Site (Potential Site)"
+    ],
+    "Cercis": [
+        "Eastern Redbud (Cercis canadensis)",
+        "Western Redbud (Cercis occidentalis)",
+        "Forest Pansy Redbud (Cercis canadensis 'Forest Pansy')"
+    ],
+    "Phoenix": [
+        "Cliff date palm (Phoenix rupicola)",
+        "Senegal date palm (Phoenix reclinata)",
+        "Date Palm (Phoenix dactylifera)",
+        "Pigmy Date Palm (Phoenix roebelenii)",
+        "Canary Island Date Palm (Phoenix canariensis)"
+    ],
+    "Myoporum": [
+        "Myoporum (Myoporum laetum)"
+    ],
+    "Cordyline": [
+        "Dracena Palm (Cordyline australis)"
+    ],
+    "Liquidambar": [
+        "Burgundy Sweet Gum (Liquidambar styraciflua 'Burgundy')",
+        "American Sweet Gum (Liquidambar styraciflua)",
+        "Upright Liquidambar (Liquidambar styraciflua 'Slender Silhoutte')",
+        "Palo Alto Sweet Gum (Liquidambar styraciflua 'Palo Alto')",
+        "Roundleaf sweetgum (Liquidambar styraciflua 'Rotundiloba')",
+        "Festival Sweet Gum (Liquidambar styraciflua 'Festival')",
+        "Oriental Sweet Gum (Liquidambar orientalis)",
+        "Chinese Sweet Gum (Liquidambar formosana)"
+    ],
+    "Aesculus": [
+        "Red Horse Chestnut (Aesculus x carnea)",
+        "White Horsechestnut (Aesculus hippocastanum)",
+        "California Buckeye (Aesculus californica)",
+        "Horsechestnut (Aesculus spp)",
+        "O'Neill Red Horse Chestnut (Aesculus x carnea 'O'Neill')",
+        "Ruby Horse Chestnut (Aesculus x carnea 'Briotii')"
+    ],
+    "Casuarina": [
+        "Horsetail pine (Casuarina cunninghamiana)"
+    ],
+    "Cassia": [
+        "Gold Medallion Tree (Cassia leptophylla)",
+        "Crown of Gold Tree (Cassia excelsa)"
+    ],
+    "Populus": [
+        "Quaking aspen (Populus tremuloides)",
+        "Eastern cottonwood (Populus deltoides)",
+        "Black Cottonwood Poplar (Populus trichocarpa)",
+        "Lombardy Poplar (Populus nigra 'Italica')",
+        "Canadian Poplar (Populus canadensis)",
+        "Poplar Spp (Populus spp)",
+        "White Poplar (Populus alba)"
+    ],
+    "Maytenus": [
+        "Meyten Tree 'Green Showers' (Maytenus boaria 'Green Showers')",
+        "Mayten (Maytenus boaria)"
+    ],
+    "Bambusa": [
+        "Bamboo Species (Bambusa spp)"
+    ],
+    "Ligustrum": [
+        "Japanese Privet (Ligustrum japonicum)",
+        "California privet (Ligustrum ovalifolium)",
+        "Glossy Privet (Ligustrum lucidum)"
+    ],
+    "Sequoia": [
+        "Coast Redwood (Sequoia sempervirens)"
+    ],
+    "Elaeagnus": [
+        "Russian Olive (Elaeagnus angustifolia)"
+    ],
+    "Brugmansia": [
+        "Angel trumpet (Brugmansia spp)"
+    ],
+    "Laurus": [
+        "Hybrid Laurel (Laurus x 'Saratoga')",
+        "Sweet Bay: Grecian Laurel (Laurus nobilis)"
+    ],
+    "Araucaria": [
+        "Monkey puzzle (Araucaria araucana)",
+        "Norfolk Island Pine (Araucaria heterophylla)",
+        "Bunya Bunya (Araucaria bidwillii)",
+        "Coral reef araucaria (Araucaria columnaris)"
+    ],
+    "Pseudotsuga": [
+        "Douglas Fir (Pseudotsuga menziesii)"
+    ],
+    "Agonis": [
+        "Peppermint willow 'After Dark' (Agonis flexuosa 'After Dark')",
+        "Peppermint Willow (Agonis flexuosa)"
+    ],
+    "Koelreuteria": [
+        "Golden Rain Tree (Koelreuteria paniculata)",
+        "Chinese Flame Tree (Koelreuteria bipinnata)"
+    ],
+    "Heteromeles": [
+        "Toyon (Heteromeles arbutifolia)"
+    ],
+    "Persea": [
+        "Stewart Avocado (Persea americana 'Stewart')",
+        "False Avocado (Persea borbonia)",
+        "Indian Bay (Persea indica)",
+        "Avocado (Persea americana)"
+    ],
+    "Caryota": [
+        "Himalayan Fishtail Palm (Caryota maxima 'Himalaya')"
+    ],
+    "Rhaphiolepis": [
+        "India Hawthorn (Rhaphiolepis indica)",
+        "Indian Hawthorn  'Majestic Beau' (Rhaphiolepis Majestic Beauty)"
+    ],
+    "Syzygium": [
+        "Eugenia (Syzygium australe)",
+        "Brush Cherry (Syzygium paniculatum)"
+    ],
+    "Trachycarpus": [
+        "Windmill Palm (Trachycarpus fortunei)"
+    ],
+    "Myrica": [
+        "Pacific Wax Myrtle Tree (Myrica californica)"
+    ],
+    "Calocedrus": [
+        "Incense Cedar (Calocedrus decurrens)"
+    ],
+    "Brachychiton": [
+        "Bottle Tree (Brachychiton populneus)",
+        "Australian Flame Tree (Brachychiton acerifolius)",
+        "Lacebark Tree (Brachychiton discolor)",
+        "Narrow-leaf bottle tree (Brachychiton rupestris)"
+    ],
+    "Archontophoenix": [
+        "King Palm (Archontophoenix cunninghamiana)",
+        "Myola palm (Archontophoenix myolensis)"
+    ],
+    "Umbellularia": [
+        "California Bay (Umbellularia californica)"
+    ],
+    "Grevillea": [
+        "Silk Oak Tree 'Red Hooks' (Grevillea 'Red Hooks')",
+        "Silk Oak Tree (Grevillea robusta)",
+        "Silkoak species (Grevillea spp)"
+    ],
+    "Leucodendron": [
+        "Silver Tree (Leucodendron argenteum)"
+    ],
+    "Tibochina": [
+        "Princess Flower (Tibochina urvilleana)"
+    ],
+    "Fagus": [
+        "Red Obelisk Beech (Fagus sylvatica 'Red Obelisk')",
+        "European Beech (Fagus sylvatica)"
+    ],
+    "Rhamnus": [
+        "Coffeeberry Tree (Rhamnus californica)",
+        "Italian Buckthorn (Rhamnus alaternus)",
+        "John Edwards Buckthorn (Rhamnus alaternus 'John Edwards')"
+    ],
+    "Nerium": [
+        "Oleander (Nerium oleander)"
+    ],
+    "Banksia": [
+        "Coast Banksia (Banksia integrifolia)"
+    ],
+    "Fremontodendron": [
+        "Flannel Bush Tree (Fremontodendron spp)"
+    ],
+    "Punica": [
+        "Pomegranate Tree 'Wonderful' (Punica granatum 'Wonderfu)"
+    ],
+    "Salix": [
+        "Arroyo willow (Salix lasiolepis)",
+        "Corkscrew Willow (Salix matsudana 'Tortuosa')",
+        "Willow (Salix spp)",
+        "Weeping Willow (Salix babylonica)",
+        "Pussy Willow (Salix discolor)"
+    ],
+    "Photinia": [
+        "Photinia Tree (Photinia fraseri)",
+        "Photinia: Chinese photinia (Photinia fraseri)"
+    ],
+    "Metasequoia": [
+        "Dawn Redwood (Metasequoia glyplostroboides)"
+    ],
+    "Morus": [
+        "Fruitless Mulberry (Morus alba 'Fruitless')",
+        "White Mulberry (Morus alba)",
+        "Red mulbeerry (Morus rubra)"
+    ],
+    "Dodonaea": [
+        "Purple Hopseed Bush (Dodonaea viscosa 'Purpurea')",
+        "Hop Bush (Dodonaea viscosa)"
+    ],
+    "Cinnamomum": [
+        "Camphor Tree (Cinnamomum camphora)"
+    ],
+    "Chilopsis": [
+        "Desert willow (Chilopsis linearis)"
+    ],
+    "Musa": [
+        "Banana (Musa spp)"
+    ],
+    "Sequoiadendron": [
+        "Sierra Redwood (Sequoiadendron giganteum)"
+    ],
+    "Robinia": [
+        "Purple Robe Locust (Robinia x ambigua 'Purple Robe')",
+        "Idaho Pink Locust (Robinia x ambigua 'Idahoensis')",
+        "Black Locust (Robinia pseudoacacia)",
+        "Globe Locust (Robinia pseudoacacia 'Umbraculifera')",
+        "Locust (Robinia x ambigua)"
+    ],
+    "Thuja": [
+        "Western Red Cedar (Thuja plicata)",
+        "Emerald Arborvitae (Thuja occidentalis 'Emerald')"
+    ],
+    "Ceratonia": [
+        "Carob (Ceratonia siliqua)"
+    ],
+    "Quillaja": [
+        "Chilean Soapbark (Quillaja saponaria)"
+    ],
+    "Cupaniopsis": [
+        "Carrotwood (Cupaniopsis anacardioides)"
+    ],
+    "Crateagus": [
+        "Hawthorn (Crateagus spp)"
+    ],
+    "Lagerstroemia": [
+        "Tuscarora Crape Myrtle (Lagerstroemia x 'Tuscarora')",
+        "Natchez Crape Myrtle (Lagerstroemia indica 'Natchez')",
+        "Tuscarora Crape Myrtle (Lagerstroemia indica 'Tuscarora')",
+        "Crape myrtle species (Lagerstroemia spp)",
+        "Crape Myrtle (Lagerstroemia indica)"
+    ],
+    "Gleditsia": [
+        "Sunburst Honey Locust (Gleditsia triacanthos 'Sunburst')",
+        "Honey Locust (Gleditsia triacanthos)",
+        "Honey Locust 'Shademaster' (Gleditsia triacanthos 'Shademaster')",
+        "Honey Locust 'Aurea' (Gleditsia triacanthos 'Aurea')"
+    ],
+    "Macadamia": [
+        "Macadamia (Macadamia tetraphylla)"
+    ],
+    "Hakea": [
+        "Sweet Hakea Tree (Hakea suaveolens)",
+        "Sea Urchin Tree (Hakea laurina)"
+    ],
+    "Celtis": [
+        "Chinese Hackberry (Celtis sinensis)",
+        "European Hackberry (Celtis australis)",
+        "Common Hackberry (Celtis occidentalis)"
+    ],
+    "Carpinus": [
+        "Upright European Hornbeam (Carpinus betulus 'Fastigiata')",
+        "European Hornbeam (Carpinus betulus)"
+    ],
+    "Brahea": [
+        "San Jose hesper palm (Brahea brandegeei)",
+        "Blue hesper palm (Brahea armata)",
+        "Guadalupe Palm (Brahea edulis)",
+        "Mexican Blue Palm (Brahea aramata)"
+    ],
+    "Lycianthes": [
+        "Blue Potato Bush (Lycianthes rantonnetii)"
+    ],
+    "Chamaerops": [
+        "Mediterranean Fan Palm (Chamaerops humilis)"
+    ],
+    "Auranticarpa": [
+        "Queensland Pittosporum (Auranticarpa rhombifolia)"
+    ],
+    "Azara": [
+        "Little-Leaf Azara (Azara microphylla)"
+    ],
+    "Rhopalostylis": [
+        "Nikau palm (Rhopalostylis sapida)",
+        "Palm (Rhopalostylis baueri)"
+    ],
+    "Palm": [
+        "Palm Spp (Palm (unknown Genus))"
+    ],
+    "Taxus": [
+        "Irish Yew (Taxus baccata)"
+    ],
+    "Arecastrum": [
+        "Queen Palm (Arecastrum romanzoffianum)"
+    ],
+    "Arctostaphylos": [
+        "Dr. Hurd Manzanita (Arctostaphylos manzanita 'Dr Hurd')"
+    ],
+    "Nyssa": [
+        "Tupelo: Sour Gum (Nyssa sylvatica)"
+    ],
+    "Betula": [
+        "European White Birch (Betula pendula)",
+        "River Birch (Betula nigra)",
+        "Birch (Betula spp)"
+    ],
+    "Abutilon": [
+        "Flowering maple (Abutilon hybridum)"
+    ],
+    "Sambucus": [
+        "Elderberry (Sambucus species)",
+        "Blue Elderberry (Sambucus mexicana)"
+    ],
+    "Albizia": [
+        "Plume Albizia Tree (Albizia distachya)",
+        "Mimosa Silk Tree (Albizia julibrissin)"
+    ],
+    "Alnus": [
+        "White Alder (Alnus rhombifolia)",
+        "Italian Alder (Alnus cordata)",
+        "Red Alder (Alnus rubra)"
+    ],
+    "Butia": [
+        "Pindo Palm (Butia capitata)",
+        "Butia (Butia catarinensis)"
+    ],
+    "n.calif)": [
+        "Walnut: Black (n.calif) (Juglans hindsii)"
+    ],
+    "Styrax": [
+        "Japanese Snowdrop Tree (Styrax japonicus)"
+    ],
+    "Ilex": [
+        "Holly Species (Ilex spp)",
+        "Wilson Holly Tree (Ilex altaclarensis 'Wilsonii')",
+        "European Holly (Ilex aquifolium)",
+        "American Holly (Ilex opaca)"
+    ],
+    "Dracaena": [
+        "Dragon Tree (Dracaena draco)"
+    ],
+    "Elaeocarpus": [
+        "Japanese Blueberry Tree (Elaeocarpus decipiens)"
+    ],
+    "Malus": [
+        "White-Flowered Crabapple (Malus x 'Callaway')",
+        "Prairie Fire Crabapple Tree (Malus floribunda 'Prairie Fire')",
+        "Showy Crab Apple: Japanese Crabapple (Malus floribunda)",
+        "Apple (Malus sylvestris)",
+        "Apple Tree 'Gala' (Malus 'Gala')"
+    ],
+    "Cornus": [
+        "Eddie's White Wonder Dogwood (Cornus nuttallii x florida 'Eddie's White Wonder')",
+        "Dogwood (Cornus SPP)",
+        "Eastern Dogwood (Cornus florida)"
+    ],
+    "Howea": [
+        "Kentia Palm (Howea forsteriana)",
+        "Belmore Sentry Palm (Howea belmoreana)"
+    ],
+    "Chionanthus": [
+        "Chinese Fringe Tree (Chionanthus retusa)"
+    ],
+    "species": [
+        "Date palm (species unknown) (Phoenix spp)"
+    ],
+    "Private": [
+        "Private Shrub (Private shrub)"
+    ],
+    "Cercidiphyllum": [
+        "Katsura tree (Cercidiphyllum japonicum)"
+    ],
+    "Ceiba": [
+        "Silk floss (Ceiba speciosa)"
+    ],
+    "Cycas": [
+        "Sago palm (Cycas revoluta)"
+    ],
+    "Cedrela": [
+        "Argentine cedar (Cedrela fissilis)"
+    ],
+    "Chamaecyparis": [
+        "Hinoki cypress (Chamaecyparis obtusa)",
+        "Port Orford Cedar (Chamaecyparis lawsoniana)",
+        "False Cypress species (Chamaecyparis species)"
+    ],
+    "Cotinus": [
+        "Smoke tree (Cotinus coggygria 'Royal Purple')"
+    ],
+    "Cussonia": [
+        "Cabbage tree (Cussonia spicata)"
+    ],
+    "Pseudopanax": [
+        "Five finger (Pseudopanax lessonii)"
+    ],
+    "Sapium": [
+        "Chinese Tallow (Sapium sebiferum)"
+    ],
+    "Tecoma": [
+        "Trumpet bush (Tecoma stans)"
+    ],
+    "Schefflera": [
+        "Umbrella tree (Schefflera species)"
+    ],
+    "Psidium": [
+        "Guava tree (Psidium guajava)"
+    ],
+    "Casurina": [
+        "Beefwood: Drooping She-Oak (Casurina stricta)"
+    ],
+    "Ailanthus": [
+        "Tree Of Heaven (Ailanthus altissima)"
+    ],
+    "Taxodium": [
+        "Montezuma Cypress (Taxodium mucronatum)"
+    ],
+    "Leucadendron": [
+        "Yellow conebush (Leucadendron 'Gold Strike')"
+    ],
+    "Pyracantha": [
+        "Firethorn Tree 'Santa Cruz' (Pyracantha  'Santa Cruz')"
+    ],
+    "Aloe": [
+        "Tree aloe (Aloe barberae)"
+    ],
+    "Picea": [
+        "Spruce Spp (Picea Spp)"
+    ],
+    "Chorisia": [
+        "Silk Floss Tree (Chorisia speciosa)"
+    ],
+    "Dypsis": [
+        "Cabada palm (Dypsis cabadae)",
+        "Triangle palm (Dypsis decaryi)"
+    ],
+    "Dicksonia": [
+        "Soft Tree Fern (Dicksonia antarctica)"
+    ],
+    "Juglans": [
+        "Walnut: English (Juglans regia)",
+        "Eastern black walnut (Juglans nigra)",
+        "Paradox Walnut Tree 'Paradox' (Juglans 'Paradox')"
+    ],
+    "Viburnum": [
+        "Sweet viburnum (Viburnum odoratissimum var. awabuki)"
+    ],
+    "Paulownia": [
+        "Dragon tree (Paulownia fortunei)",
+        "Empress Tree (Paulownia tomentosa)"
+    ],
+    "s.calif)": [
+        "Walnut: Black (s.calif) (Juglans californica)"
+    ],
+    "Diospyros": [
+        "Persimmon (Diospyros kaki)"
+    ],
+    "Corynocarpus": [
+        "New Zealand Laurel (Corynocarpus laevigata)"
+    ],
+    "Crinodendron": [
+        "Lily-of-the-Valley Tree (Crinodendron patagua)"
+    ],
+    "Griselinia": [
+        "Griselinia (Griselinia lucida)"
+    ],
+    "Acca": [
+        "Pineapple Guava Tree (Acca sellowiana)"
+    ],
+    "Jubaea": [
+        "Chilean Wine Palm (Jubaea chilensis)"
+    ],
+    "New": [
+        "New Zealand Tea Tree (New Zealand Tea Tree)"
+    ],
+    "Styphnolobium": [
+        "Chinese scholar tree (Styphnolobium japonicum)"
+    ],
+    "Cercocarpus": [
+        "Mountain mahogany (Cercocarpus betuloides)"
+    ],
+    "Livistona": [
+        "Chinese fan palm (Livistona chinensis)"
+    ],
+    "Ziziphus": [
+        "Jujube (Ziziphus jujuba)"
+    ],
+    "Catalpa": [
+        "Northern Catalpa (Catalpa speciosa)"
+    ],
+    "Sophora": [
+        "Regent Scholar Tree (Sophora japonica 'Regent')",
+        "Japanese Pagoda (Sophora japonica)"
+    ],
+    "Cryptomeria": [
+        "Japanese Cryptomeria (Cryptomeria japonica)"
+    ],
+    "Escallonia": [
+        "White escallonia (Escallonia bifida)"
+    ],
+    "Erythrina": [
+        "Coral tree (Erythrina caffra)"
+    ],
+    "Xylosma": [
+        "Brush holly (Xylosma congestum)"
+    ],
+    "Wodyetia": [
+        "Foxtail palm (Wodyetia bifurcata)"
+    ],
+    "Melia": [
+        "Chinaberry (Melia azerdarach)"
+    ],
+    "Garrya": [
+        "Evie Coast Silktassel Tree (Garrya elliptica 'Evie')",
+        "James Roof Coast Silktassel Tree (Garrya elliptica 'James Roof')"
+    ],
+    "Radermachera": [
+        "China Doll Tree (Radermachera sinica)"
+    ],
+    "Meryta": [
+        "Puka or puke tree (Meryta sinclairii)"
+    ],
+    "Mangifera": [
+        "Mango (Mangifera indica)"
+    ],
+    "Beaucarnea": [
+        "Ponytail palm (Beaucarnea recurvata)"
+    ],
+    "Moringa": [
+        "Drumstick tree (Moringa oleifera)"
+    ],
+    "Fortunella": [
+        "Kumquat (Fortunella margarita)"
+    ],
+    "Angohpora": [
+        "Angophora species (Angohpora spp.)"
+    ],
+    "Torreya": [
+        "California nutmeg (Torreya californica)"
+    ],
+    "Castanea": [
+        "American Chestnut (Castanea dentata)"
+    ],
+    "Corylus": [
+        "Hazel: Turkish (Corylus colurna)"
+    ],
+    "Lithocarpus": [
+        "Tan Oak (Lithocarpus densiflorus)"
+    ],
+    "Sorbus": [
+        "European Mountain Ash Tr (Sorbus aucuparia)"
+    ],
+    "Stenocarpus": [
+        "Firewheel tree (Stenocarpus sinuatus)"
+    ],
+    "Carya": [
+        "Pecan (Carya illinoensis)"
+    ],
+    "Euphorbia": [
+        "Candelabra tree (Euphorbia ingens)"
+    ]
+}

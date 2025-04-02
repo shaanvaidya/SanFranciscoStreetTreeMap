@@ -1,0 +1,12 @@
+tippecanoe -o trees.mbtiles \
+  --layer=trees \
+  --minimum-zoom=10 \
+  --maximum-zoom=16 \
+  --drop-densest-as-needed \
+  --extend-zooms-if-still-dropping \
+  --no-feature-limit \
+  --no-tile-size-limit \
+  --force \
+  trees.geojson
+
+node generate-trees-lookup.cjs
