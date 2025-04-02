@@ -420,13 +420,23 @@ function App() {
           'circle-radius': [
             'interpolate',
             ['linear'],
-            ['get', 'dbh'],
-            0, 4,
-            10, 5,
-            20, 6,
-            30, 7,
-            40, 8,
-            50, 9
+            ['zoom'],
+            10, [
+              'interpolate',
+              ['linear'],
+              ['min', ['coalesce', ['get', 'dbh'], 0], 60],
+              0, 2,
+              30, 2.5,
+              60, 3
+            ],
+            14, [
+              'interpolate',
+              ['linear'],
+              ['min', ['coalesce', ['get', 'dbh'], 0], 60],
+              0, 4,
+              30, 4.5,
+              60, 5
+            ]
           ],
           'circle-color': ['get', 'color'],
           'circle-opacity': [
