@@ -127,6 +127,18 @@ const TreeDetails = ({
         </Typography>
         <Typography variant="h5" sx={{ fontWeight: 700, color: '#2e7d32', mb: 0.5, fontSize: { xs: '1.25rem', sm: '2.0rem' }, }}>
           {selectedTree.common_name}
+          <span
+            style={{
+              width: 12,
+              height: 12,
+              borderRadius: '50%',
+              backgroundColor: selectedTree.color,
+              display: 'inline-block',
+              marginLeft: 8,
+              verticalAlign: 'middle',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+            }}
+          />
         </Typography>
         <Typography variant="body2" sx={{ color: '#2e7d32', mb: 0.5, fontSize: { xs: '1.0rem', sm: '1.2rem' } }}>
           {selectedTree.scientific_name}
@@ -170,16 +182,6 @@ const TreeDetails = ({
             mt: 0.5,
           }}
         >
-          <span
-            style={{
-              width: 12,
-              height: 12,
-              borderRadius: '50%',
-              backgroundColor: selectedTree.color,
-              display: 'inline-block',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-            }}
-          />
           {selectedTree.neighborhood_name || 'Unknown Neighborhood'}
           {selectedTree.neighborhood_name && (
             <Typography
@@ -1169,7 +1171,7 @@ function App() {
             top: { xs: 'auto', sm: 0 },
             left: { xs: 0, sm: 'auto' },
             right: 0,
-            width: { xs: '100%', sm: 500 },
+            width: { xs: '100%', sm: 550 },
             height: { xs: '50%', sm: '100%' },
             backgroundColor: 'rgba(248, 249, 250, 0.9)', // light blur-glass look
             backdropFilter: 'blur(10px)',
