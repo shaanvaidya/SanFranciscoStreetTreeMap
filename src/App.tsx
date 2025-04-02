@@ -1,12 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
-import { Box, CssBaseline, Drawer, IconButton, TextField, Autocomplete, Typography, Button, Chip } from '@mui/material'
+import { Box, CssBaseline, IconButton, TextField, Autocomplete, Typography, Button, Chip, Dialog, DialogTitle, DialogContent, Slide } from '@mui/material'
 import { MyLocation, Close } from '@mui/icons-material'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { Feature, FeatureCollection, Point, GeoJsonProperties } from 'geojson';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import BugReportIcon from '@mui/icons-material/BugReport'
+import { } from '@mui/material';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { TransitionProps } from '@mui/material/transitions';
+import { forwardRef } from 'react';
+
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2hhYW52YWlkeWEiLCJhIjoiY20zc2FzeWtyMGV6dzJqb2oyNjcxc2k2dCJ9.kqxE189voII-7Ua8TFpVgw'
 
@@ -16,6 +21,14 @@ const theme = createTheme({
     fontFamily: '"Manrope", "Helvetica", "Arial", sans-serif',
   },
 });
+
+const Transition = forwardRef(function Transition(
+  props: TransitionProps & { children: React.ReactElement },
+  ref: React.Ref<unknown>
+) {
+  return <Slide direction="down" ref={ref} {...props} />;
+});
+
 
 interface TreeInfo {
   id: number
@@ -759,6 +772,8 @@ function App() {
     setSelectedTreeId(null)
   }
 
+  const [openInfo, setOpenInfo] = useState(false);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -780,15 +795,75 @@ function App() {
           zIndex: 3
         }}
       >
-        <Typography
-          variant="h6"
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              color: '#2e7d32'
+            }}
+          >
+            San Francisco Street Tree Map
+          </Typography>
+          <IconButton
+            size="small"
+            onClick={() => setOpenInfo(true)}
+            sx={{ color: '#2e7d32' }}
+            aria-label="Learn more about this map"
+          >
+            <InfoOutlinedIcon />
+          </IconButton>
+        </Box>
+        <Dialog
+          open={openInfo}
+          onClose={() => setOpenInfo(false)}
+          TransitionComponent={Transition}
+          keepMounted
+          fullScreen // mobile-first
           sx={{
-            fontWeight: 700,
-            color: '#2e7d32'
+            '& .MuiDialog-paper': {
+              borderRadius: 2, // flat on mobile, rounded on desktop
+              maxWidth: { sm: 500 },
+              margin: { sm: 'auto' }
+            }
+          }}
+          PaperProps={{
+            sx: {
+              maxHeight: { xs: 270, sm: 250 }, // 🔽 Controls overall height
+              mx: 2, // 🔽 Small horizontal margin on mobile
+              my: '20vh', // 🔽 Push it down vertically on mobile
+              borderRadius: 2,
+              overflow: 'hidden',
+            }
           }}
         >
-          San Francisco Street Tree Map
-        </Typography>
+          <DialogTitle
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 2,
+              py: 1,
+              backgroundColor: '#f8f9fa',
+              borderBottom: '1px solid #ddd',
+              color: 'rgba(5, 117, 36, 0.87)'
+            }}
+          >
+            <Typography variant="h6">About This Map</Typography>
+            <IconButton onClick={() => setOpenInfo(false)} size="small" aria-label="Close">
+              <Close />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent dividers sx={{ flexDirection: 'column', justifyContent: 'center' }}>
+            <Typography variant="body1" sx={{ mb: 1 }}>
+              This interactive map shows street trees in San Francisco. You can filter by species,
+              neighborhood, search by address, or go to your current location. Tree data is sourced from the <a href="https://data.sfgov.org/City-Infrastructure/Street-Tree-List/tkzw-k3nq/about_data" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#2e7d32' }}>San Francisco Public Works Street Tree List</a>.
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Built with ❤️ using Mapbox and React.
+            </Typography>
+          </DialogContent>
+        </Dialog>
         <Button
           component="a"
           href="https://github.com/shaanvaidya/SanFranciscoStreetTreeMap/issues/new?title=Feedback:+&body=Please+describe+your+request+or+bug+here."
