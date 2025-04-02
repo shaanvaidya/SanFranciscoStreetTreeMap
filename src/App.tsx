@@ -434,8 +434,8 @@ function App() {
               ['linear'],
               ['min', ['coalesce', ['get', 'dbh'], 0], 60],
               0, 4,
-              30, 4.5,
-              60, 5
+              30, 5,
+              60, 6
             ]
           ],
           'circle-color': ['get', 'color'],
@@ -1146,16 +1146,12 @@ function App() {
             backgroundColor: 'rgba(248, 249, 250, 0.9)', // light blur-glass look
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
-            // backgroundColor: '#f8f9fa',
-            // boxShadow: '0 0 30px rgba(0,0,0,0.1)',
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)', // Instead of 0.05
             borderLeft: '1px solid #e0e0e0',
             zIndex: 1000,
             display: 'flex',
             flexDirection: 'column',
             p: { xs: 0, sm: 3 },
-            borderTopLeftRadius: { xs: 16, sm: 0 },
-            borderTopRightRadius: { xs: 16, sm: 0 },
             transform: {
               xs: selectedTree ? 'translateY(0)' : 'translateY(100%)',
               sm: selectedTree ? 'translateX(0)' : 'translateX(100%)'
