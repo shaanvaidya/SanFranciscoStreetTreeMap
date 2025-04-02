@@ -1122,7 +1122,7 @@ function App() {
           onClick={handleLocationClick}
           sx={{
             position: 'absolute',
-            bottom: { xs: 120, sm: 40 },
+            bottom: { xs: 40, sm: 40 },
             right: 20,
             backgroundColor: 'white',
             boxShadow: 2,
