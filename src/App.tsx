@@ -784,23 +784,28 @@ function App() {
           left: 0,
           right: 0,
           height: 56,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
           px: 2,
           backgroundColor: 'rgba(248, 249, 250, 0.9)',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           borderBottom: '1px solid #e0e0e0',
-          zIndex: 3
+          zIndex: 3,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        {/* Title + Info */}
+        <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
           <Typography
             variant="h6"
             sx={{
               fontWeight: 700,
-              color: '#2e7d32'
+              color: '#2e7d32',
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
             }}
           >
             San Francisco Street Tree Map
@@ -808,93 +813,101 @@ function App() {
           <IconButton
             size="small"
             onClick={() => setOpenInfo(true)}
-            sx={{ color: '#2e7d32' }}
+            sx={{ color: '#2e7d32', ml: 1 }}
             aria-label="Learn more about this map"
           >
             <InfoOutlinedIcon />
           </IconButton>
         </Box>
-        <Dialog
-          open={openInfo}
-          onClose={() => setOpenInfo(false)}
-          TransitionComponent={Transition}
-          keepMounted
-          fullScreen // mobile-first
-          sx={{
-            '& .MuiDialog-paper': {
-              borderRadius: 2, // flat on mobile, rounded on desktop
-              maxWidth: { sm: 500 },
-              margin: { sm: 'auto' }
-            }
-          }}
-          PaperProps={{
-            sx: {
-              maxHeight: { xs: 270, sm: 250 }, // 🔽 Controls overall height
-              mx: 2, // 🔽 Small horizontal margin on mobile
-              my: '20vh', // 🔽 Push it down vertically on mobile
-              borderRadius: 2,
-              overflow: 'hidden',
-            }
-          }}
-        >
-          <DialogTitle
+
+        {/* Feedback */}
+        <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
+          {/* Just icon on mobile */}
+          <IconButton
+            component="a"
+            href="https://github.com/shaanvaidya/SanFranciscoStreetTreeMap/issues/new?title=Feedback:+&body=Please+describe+your+request+or+bug+here."
+            target="_blank"
+            rel="noopener noreferrer"
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              px: 2,
-              py: 1,
-              backgroundColor: '#f8f9fa',
-              borderBottom: '1px solid #ddd',
-              color: 'rgba(5, 117, 36, 0.87)'
+              display: { xs: 'inline-flex', sm: 'none' },
+              color: '#2e7d32'
             }}
           >
-            <Typography variant="h6">About This Map</Typography>
-            <IconButton onClick={() => setOpenInfo(false)} size="small" aria-label="Close">
-              <Close />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent dividers sx={{ flexDirection: 'column', justifyContent: 'center' }}>
-            <Typography variant="body1" sx={{ mb: 1 }}>
-              This interactive map shows street trees in San Francisco. You can filter by species,
-              neighborhood, search by address, or go to your current location. Tree data is sourced from the <a href="https://data.sfgov.org/City-Infrastructure/Street-Tree-List/tkzw-k3nq/about_data" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#2e7d32' }}>San Francisco Public Works Street Tree List</a>.
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Built with ❤️ using Mapbox and React.
-            </Typography>
-          </DialogContent>
-        </Dialog>
-        <Button
-          component="a"
-          href="https://github.com/shaanvaidya/SanFranciscoStreetTreeMap/issues/new?title=Feedback:+&body=Please+describe+your+request+or+bug+here."
-          target="_blank"
-          rel="noopener noreferrer"
-          variant="outlined"
-          size="small"
-          sx={{
-            display: { xs: 'none', sm: 'inline-flex' },
-            color: '#2e7d32',
-            borderColor: '#2e7d32',
-            ml: 2
-          }}
-        >
-          <BugReportIcon />Give Feedback
-        </Button>
+            <BugReportIcon />
+          </IconButton>
 
-        {/* Just icon on mobile */}
-        <IconButton
-          component="a"
-          href="https://github.com/shaanvaidya/SanFranciscoStreetTreeMap/issues/new?title=Feedback:+&body=Please+describe+your+request+or+bug+here."
-          target="_blank"
-          rel="noopener noreferrer"
+          {/* Full button on desktop */}
+          <Button
+            component="a"
+            href="https://github.com/shaanvaidya/SanFranciscoStreetTreeMap/issues/new?title=Feedback:+&body=Please+describe+your+request+or+bug+here."
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="outlined"
+            size="small"
+            sx={{
+              display: { xs: 'none', sm: 'inline-flex' },
+              color: '#2e7d32',
+              borderColor: '#2e7d32',
+              ml: 1,
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <BugReportIcon sx={{ mr: 0.5 }} />
+            Give Feedback
+          </Button>
+        </Box>
+      </Box>
+      <Dialog
+        open={openInfo}
+        onClose={() => setOpenInfo(false)}
+        TransitionComponent={Transition}
+        keepMounted
+        fullScreen // mobile-first
+        sx={{
+          '& .MuiDialog-paper': {
+            borderRadius: 2, // flat on mobile, rounded on desktop
+            maxWidth: { sm: 500 },
+            margin: { sm: 'auto' }
+          }
+        }}
+        PaperProps={{
+          sx: {
+            maxHeight: { xs: 270, sm: 250 }, // 🔽 Controls overall height
+            mx: 2, // 🔽 Small horizontal margin on mobile
+            my: '20vh', // 🔽 Push it down vertically on mobile
+            borderRadius: 2,
+            overflow: 'hidden',
+          }
+        }}
+      >
+        <DialogTitle
           sx={{
-            display: { xs: 'inline-flex', sm: 'none' },
-            color: '#2e7d32'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 2,
+            py: 1,
+            backgroundColor: '#f8f9fa',
+            borderBottom: '1px solid #ddd',
+            color: 'rgba(5, 117, 36, 0.87)'
           }}
         >
-          <BugReportIcon />
-        </IconButton>
-      </Box>
+          <Typography variant="h6">About This Map</Typography>
+          <IconButton onClick={() => setOpenInfo(false)} size="small" aria-label="Close">
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers sx={{ flexDirection: 'column', justifyContent: 'center' }}>
+          <Typography variant="body1" sx={{ mb: 1 }}>
+            This interactive map shows street trees in San Francisco. You can filter by species,
+            neighborhood, search by address, or go to your current location. Tree data is sourced from the <a href="https://data.sfgov.org/City-Infrastructure/Street-Tree-List/tkzw-k3nq/about_data" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#2e7d32' }}>San Francisco Public Works Street Tree List</a>.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Built with ❤️ using Mapbox and React.
+          </Typography>
+        </DialogContent>
+      </Dialog>
+
       <Box sx={{ height: '100vh', width: '100vw', position: 'relative' }}>
         <Box ref={mapContainer} sx={{ position: 'absolute', top: 56, bottom: 0, width: '100%' }} />
         <Button
