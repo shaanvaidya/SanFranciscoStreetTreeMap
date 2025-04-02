@@ -463,11 +463,39 @@ function App() {
         type: 'circle',
         source: 'filtered-trees',
         paint: {
-          'circle-radius': 6,
-          'circle-color': ['get', 'color'], // ✅ dynamic color from tree data
+          'circle-radius': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, [
+              'interpolate',
+              ['linear'],
+              ['min', ['coalesce', ['get', 'dbh'], 0], 60],
+              0, 2,
+              30, 2.5,
+              60, 3
+            ],
+            14, [
+              'interpolate',
+              ['linear'],
+              ['min', ['coalesce', ['get', 'dbh'], 0], 60],
+              0, 4,
+              30, 5,
+              60, 6
+            ]
+          ],
+          'circle-color': ['get', 'color'],
+          'circle-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 0.6,
+            15, 0.8,
+            20, 1
+          ],
           'circle-stroke-width': 2,
-          'circle-stroke-color': '#fff',
-          'circle-opacity': 0.9
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-opacity': 0.8
         }
       });
 
