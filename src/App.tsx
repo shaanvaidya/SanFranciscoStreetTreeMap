@@ -357,7 +357,7 @@ function App() {
       // Add the GeoJSON source
       map.current.addSource('trees', {
         type: 'vector',
-        url: 'mapbox://shaanvaidya.4hee68hi'
+        url: 'mapbox://shaanvaidya.4j2s4npu'
       })
 
       // Add source for user location
