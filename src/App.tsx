@@ -436,8 +436,8 @@ function App() {
               ['linear'],
               ['min', ['coalesce', ['get', 'dbh'], 0], 60],
               0, 4,
-              30, 5,
-              60, 6
+              30, 6,
+              60, 8
             ]
           ],
           'circle-color': ['get', 'color'],
@@ -564,16 +564,18 @@ function App() {
         })
 
         // Animate to the tree location
-        const offsetLat = -0.0005; // ~50 meters; tweak as needed
         const isMobile = window.innerWidth < 600;
 
+        const sidebarOffset = isMobile
+          ? [0, -window.innerHeight * 0.2] // push tree 40% higher on mobile
+          : [-window.innerWidth * 0.2, 0]; // push tree left on desktop
+
         map.current?.flyTo({
-          center: isMobile
-            ? [props.longitude, props.latitude + offsetLat]
-            : [props.longitude, props.latitude],
+          center: [props.longitude, props.latitude],
           zoom: 18,
           duration: 1000,
-          essential: true
+          essential: true,
+          offset: sidebarOffset as [number, number],
         });
       })
 
@@ -948,7 +950,7 @@ function App() {
         </DialogContent>
       </Dialog>
 
-      <Box sx={{ height: '100vh', width: '100vw', position: 'relative' }}>
+      <Box sx={{ height: '100dvh', width: '100vw', position: 'relative' }}>
         <Box ref={mapContainer} sx={{ position: 'absolute', top: 56, bottom: 0, width: '100%' }} />
         <Button
           onClick={() => setShowFilters(!showFilters)}
@@ -1171,7 +1173,12 @@ function App() {
             top: { xs: 'auto', sm: 0 },
             left: { xs: 0, sm: 'auto' },
             right: 0,
-            width: { xs: '100%', sm: 550 },
+            width: {
+              xs: '100%',    // Full width on extra small screens (mobile)
+              sm: 400,       // 400px on small screens
+              md: 500,       // 500px on medium+
+              lg: 600,       // Optional: wider on large screens
+            },
             height: { xs: '50%', sm: '100%' },
             backgroundColor: 'rgba(248, 249, 250, 0.9)', // light blur-glass look
             backdropFilter: 'blur(10px)',
