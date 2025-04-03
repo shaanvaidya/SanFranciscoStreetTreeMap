@@ -1,34 +1,47 @@
-import requests
-from bs4 import BeautifulSoup
-from tqdm import tqdm  # for progress bar
+from playwright.sync_api import sync_playwright
+from tqdm import tqdm
+import json
 import time
 
-BASE_URL = "https://selectree.calpoly.edu/tree-detail/"
-HEADERS = {"User-Agent": "Mozilla/5.0"}
+tree_data = {}
 
-species_links = {}
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True)
+    page = browser.new_page()
 
-for tree_id in tqdm(range(1, 2352)):
-    url = f"{BASE_URL}{tree_id}"
-    response = requests.get(url, headers=HEADERS)
+    for i in tqdm(range(1, 2352), desc="Scraping Selectree"):
+        url = f"https://selectree.calpoly.edu/tree-detail/{i}"
+        try:
+            page.goto(url, timeout=10000)
+            page.wait_for_selector("div.tree-name-info", timeout=3000)
+            info = page.query_selector("div.tree-name-info")
 
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.text, "html.parser")
-        # Try to find the species name in the <h2> tag
-        h2 = soup.find("h2")
-        print(response.text)
-        print(h2)
-        if h2:
-            species_name = h2.text.strip()
-            species_links[species_name] = url
-            print(f"{species_name}: {url}")
-    else:
-        print(f"Error: {response.status_code} for {url}")
-        continue  # skip 404s or other errors
+            common_name = info.query_selector("h2.label-demibold")
+            scientific_name = info.query_selector("p.tree-name-info-science-name span")
+            family = info.query_selector("span.tree-name-info-family")
 
-    time.sleep(0.1)  # be polite
+            synonyms_div = info.query_selector("div.tree-name-info-middle-text")
+            synonyms = [el.inner_text().strip() for el in synonyms_div.query_selector_all("p.font-italic")] if synonyms_div else []
 
-# Save to a file (optional)
-with open("selectree_species_links.txt", "w", encoding="utf-8") as f:
-    for name, link in species_links.items():
-        f.write(f"{name}\t{link}\n")
+            alt_names_div = info.query_selector("div.tree-name-info-right-text")
+            alt_names = [el.inner_text().strip() for el in alt_names_div.query_selector_all("p") if not el.get_attribute("class")] if alt_names_div else []
+
+            tree_data[i] = {
+                "common_name": common_name.inner_text().strip() if common_name else None,
+                "scientific_name": scientific_name.inner_text().strip() if scientific_name else None,
+                "family": family.inner_text().strip() if family else None,
+                "synonyms": synonyms,
+                "additional_common_names": alt_names,
+                "url": url
+            }
+            print(tree_data[i])
+        except Exception as e:
+            # You can log or collect failed IDs here if needed
+            pass
+        time.sleep(0.05)
+
+    browser.close()
+
+# Save to file
+with open("selectree_detailed_tree_data.json", "w") as f:
+    json.dump(tree_data, f, indent=2)
