@@ -344,6 +344,9 @@ const TreeSummaryBar = ({
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: 1,
+      height: 80, // 🔒 Fix the height (adjust as needed)
+      overflow: 'hidden', // ✅ Prevent internal overflow
+      boxSizing: 'border-box',
     }}
   >
     <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -1048,7 +1051,7 @@ function App() {
         </DialogContent>
       </Dialog>
 
-      <Box sx={{ height: '100dvh', width: '100vw', position: 'relative' }}>
+      <Box sx={{ height: '100dvh', width: '100vw', overflow: 'hidden', position: 'relative' }}>
         <Box ref={mapContainer} sx={{ position: 'absolute', top: 56, bottom: 0, width: '100%' }} />
         <Button
           onClick={() => setShowFilters(!showFilters)}
