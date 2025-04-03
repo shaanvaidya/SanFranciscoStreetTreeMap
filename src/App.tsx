@@ -1052,19 +1052,21 @@ function App() {
         <Box ref={mapContainer} sx={{ position: 'absolute', top: 56, bottom: 0, width: '100%' }} />
         <Button
           onClick={() => setShowFilters(!showFilters)}
-          variant="contained"
+          variant="outlined"
           size="small"
           sx={{
+            borderColor: '#2e7d32',
+            color: '#2e7d32',
+            backgroundColor: 'white',
+            '&:hover': {
+              backgroundColor: '#f5f5f5',
+              borderColor: '#27662c',
+            },
             display: { xs: 'block', sm: 'block' },
             position: 'absolute',
             top: 70,
             left: 20,
-            zIndex: 2,
-            backgroundColor: '#2e7d32', // ✅ Green background
-            color: 'white',
-            '&:hover': {
-              backgroundColor: '#27662c', // ✅ Slightly darker green on hover
-            }
+            zIndex: 2
           }}
         >
           {showFilters ? 'Hide Filters' : 'Show Filters'}
