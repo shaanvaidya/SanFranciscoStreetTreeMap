@@ -11,6 +11,9 @@ import { } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { TransitionProps } from '@mui/material/transitions';
 import { forwardRef } from 'react';
+import RoomIcon from '@mui/icons-material/Room';
+import LaunchIcon from '@mui/icons-material/Launch';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2hhYW52YWlkeWEiLCJhIjoiY20zc2FzeWtyMGV6dzJqb2oyNjcxc2k2dCJ9.kqxE189voII-7Ua8TFpVgw'
@@ -318,6 +321,87 @@ const TreeDetails = ({
   </Box>
 )
 
+const TreeSummaryBar = ({
+  tree,
+  onMoreDetails,
+  onClose,
+}: {
+  tree: TreeInfo;
+  onMoreDetails: () => void;
+  onClose: () => void;
+}) => (
+  <Box
+    sx={{
+      position: 'absolute',
+      bottom: 0,
+      width: '100%',
+      zIndex: 1100,
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderTop: '1px solid #ccc',
+      px: 2,
+      py: 1.5,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 1,
+    }}
+  >
+    <Box sx={{ flex: 1, minWidth: 0 }}>
+      <Typography
+        variant="body1"
+        sx={{
+          fontWeight: 600,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          color: '#2e7d32',
+        }}
+      >
+        {tree.common_name}
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{
+          fontStyle: 'italic',
+          color: '#555',
+          lineHeight: 1.2,
+          fontSize: '0.85rem',
+        }}
+      >
+        {tree.scientific_name}
+      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
+        <RoomIcon fontSize="small" sx={{ color: '#2e7d32' }} />
+        <Typography variant="body2" sx={{ fontSize: '0.8rem', color: '#333' }}>
+          {tree.address}
+        </Typography>
+        <IconButton
+          size="small"
+          href={`https://www.google.com/maps?q=${tree.latitude},${tree.longitude}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{ ml: 0.5, color: '#2e7d32' }}
+        >
+          <LaunchIcon fontSize="small" />
+        </IconButton>
+      </Box>
+    </Box>
+
+    <Button
+      variant="text"
+      onClick={onMoreDetails}
+      size="small"
+      sx={{ color: '#2e7d32', whiteSpace: 'nowrap' }}
+    >
+      Details
+    </Button>
+
+    <IconButton onClick={onClose} sx={{ color: '#2e7d32' }}>
+      <CloseIcon />
+    </IconButton>
+  </Box>
+);
+
 
 function App() {
   const mapContainer = useRef<HTMLDivElement>(null)
@@ -341,6 +425,14 @@ function App() {
   const [addressQuery, setAddressQuery] = useState('');
   const [addressResults, setAddressResults] = useState<any[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const isMobile = window.innerWidth < 600;
+  const [showFullTreeDetails, setShowFullTreeDetails] = useState(!isMobile);
+
+  useEffect(() => {
+    if (selectedTree) {
+      setShowFullTreeDetails(!isMobile);
+    }
+  }, [selectedTree]);
 
   // Initialize map
   useEffect(() => {
@@ -810,8 +902,14 @@ function App() {
 
   // Update the drawer close handler to clear the highlight
   const handleDrawerClose = () => {
-    setSelectedTree(null)
-    setSelectedTreeId(null)
+    if (isMobile && showFullTreeDetails) {
+      // Just collapse to summary on mobile
+      setShowFullTreeDetails(false);
+    } else {
+      // Fully close on desktop or from summary
+      setSelectedTree(null);
+      setSelectedTreeId(null);
+    }
   }
 
   const [openInfo, setOpenInfo] = useState(false);
@@ -1154,7 +1252,7 @@ function App() {
           onClick={handleLocationClick}
           sx={{
             position: 'absolute',
-            bottom: { xs: 40, sm: 40 },
+            bottom: { xs: 110, sm: 40 },
             right: 20,
             backgroundColor: 'white',
             boxShadow: 2,
@@ -1166,48 +1264,76 @@ function App() {
         >
           <MyLocation />
         </IconButton>
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: { xs: 0, sm: 'auto' },
-            top: { xs: 'auto', sm: 0 },
-            left: { xs: 0, sm: 'auto' },
-            right: 0,
-            width: {
-              xs: '100%',    // Full width on extra small screens (mobile)
-              sm: 400,       // 400px on small screens
-              md: 500,       // 500px on medium+
-              lg: 600,       // Optional: wider on large screens
-            },
-            height: { xs: '50%', sm: '100%' },
-            backgroundColor: 'rgba(248, 249, 250, 0.9)', // light blur-glass look
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)', // Instead of 0.05
-            borderLeft: '1px solid #e0e0e0',
-            zIndex: 1000,
-            display: 'flex',
-            flexDirection: 'column',
-            p: { xs: 0, sm: 3 },
-            transform: {
-              xs: selectedTree ? 'translateY(0)' : 'translateY(100%)',
-              sm: selectedTree ? 'translateX(0)' : 'translateX(100%)'
-            },
-            transition: 'transform 0.3s ease',
-            pointerEvents: selectedTree ? 'auto' : 'none',
-            opacity: selectedTree ? 1 : 0
-          }}
-        >
-          {selectedTree && (
-            <TreeDetails
-              selectedTree={selectedTree}
-              speciesCounts={speciesCounts}
-              setSelectedSpecies={setSelectedSpecies}
-              setSelectedNeighborhood={setSelectedNeighborhood}
-              handleDrawerClose={handleDrawerClose}
+        <>
+          {isMobile && selectedTree && !showFullTreeDetails && (
+            <TreeSummaryBar
+              tree={selectedTree}
+              onMoreDetails={() => setShowFullTreeDetails(true)}
+              onClose={() => {
+                setSelectedTree(null);
+                setSelectedTreeId(null);
+              }}
             />
           )}
-        </Box>
+
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: { xs: 0, sm: 'auto' },
+              top: { xs: 'auto', sm: 0 },
+              left: { xs: 0, sm: 'auto' },
+              right: 0,
+              width: {
+                xs: '100%',
+                sm: 400,
+                md: 500,
+                lg: 600,
+              },
+              height: {
+                xs: '100%',
+                sm: '100%',
+              },
+              backgroundColor: 'rgba(248, 249, 250, 0.95)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              borderLeft: { sm: '1px solid #e0e0e0' },
+              zIndex: 1000,
+              display: 'flex',
+              flexDirection: 'column',
+              p: { xs: 0, sm: 3 },
+              transform: {
+                xs:
+                  selectedTree && showFullTreeDetails
+                    ? 'translateY(0%)'
+                    : 'translateY(100%)',
+                sm: selectedTree ? 'translateX(0)' : 'translateX(100%)',
+              },
+              opacity: {
+                xs: selectedTree && showFullTreeDetails ? 1 : 0,
+                sm: selectedTree ? 1 : 0,
+              },
+              transition: 'transform 0.35s ease-in-out, opacity 0.3s ease-in-out',
+              pointerEvents: {
+                xs: selectedTree && showFullTreeDetails ? 'auto' : 'none',
+                sm: selectedTree ? 'auto' : 'none',
+              },
+            }}
+          >
+            {selectedTree && (
+              <TreeDetails
+                selectedTree={selectedTree}
+                speciesCounts={speciesCounts}
+                setSelectedSpecies={setSelectedSpecies}
+                setSelectedNeighborhood={setSelectedNeighborhood}
+                handleDrawerClose={() => {
+                  setShowFullTreeDetails(false);
+                  handleDrawerClose();
+                }}
+              />
+            )}
+          </Box>
+        </>
       </Box>
     </ThemeProvider >
   )
