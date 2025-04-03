@@ -152,7 +152,12 @@ const TreeDetails = ({
         </Typography>
         <Typography
           component="button"
-          onClick={() => setSelectedSpecies(selectedTree.species)}
+          onClick={() => {
+            setSelectedSpecies(selectedTree.species)
+            if (window.innerWidth < 600) {
+              handleDrawerClose(); // collapse on mobile only
+            }
+          }}
           sx={{
             mt: 0.5,
             color: '#2e7d32',
@@ -189,7 +194,12 @@ const TreeDetails = ({
           {selectedTree.neighborhood_name && (
             <Typography
               component="button"
-              onClick={() => setSelectedNeighborhood(selectedTree.neighborhood_name!)}
+              onClick={() => {
+                setSelectedNeighborhood(selectedTree.neighborhood_name!)
+                if (window.innerWidth < 600) {
+                  handleDrawerClose(); // collapse on mobile only
+                }
+              }}
               sx={{
                 color: '#2e7d32',
                 textDecoration: 'none',
