@@ -536,12 +536,12 @@ function App() {
               30, 2.5,
               60, 3
             ],
-            14, [
+            16, [
               'interpolate',
               ['linear'],
               ['min', ['coalesce', ['get', 'dbh'], 0], 60],
-              0, 4,
-              30, 6,
+              0, 6,
+              30, 7,
               60, 8
             ]
           ],
@@ -582,13 +582,13 @@ function App() {
               30, 2.5,
               60, 3
             ],
-            14, [
+            16, [
               'interpolate',
               ['linear'],
               ['min', ['coalesce', ['get', 'dbh'], 0], 60],
-              0, 4,
-              30, 5,
-              60, 6
+              0, 6,
+              30, 7,
+              60, 8
             ]
           ],
           'circle-color': ['get', 'color'],
@@ -672,7 +672,7 @@ function App() {
         const isMobile = window.innerWidth < 600;
 
         const sidebarOffset = isMobile
-          ? [0, -window.innerHeight * 0.2] // push tree 40% higher on mobile
+          ? [0, window.innerHeight * 0.1] // push tree lower on mobile, close to the bottom bar
           : [-window.innerWidth * 0.2, 0]; // push tree left on desktop
 
         map.current?.flyTo({
@@ -694,13 +694,23 @@ function App() {
           'circle-radius': [
             'interpolate',
             ['linear'],
-            ['get', 'dbh'],
-            0, 5,
-            10, 6,
-            20, 7,
-            30, 8,
-            40, 9,
-            50, 10
+            ['zoom'],
+            10, [
+              'interpolate',
+              ['linear'],
+              ['min', ['coalesce', ['get', 'dbh'], 0], 60],
+              0, 2,
+              30, 2.5,
+              60, 3
+            ],
+            16, [
+              'interpolate',
+              ['linear'],
+              ['min', ['coalesce', ['get', 'dbh'], 0], 60],
+              0, 6,
+              30, 7,
+              60, 8
+            ]
           ],
           'circle-color': ['get', 'color'],
           'circle-opacity': 1,
@@ -1110,8 +1120,8 @@ function App() {
               top: 110,
               left: 20,
               right: 20,
-              maxWidth: { xs: '100%', sm: 300 },
-              p: { xs: 2, sm: 1 },
+              maxWidth: { xs: '70%', sm: 300 },
+              p: { xs: 1, sm: 1 },
               backgroundColor: 'rgba(248, 249, 250, 0.9)', // light blur-glass look
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
