@@ -1,27 +1,61 @@
 import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
-import { Box, CssBaseline, IconButton, TextField, Autocomplete, Typography, Button, Chip, Dialog, DialogTitle, DialogContent, Slide } from '@mui/material'
-import { MyLocation, Close } from '@mui/icons-material'
+import { Box, CssBaseline, IconButton, TextField, Autocomplete, Typography, Button, Chip, Dialog, DialogTitle, DialogContent, Slide, Snackbar, Alert } from '@mui/material'
+import { MyLocation, Close, Nature, LocationOn, CalendarToday, Straighten, Policy, MapOutlined, ContentCopy, BugReport as BugReportIcon, Launch as LaunchIcon, InfoOutlined as InfoOutlinedIcon, Close as CloseIcon } from '@mui/icons-material'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { Feature, FeatureCollection, Point, GeoJsonProperties } from 'geojson';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import BugReportIcon from '@mui/icons-material/BugReport'
-import { } from '@mui/material';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { TransitionProps } from '@mui/material/transitions';
 import { forwardRef } from 'react';
-import RoomIcon from '@mui/icons-material/Room';
-import LaunchIcon from '@mui/icons-material/Launch';
-import CloseIcon from '@mui/icons-material/Close';
 
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2hhYW52YWlkeWEiLCJhIjoiY20zc2FzeWtyMGV6dzJqb2oyNjcxc2k2dCJ9.kqxE189voII-7Ua8TFpVgw'
 
 const theme = createTheme({
-  palette: { mode: 'light' },
+  palette: { 
+    mode: 'light',
+    primary: {
+      main: '#2e7d32',
+      light: '#4caf50',
+      dark: '#1b5e20',
+    },
+    secondary: {
+      main: '#81c784',
+    },
+    background: {
+      default: '#f8f9fa',
+      paper: '#ffffff',
+    }
+  },
   typography: {
     fontFamily: '"Manrope", "Helvetica", "Arial", sans-serif',
+    h5: {
+      fontWeight: 700,
+    },
+    h6: {
+      fontWeight: 600,
+    },
+  },
+  shape: {
+    borderRadius: 12,
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: 'none',
+          fontWeight: 600,
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+        },
+      },
+    },
   },
 });
 
@@ -50,32 +84,9 @@ interface TreeInfo {
   scientific_name: string
 }
 
-interface GeoJSONFeature {
-  type: string
-  geometry: {
-    type: string
-    coordinates: [number, number]
-  }
-  properties: {
-    id: number
-    species: string
-    address: string
-    dbh: number | null
-    plantDate: string | null
-    siteInfo: string | null
-    legalStatus: string | null
-    neighborhood: string | null
-    color: string
-    latitude: number
-    longitude: number
-    neighborhood_name: string | null
-  }
-}
 
-interface GeoJSONResponse {
-  type: string
-  features: GeoJSONFeature[]
-}
+
+
 
 const subtitleStyle = {
   color: '#2e7d32',
@@ -85,28 +96,22 @@ const subtitleStyle = {
   fontWeight: 600
 };
 
-const bodyStyle = {
-  fontWeight: 500,
-  color: '#000000'
-};
 
-const infoStyle = {
-  color: '#444',
-  mb: 0.5
-};
 
 const TreeDetails = ({
   selectedTree,
   speciesCounts,
   setSelectedSpecies,
   setSelectedNeighborhood,
-  handleDrawerClose
+  handleDrawerClose,
+  setToastMessage
 }: {
   selectedTree: TreeInfo
   speciesCounts: Record<string, number>
   setSelectedSpecies: (val: string) => void
   setSelectedNeighborhood: (val: string) => void
   handleDrawerClose: () => void
+  setToastMessage: (message: string) => void
 }) => (
   <Box sx={{
     transition: 'transform 0.3s ease-in-out',
@@ -118,108 +123,134 @@ const TreeDetails = ({
       sx={{
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         mb: 3,
-        pb: 2,
-        borderBottom: '2px solid #2e7d32'
+        pb: 3,
+        borderBottom: '1px solid rgba(46, 125, 50, 0.2)'
       }}
     >
-      <Box>
-        <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>
-          #{selectedTree.id} {/* Show Tree ID here */}
-        </Typography>
-        <Typography variant="h5" sx={{ fontWeight: 700, color: '#2e7d32', mb: 0.5, fontSize: { xs: '1.25rem', sm: '2.0rem' }, }}>
-          {selectedTree.common_name}
-          <span
-            style={{
-              width: 12,
-              height: 12,
+      <Box sx={{ flex: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Chip 
+            label={`Tree #${selectedTree.id}`} 
+            size="small" 
+            sx={{ 
+              backgroundColor: 'rgba(46, 125, 50, 0.1)',
+              color: '#2e7d32',
+              fontWeight: 600,
+              fontSize: '0.75rem'
+            }} 
+          />
+          <Box
+            sx={{
+              width: 16,
+              height: 16,
               borderRadius: '50%',
               backgroundColor: selectedTree.color,
-              display: 'inline-block',
-              marginLeft: 8,
-              verticalAlign: 'middle',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              border: '2px solid white',
             }}
           />
+        </Box>
+        
+        <Typography variant="h5" sx={{ 
+          fontWeight: 700, 
+          color: '#1b5e20', 
+          mb: 0.5, 
+          fontSize: { xs: '1.5rem', sm: '2.0rem' },
+          lineHeight: 1.2
+        }}>
+          {selectedTree.common_name}
         </Typography>
-        <Typography variant="body2" sx={{ color: '#2e7d32', mb: 0.5, fontSize: { xs: '1.0rem', sm: '1.2rem' } }}>
-          {selectedTree.scientific_name}
-        </Typography>
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+          <Nature sx={{ fontSize: 18, color: '#4caf50' }} />
+          <Typography variant="body1" sx={{ 
+            color: '#2e7d32', 
+            fontStyle: 'italic',
+            fontSize: { xs: '0.9rem', sm: '1.1rem' } 
+          }}>
+            {selectedTree.scientific_name}
+          </Typography>
+        </Box>
 
-        <Typography variant="subtitle2" sx={{ color: '#666', mb: 0.5, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
-          {speciesCounts[selectedTree.species]?.toLocaleString()} such trees in San Francisco
+        <Typography variant="body2" sx={{ 
+          color: '#666', 
+          fontSize: { xs: '0.85rem', sm: '0.95rem' },
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5
+        }}>
+          <strong>{speciesCounts[selectedTree.species]?.toLocaleString()}</strong> trees of this species in SF
         </Typography>
-        <Typography
-          component="button"
-          onClick={() => {
-            setSelectedSpecies(selectedTree.species)
-            if (window.innerWidth < 600) {
-              handleDrawerClose(); // collapse on mobile only
-            }
-          }}
-          sx={{
-            mt: 0.5,
-            color: '#2e7d32',
-            fontWeight: 500,
-            fontSize: { xs: '0.8rem', sm: '0.9rem' },
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.5,
-            background: 'none',
-            border: 'none',
-            padding: 0,
-            cursor: 'pointer',
-            textDecoration: 'none',
-            '&:hover': {
+        
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 1.5 }}>
+          <Typography
+            component="button"
+            onClick={() => {
+              setSelectedSpecies(selectedTree.species)
+              if (window.innerWidth < 600) {
+                handleDrawerClose();
+              }
+            }}
+            sx={{
+              color: '#2e7d32',
+              fontSize: { xs: '0.85rem', sm: '0.9rem' },
+              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              background: 'none',
+              border: 'none',
+              padding: '4px 0',
+              cursor: 'pointer',
               textDecoration: 'underline',
-            },
-          }}
-        >
-          View all trees of this species
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{
-            color: '#444',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            fontWeight: 500,
-            fontSize: { xs: '0.8rem', sm: '0.9rem' },
-            mt: 0.5,
-          }}
-        >
-          {selectedTree.neighborhood_name || 'Unknown Neighborhood'}
+              textDecorationColor: 'transparent',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                textDecorationColor: '#2e7d32',
+                color: '#1b5e20',
+              },
+            }}
+          >
+            <Nature sx={{ fontSize: 14 }} />
+            View all {selectedTree.common_name} trees
+          </Typography>
+          
           {selectedTree.neighborhood_name && (
             <Typography
               component="button"
               onClick={() => {
                 setSelectedNeighborhood(selectedTree.neighborhood_name!)
                 if (window.innerWidth < 600) {
-                  handleDrawerClose(); // collapse on mobile only
+                  handleDrawerClose();
                 }
               }}
               sx={{
                 color: '#2e7d32',
-                textDecoration: 'none',
+                fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                fontWeight: 500,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 0.5,
-                fontWeight: 500,
-                fontSize: { xs: '0.8rem', sm: '0.9rem' },
-                ml: 1,
-                '&:hover': { textDecoration: 'underline' },
                 background: 'none',
                 border: 'none',
-                padding: 0,
-                cursor: 'pointer'
+                padding: '4px 0',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+                textDecorationColor: 'transparent',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  textDecorationColor: '#2e7d32',
+                  color: '#1b5e20',
+                },
               }}
             >
-              View all trees in this neighborhood
+              <MapOutlined sx={{ fontSize: 14 }} />
+              Explore {selectedTree.neighborhood_name}
             </Typography>
           )}
-        </Typography>
+        </Box>
       </Box>
       <IconButton
         onClick={handleDrawerClose}
@@ -241,89 +272,187 @@ const TreeDetails = ({
       <Box
         sx={{
           display: 'grid',
-          gap: 2,
+          gap: 2.5,
           '& > div': {
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
-            backdropFilter: 'blur(4px)',
-            p: 2,
-            borderRadius: 2,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-            border: '1px solid #ddd'
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(8px)',
+            p: 2.5,
+            borderRadius: 3,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            border: '1px solid rgba(46, 125, 50, 0.1)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+              borderColor: 'rgba(46, 125, 50, 0.2)',
+            }
           }
         }}
       >
         <Box>
-          <Typography variant="subtitle2" sx={subtitleStyle}>
-            Closest Address
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+            <LocationOn sx={{ color: '#4caf50', fontSize: 20 }} />
+            <Typography variant="subtitle2" sx={subtitleStyle}>
+              Location
+            </Typography>
+          </Box>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            backgroundColor: 'rgba(46, 125, 50, 0.05)',
+            p: 1.5,
+            borderRadius: 2,
+            mb: 1
+          }}>
             <Typography
               variant="body1"
-              sx={{ fontWeight: 500, color: '#000000', mr: 1 }}
+              sx={{ fontWeight: 600, color: '#1b5e20', flex: 1 }}
             >
               {selectedTree.address}
             </Typography>
             <IconButton
               size="small"
-              onClick={() => navigator.clipboard.writeText(selectedTree.address)}
+              onClick={() => {
+                navigator.clipboard.writeText(selectedTree.address);
+                setToastMessage('Address copied to clipboard!');
+              }}
               sx={{
                 color: '#2e7d32',
                 '&:hover': { backgroundColor: 'rgba(46,125,50,0.1)' },
               }}
             >
-              <ContentCopyIcon fontSize="small" />
+              <ContentCopy fontSize="small" />
             </IconButton>
           </Box>
-          <Typography
+          <Button
+            variant="text"
+            size="small"
             component="a"
             href={`https://www.google.com/maps?q=${selectedTree.latitude},${selectedTree.longitude}`}
             target="_blank"
             rel="noopener noreferrer"
+            startIcon={<LaunchIcon sx={{ fontSize: 16 }} />}
             sx={{
               color: '#2e7d32',
-              textDecoration: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              fontWeight: 500,
-              '&:hover': { textDecoration: 'underline' }
+              fontSize: '0.875rem',
+              '&:hover': { 
+                backgroundColor: 'rgba(46, 125, 50, 0.04)',
+              }
             }}
           >
             View on Google Maps
-          </Typography>
+          </Button>
         </Box>
 
         <Box>
-          <Typography variant="subtitle2" sx={subtitleStyle}>
-            Additional Information
-          </Typography>
-          <Typography variant="body2" sx={infoStyle}>
-            Trunk Size: {selectedTree.dbh ? `${selectedTree.dbh} inches` : 'N/A'}
-          </Typography>
-          <Typography variant="body2" sx={infoStyle}>
-            Planted: {selectedTree.plantDate ? new Date(selectedTree.plantDate).toLocaleDateString() : 'N/A'}
-          </Typography>
-          <Typography variant="body2" sx={infoStyle}>
-            Site Info: {selectedTree.siteInfo || 'N/A'}
-          </Typography>
-          <Typography variant="body2" sx={infoStyle}>
-            Legal Status: {selectedTree.legalStatus || 'N/A'}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+            <InfoOutlinedIcon sx={{ color: '#4caf50', fontSize: 20 }} />
+            <Typography variant="subtitle2" sx={subtitleStyle}>
+              Tree Details
+            </Typography>
+          </Box>
+          
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Straighten sx={{ color: '#81c784', fontSize: 18 }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" sx={{ color: '#666', fontSize: '0.75rem' }}>
+                  Trunk Size
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1b5e20' }}>
+                  {selectedTree.dbh ? `${selectedTree.dbh} inches` : 'Not recorded'}
+                </Typography>
+              </Box>
+            </Box>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <CalendarToday sx={{ color: '#81c784', fontSize: 18 }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" sx={{ color: '#666', fontSize: '0.75rem' }}>
+                  Date Planted
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1b5e20' }}>
+                  {selectedTree.plantDate 
+                    ? new Date(selectedTree.plantDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })
+                    : 'Unknown'}
+                </Typography>
+              </Box>
+            </Box>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <LocationOn sx={{ color: '#81c784', fontSize: 18 }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" sx={{ color: '#666', fontSize: '0.75rem' }}>
+                  Site Type
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1b5e20' }}>
+                  {selectedTree.siteInfo || 'Standard'}
+                </Typography>
+              </Box>
+            </Box>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Policy sx={{ color: '#81c784', fontSize: 18 }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" sx={{ color: '#666', fontSize: '0.75rem' }}>
+                  Maintenance
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1b5e20' }}>
+                  {selectedTree.legalStatus || 'City Maintained'}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
         </Box>
         <Box>
-          <Typography variant="subtitle2" sx={subtitleStyle}>
-            Street View
-          </Typography>
-          <Box sx={{ mt: 2, borderRadius: 2, overflow: 'hidden', height: 350 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+            <MapOutlined sx={{ color: '#4caf50', fontSize: 20 }} />
+            <Typography variant="subtitle2" sx={subtitleStyle}>
+              Street View
+            </Typography>
+          </Box>
+          <Box sx={{ 
+            position: 'relative',
+            borderRadius: 2, 
+            overflow: 'hidden', 
+            height: 300,
+            backgroundColor: '#f5f5f5',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(to bottom, transparent 80%, rgba(0,0,0,0.05) 100%)',
+              pointerEvents: 'none',
+              zIndex: 1
+            }
+          }}>
             <iframe
               width="100%"
               height="100%"
               style={{ border: 0 }}
               loading="lazy"
               allowFullScreen
-              src={`https://www.google.com/maps/embed/v1/streetview?key=AIzaSyDA-b6A5qwlxK2_YnNilM0XRIvMttvD7o4&location=${selectedTree.latitude},${selectedTree.longitude}&heading=0&pitch=0&fov=80`}
+              src={`https://www.google.com/maps/embed/v1/streetview?key=AIzaSyDA-b6A5qwlxK2_YnNilM0XRIvMttvD7o4&location=${selectedTree.latitude},${selectedTree.longitude}&heading=0&pitch=10&fov=90`}
             ></iframe>
           </Box>
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              display: 'block', 
+              mt: 1, 
+              color: '#666',
+              textAlign: 'center'
+            }}
+          >
+            Street view may not show the exact tree location
+          </Typography>
         </Box>
 
       </Box>
@@ -346,72 +475,112 @@ const TreeSummaryBar = ({
       bottom: 0,
       width: '100%',
       zIndex: 1100,
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderTop: '1px solid #ccc',
+      backgroundColor: 'rgba(255, 255, 255, 0.98)',
+      backdropFilter: 'blur(10px)',
+      borderTop: '2px solid rgba(46, 125, 50, 0.2)',
       px: 2,
       py: 1.5,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: 1,
-      height: 80, // 🔒 Fix the height (adjust as needed)
-      overflow: 'hidden', // ✅ Prevent internal overflow
+      minHeight: 85,
+      overflow: 'hidden',
       boxSizing: 'border-box',
+      boxShadow: '0 -4px 12px rgba(0,0,0,0.08)',
     }}
   >
     <Box sx={{ flex: 1, minWidth: 0 }}>
-      <Typography
-        variant="body1"
-        sx={{
-          fontWeight: 600,
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          color: '#2e7d32',
-        }}
-      >
-        {tree.common_name}
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+        <Box
+          sx={{
+            width: 12,
+            height: 12,
+            borderRadius: '50%',
+            backgroundColor: tree.color,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+            flexShrink: 0,
+          }}
+        />
+        <Typography
+          variant="body1"
+          sx={{
+            fontWeight: 700,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            color: '#1b5e20',
+            fontSize: '1rem',
+          }}
+        >
+          {tree.common_name}
+        </Typography>
+      </Box>
+      
       <Typography
         variant="body2"
         sx={{
           fontStyle: 'italic',
-          color: '#555',
+          color: '#4caf50',
           lineHeight: 1.2,
-          fontSize: '0.85rem',
+          fontSize: '0.8rem',
+          mb: 0.5,
         }}
       >
         {tree.scientific_name}
       </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
-        <RoomIcon fontSize="small" sx={{ color: '#2e7d32' }} />
-        <Typography variant="body2" sx={{ fontSize: '0.8rem', color: '#333' }}>
+      
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <LocationOn sx={{ fontSize: 16, color: '#81c784' }} />
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            fontSize: '0.75rem', 
+            color: '#666',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            flex: 1,
+          }}
+        >
           {tree.address}
         </Typography>
-        <IconButton
-          size="small"
-          href={`https://www.google.com/maps?q=${tree.latitude},${tree.longitude}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          sx={{ ml: 0.5, color: '#2e7d32' }}
-        >
-          <LaunchIcon fontSize="small" />
-        </IconButton>
       </Box>
     </Box>
 
-    <Button
-      variant="text"
-      onClick={onMoreDetails}
-      size="small"
-      sx={{ color: '#2e7d32', whiteSpace: 'nowrap' }}
-    >
-      Details
-    </Button>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+      <Button
+        variant="text"
+        onClick={onMoreDetails}
+        size="small"
+        sx={{ 
+          color: '#2e7d32',
+          fontWeight: 500,
+          fontSize: '0.875rem',
+          px: 1.5,
+          py: 0.5,
+          textTransform: 'none',
+          '&:hover': {
+            backgroundColor: 'rgba(46, 125, 50, 0.04)',
+          }
+        }}
+      >
+        Details
+      </Button>
 
-    <IconButton onClick={onClose} sx={{ color: '#2e7d32' }}>
-      <CloseIcon />
-    </IconButton>
+      <IconButton 
+        onClick={onClose} 
+        size="small"
+        sx={{ 
+          color: '#666',
+          '&:hover': {
+            backgroundColor: 'rgba(0,0,0,0.04)',
+          }
+        }}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </Box>
   </Box>
 );
 
@@ -424,12 +593,12 @@ function App() {
   const [selectedSpecies, setSelectedSpecies] = useState<string | null>(null)
   const [neighborhoods, setNeighborhoods] = useState<string[]>([])
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null)
-  const [zoom, setZoom] = useState(12)
+
   const [selectedTreeId, setSelectedTreeId] = useState<number | null>(null)
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
+
   const [speciesCounts, setSpeciesCounts] = useState<Record<string, number>>({})
   const [neighborhoodCounts, setNeighborhoodCounts] = useState<Record<string, number>>({})
-  const [error, setError] = useState<string | null>(null)
+
   const [filteredGeoJSON, setFilteredGeoJSON] = useState<FeatureCollection<Point>>({
     type: 'FeatureCollection',
     features: []
@@ -440,6 +609,7 @@ function App() {
   const [showFilters, setShowFilters] = useState(false);
   const isMobile = window.innerWidth < 600;
   const [showFullTreeDetails, setShowFullTreeDetails] = useState(!isMobile);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (selectedTree) {
@@ -635,7 +805,6 @@ function App() {
         })
         .catch(error => {
           console.error('Error loading tree metadata:', error);
-          setError('Failed to load tree metadata. Please try again later.');
         });
 
       // Add click event
@@ -748,10 +917,7 @@ function App() {
         map.current.getCanvas().style.cursor = features.length ? 'pointer' : ''
       })
 
-      // Track zoom level
-      map.current.on('zoom', () => {
-        if (map.current) setZoom(map.current.getZoom())
-      })
+
     })
 
     return () => {
@@ -891,7 +1057,6 @@ function App() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const location: [number, number] = [position.coords.longitude, position.coords.latitude]
-        setUserLocation(location)
 
         // Update the user location source
         const source = map.current?.getSource('user-location')
@@ -1120,17 +1285,19 @@ function App() {
               top: 110,
               left: 20,
               right: 20,
-              maxWidth: { xs: '70%', sm: 300 },
-              p: { xs: 1, sm: 1 },
-              backgroundColor: 'rgba(248, 249, 250, 0.9)', // light blur-glass look
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              borderRadius: 2,
-              boxShadow: 3,
+              maxWidth: { xs: '90%', sm: 340 },
+              p: { xs: 2, sm: 2.5 },
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+              border: '1px solid rgba(46, 125, 50, 0.1)',
               display: 'flex',
               flexDirection: 'column',
-              gap: 1,
+              gap: 2,
               zIndex: 2,
+              transition: 'all 0.3s ease',
             }}
           >
 
@@ -1355,11 +1522,35 @@ function App() {
                   setShowFullTreeDetails(false);
                   handleDrawerClose();
                 }}
+                setToastMessage={setToastMessage}
               />
             )}
           </Box>
         </>
       </Box>
+      
+      {/* Toast Notification */}
+      <Snackbar
+        open={!!toastMessage}
+        autoHideDuration={3000}
+        onClose={() => setToastMessage(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setToastMessage(null)} 
+          severity="success" 
+          sx={{ 
+            width: '100%',
+            backgroundColor: '#4caf50',
+            color: 'white',
+            '& .MuiAlert-icon': {
+              color: 'white'
+            }
+          }}
+        >
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </ThemeProvider >
   )
 }
