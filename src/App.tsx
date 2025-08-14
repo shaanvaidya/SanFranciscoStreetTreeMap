@@ -530,38 +530,50 @@ function App() {
         '& .mapboxgl-ctrl-geolocate': { display: 'none !important' }
       }}>
         <Box ref={mapContainer} sx={{ position: 'absolute', top: 56, bottom: 0, width: '100%' }} />
-        <FiltersPanel
-          species={species}
-          neighborhoods={neighborhoods}
-          speciesCounts={speciesCounts}
-          neighborhoodCounts={neighborhoodCounts}
-          selectedSpecies={selectedSpecies}
-          setSelectedSpecies={setSelectedSpecies}
-          selectedNeighborhood={selectedNeighborhood}
-          setSelectedNeighborhood={setSelectedNeighborhood}
-          addressQuery={addressQuery}
-          setAddressQuery={setAddressQuery}
-          onGeocode={({ center, place_name }) => {
-            const [lng, lat] = center
-            const source = map.current?.getSource('searched-location');
-            if (source && 'setData' in source) {
-              source.setData({
-                type: 'FeatureCollection',
-                features: [
-                  {
-                    type: 'Feature',
-                    geometry: { type: 'Point', coordinates: [lng, lat] },
-                    properties: {}
-                  }
-                ]
-              });
-            }
-            map.current?.flyTo({ center: [lng, lat], zoom: 17 });
-            setAddressQuery(place_name);
-          }}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-        />
+                 <FiltersPanel
+           species={species}
+           neighborhoods={neighborhoods}
+           speciesCounts={speciesCounts}
+           neighborhoodCounts={neighborhoodCounts}
+           selectedSpecies={selectedSpecies}
+           setSelectedSpecies={setSelectedSpecies}
+           selectedNeighborhood={selectedNeighborhood}
+           setSelectedNeighborhood={setSelectedNeighborhood}
+           addressQuery={addressQuery}
+           setAddressQuery={setAddressQuery}
+           onGeocode={({ center, place_name }) => {
+             const [lng, lat] = center
+             const source = map.current?.getSource('searched-location');
+             if (source && 'setData' in source) {
+               source.setData({
+                 type: 'FeatureCollection',
+                 features: [
+                   {
+                     type: 'Feature',
+                     geometry: { type: 'Point', coordinates: [lng, lat] },
+                     properties: {}
+                   }
+                 ]
+               });
+             }
+             map.current?.flyTo({ center: [lng, lat], zoom: 17 });
+             setAddressQuery(place_name);
+           }}
+           onClearAll={() => {
+             setSelectedSpecies(null);
+             setSelectedNeighborhood(null);
+             setAddressQuery('');
+             const searchedSource = map.current?.getSource('searched-location');
+             if (searchedSource && 'setData' in searchedSource) {
+               searchedSource.setData({
+                 type: 'FeatureCollection',
+                 features: []
+               });
+             }
+           }}
+           showFilters={showFilters}
+           setShowFilters={setShowFilters}
+         />
 
 
         {/* Location Button */}
@@ -576,7 +588,7 @@ function App() {
           }}
           sx={{
             position: 'absolute',
-            bottom: { xs: 110, sm: 40 },
+            bottom: { xs: selectedTree ? 120 : 30, sm: 40 },
             right: {
               xs: 20,
               sm: selectedTree ? 420 : 20,
