@@ -1,6 +1,5 @@
 import { Box, Typography, IconButton, Chip, Button } from '@mui/material'
-import { Nature, LocationOn, CalendarToday, Straighten, Policy, MapOutlined, ContentCopy, InfoOutlined as InfoOutlinedIcon, Close as CloseIcon, Launch as LaunchIcon } from '@mui/icons-material'
-import { Feature, FeatureCollection, Point, GeoJsonProperties } from 'geojson'
+import { Nature, LocationOn, CalendarToday, Straighten, Policy, MapOutlined, ContentCopy, Close as CloseIcon, Launch as LaunchIcon } from '@mui/icons-material'
 import { TreeInfo } from '../types/tree'
 
 const subtitleStyle = {
@@ -200,70 +199,61 @@ export const TreeDetails = ({
         }}
       >
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-            <LocationOn sx={{ color: '#4caf50', fontSize: 20 }} />
-            <Typography variant="subtitle2" sx={subtitleStyle as any}>
-              Nearest Address
-            </Typography>
-          </Box>
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            backgroundColor: 'rgba(46, 125, 50, 0.05)',
-            p: 1.5,
-            borderRadius: 2,
-            mb: 1
-          }}>
-            <Typography
-              variant="body1"
-              sx={{ fontWeight: 600, color: '#1b5e20', flex: 1 }}
-            >
-              {selectedTree.address}
-            </Typography>
-            <IconButton
-              size="small"
-              onClick={() => {
-                navigator.clipboard.writeText(selectedTree.address);
-                setToastMessage('Address copied to clipboard!');
-              }}
-              sx={{
-                color: '#2e7d32',
-                '&:hover': { backgroundColor: 'rgba(46,125,50,0.1)' },
-              }}
-            >
-              <ContentCopy fontSize="small" />
-            </IconButton>
-          </Box>
-          <Button
-            variant="text"
-            size="small"
-            component="a"
-            href={`https://www.google.com/maps?q=${selectedTree.latitude},${selectedTree.longitude}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            startIcon={<LaunchIcon sx={{ fontSize: 16 }} />}
-            sx={{
-              color: '#2e7d32',
-              fontSize: '0.875rem',
-              '&:hover': { 
-                backgroundColor: 'rgba(46, 125, 50, 0.04)',
-              }
-            }}
-          >
-            View on Google Maps
-          </Button>
-        </Box>
-
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-            <InfoOutlinedIcon sx={{ color: '#4caf50', fontSize: 20 }} />
-            <Typography variant="subtitle2" sx={subtitleStyle as any}>
-              Tree Details
-            </Typography>
-          </Box>
-          
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <LocationOn sx={{ color: '#81c784', fontSize: 18 }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="caption" sx={{ color: '#666', fontSize: '0.75rem' }}>
+                  Nearest Address
+                </Typography>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1,
+                  mt: 0.5
+                }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#1b5e20', flex: 1 }}>
+                    {selectedTree.address}
+                  </Typography>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText(selectedTree.address);
+                      setToastMessage('Address copied to clipboard!');
+                    }}
+                    sx={{
+                      color: '#2e7d32',
+                      p: 0.5,
+                      '&:hover': { backgroundColor: 'rgba(46,125,50,0.1)' },
+                    }}
+                  >
+                    <ContentCopy sx={{ fontSize: 16 }} />
+                  </IconButton>
+                </Box>
+                <Button
+                  variant="text"
+                  size="small"
+                  component="a"
+                  href={`https://www.google.com/maps?q=${selectedTree.latitude},${selectedTree.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  startIcon={<LaunchIcon sx={{ fontSize: 14 }} />}
+                  sx={{
+                    color: '#2e7d32',
+                    fontSize: '0.75rem',
+                    mt: 0.5,
+                    p: 0,
+                    minHeight: 'auto',
+                    '&:hover': { 
+                      backgroundColor: 'rgba(46, 125, 50, 0.04)',
+                    }
+                  }}
+                >
+                  View on Google Maps
+                </Button>
+              </Box>
+            </Box>
+
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Straighten sx={{ color: '#81c784', fontSize: 18 }} />
               <Box sx={{ flex: 1 }}>
