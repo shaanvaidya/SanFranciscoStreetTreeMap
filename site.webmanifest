@@ -1,0 +1,16 @@
+{
+  "name": "San Francisco Street Trees",
+  "short_name": "SF Trees",
+  "description": "Interactive map of San Francisco's street trees",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2e7d32",
+  "icons": [
+    {
+      "src": "/icons8-oak-leaf-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    }
+  ]
+}
