@@ -1,54 +1,141 @@
-# React + TypeScript + Vite
+# San Francisco Street Tree Map
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive web map showcasing the street trees of San Francisco, built with React and Mapbox GL JS. Explore over 200,000 street trees across the city, filter by species and neighborhoods, and discover detailed information about each tree including its scientific name, planting date, and size.
 
-Currently, two official plugins are available:
+## 🌳 About This Project
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This project visualizes San Francisco's urban forest using official data from the city's Department of Public Works (DPW). The map provides an intuitive way to explore the diversity and distribution of street trees throughout San Francisco's neighborhoods, from towering eucalyptus trees to decorative flowering species.
 
-## Expanding the ESLint configuration
+## 📊 Data Source
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The tree data comes from the **San Francisco Department of Public Works (DPW) Street Tree List**, specifically the dataset dated March 23, 2025. This comprehensive dataset includes:
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- **Tree Species**: Scientific and common names for each tree
+- **Location Data**: Precise GPS coordinates and street addresses
+- **Physical Attributes**: Diameter at Breast Height (DBH) measurements
+- **Administrative Info**: Planting dates, legal status, and site information
+- **Neighborhood Mapping**: Association with San Francisco's official neighborhood boundaries
+
+### Data Processing
+
+The raw DPW data undergoes several processing steps to optimize it for web mapping:
+
+1. **Data Cleaning**: Species names are standardized, missing values are handled, and data quality issues are corrected
+2. **Neighborhood Enrichment**: Trees are mapped to neighborhood boundaries using spatial analysis
+3. **GeoJSON Conversion**: Data is converted to web-friendly GeoJSON format
+4. **Vector Tile Generation**: Using Tippecanoe to create optimized Mapbox vector tiles for fast rendering
+5. **Species Metadata**: Additional information is enriched using botanical databases
+
+## ✨ Features
+
+- **Interactive Map**: Pan, zoom, and explore street trees across San Francisco
+- **Tree Details**: Click any tree to view detailed information including species, size, planting date, and location
+- **Advanced Filtering**: Filter trees by species or neighborhood with real-time count updates
+- **Address Search**: Search for specific addresses to locate nearby trees
+- **Responsive Design**: Optimized for both desktop and mobile viewing
+- **Location Services**: Find trees near your current location
+- **Species Discovery**: Learn about San Francisco's diverse urban forest with links to botanical information
+
+## 🛠 Technology Stack
+
+- **Frontend**: React 18 with TypeScript
+- **Mapping**: Mapbox GL JS with custom vector tiles
+- **UI Framework**: Material-UI (MUI) with custom theming
+- **Build Tool**: Vite for fast development and optimized builds
+- **Data Processing**: Python scripts with pandas for data cleaning
+- **Deployment**: GitHub Pages with automated CI/CD
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- Mapbox API token (for map tiles)
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/shaanvaidya/SanFranciscoStreetTreeMap.git
+cd SanFranciscoStreetTreeMap
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+2. Install dependencies:
+```bash
+npm install
 ```
+
+3. Create a `.env` file with your Mapbox token:
+```env
+VITE_MAPBOX_TOKEN=your_mapbox_token_here
+```
+
+4. Start the development server:
+```bash
+npm run dev
+```
+
+5. Open [http://localhost:5173](http://localhost:5173) to view the application
+
+### Building for Production
+
+```bash
+npm run build
+```
+
+### Deployment
+
+The project is configured for deployment to GitHub Pages:
+
+```bash
+npm run deploy
+```
+
+## 📁 Project Structure
+
+```
+SanFranciscoStreetTreeMap/
+├── src/                    # React application source code
+│   ├── components/         # Reusable UI components
+│   ├── types/             # TypeScript type definitions
+│   └── App.tsx            # Main application component
+├── data_prep/             # Data processing scripts and raw data
+│   ├── Street_Tree_List_20250323.csv  # Original DPW dataset
+│   ├── cleanupData.py     # Data cleaning script
+│   ├── convert_to_geojson.py  # GeoJSON conversion
+│   └── trees.mbtiles      # Mapbox vector tiles
+├── public/                # Static assets
+└── trees-lookup.json     # Processed tree metadata
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Here are some ways you can contribute:
+
+- **Data Updates**: Help process newer versions of the DPW street tree dataset
+- **Feature Enhancements**: Add new filtering options or visualizations
+- **Bug Fixes**: Report and fix issues you encounter
+- **Documentation**: Improve documentation and add code comments
+- **Performance**: Optimize map rendering and data loading
+
+Please feel free to submit issues and pull requests.
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 🙏 Acknowledgments
+
+- **San Francisco Department of Public Works**: For providing the comprehensive street tree dataset
+- **Mapbox**: For excellent mapping tools and vector tile hosting
+- **San Francisco Urban Forest**: For maintaining the city's incredible tree canopy
+- **Open Source Community**: For the tools and libraries that make this project possible
+
+## 📧 Contact
+
+Created by [Shaan Vaidya](https://github.com/shaanvaidya) - feel free to reach out with questions or suggestions!
+
+---
+
+*Help us keep San Francisco green! 🌲 Consider volunteering with local tree planting and maintenance organizations.*
