@@ -2,6 +2,10 @@
 
 An interactive web map showcasing the street trees of San Francisco, built with React and Mapbox GL JS. Explore over 200,000 street trees across the city, filter by species and neighborhoods, and discover detailed information about each tree including its scientific name, planting date, and size.
 
+## 🔗 Live Demo
+
+**[🌳 Explore the Interactive Map →](https://shaanvaidya.com/SanFranciscoStreetTreeMap)**
+
 ## 🌳 About This Project
 
 This project visualizes San Francisco's urban forest using official data from the city's Department of Public Works (DPW). The map provides an intuitive way to explore the diversity and distribution of street trees throughout San Francisco's neighborhoods, from towering eucalyptus trees to decorative flowering species.
