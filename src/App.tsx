@@ -597,7 +597,7 @@ function App() {
             },
             backgroundColor: 'white',
             boxShadow: 2,
-            zIndex: 2000, // ensure it's always on top of sidebar/summary
+            zIndex: 500, // below full-screen tree details but above map
             width: 48,
             height: 48,
             '&:hover': { backgroundColor: '#f5f5f5' }
