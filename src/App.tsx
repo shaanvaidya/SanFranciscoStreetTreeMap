@@ -292,7 +292,7 @@ const TreeDetails = ({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
             <LocationOn sx={{ color: '#4caf50', fontSize: 20 }} />
             <Typography variant="subtitle2" sx={subtitleStyle}>
-              Location
+              Nearest Address
             </Typography>
           </Box>
           <Box sx={{ 
@@ -588,6 +588,7 @@ const TreeSummaryBar = ({
 function App() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
+  const geolocateControlRef = useRef<mapboxgl.GeolocateControl | null>(null)
   const [selectedTree, setSelectedTree] = useState<TreeInfo | null>(null)
   const [species, setSpecies] = useState<string[]>([])
   const [selectedSpecies, setSelectedSpecies] = useState<string | null>(null)
@@ -671,6 +672,14 @@ function App() {
           features: []
         }
       });
+
+      // Initialize GeolocateControl for heading/tracking and add it (we will hide its UI)
+      geolocateControlRef.current = new mapboxgl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+        showUserHeading: true
+      });
+      map.current.addControl(geolocateControlRef.current, 'bottom-right');
 
       // Add layer for user location
       map.current.addLayer({
@@ -1051,43 +1060,6 @@ function App() {
     ]);
   }, [selectedTreeId]);
 
-  const handleLocationClick = () => {
-    if (!map.current) return
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const location: [number, number] = [position.coords.longitude, position.coords.latitude]
-
-        // Update the user location source
-        const source = map.current?.getSource('user-location')
-        if (source && 'setData' in source) {
-          source.setData({
-            type: 'FeatureCollection',
-            features: [{
-              type: 'Feature',
-              geometry: {
-                type: 'Point',
-                coordinates: location
-              },
-              properties: {}
-            }]
-          })
-        }
-
-        // Fly to location
-        map.current?.flyTo({
-          center: location,
-          zoom: 16,
-          duration: 1000
-        })
-      },
-      (error) => {
-        console.error('Error getting location:', error);
-        alert(`Location error (${error.code}): ${error.message}`);
-      }
-    )
-  }
-
   // Update the drawer close handler to clear the highlight
   const handleDrawerClose = () => {
     if (isMobile && showFullTreeDetails) {
@@ -1098,6 +1070,42 @@ function App() {
       setSelectedTree(null);
       setSelectedTreeId(null);
     }
+  }
+
+  const handleLocationClick = () => {
+    if (!map.current) return
+
+    const updateUserLocationOnMap = (location: [number, number]) => {
+      const source = map.current?.getSource('user-location');
+      if (source && 'setData' in source) {
+        source.setData({
+          type: 'FeatureCollection',
+          features: [{
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: location },
+            properties: {}
+          }]
+        });
+      }
+    };
+
+    if (!('geolocation' in navigator)) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const location: [number, number] = [position.coords.longitude, position.coords.latitude];
+        updateUserLocationOnMap(location);
+        map.current?.flyTo({ center: location, zoom: Math.max(map.current.getZoom(), 16), duration: 800 });
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        setToastMessage(`Location error (${error.code}): ${error.message}`);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+    );
   }
 
   const [openInfo, setOpenInfo] = useState(false);
@@ -1236,7 +1244,9 @@ function App() {
         </DialogContent>
       </Dialog>
 
-      <Box sx={{ height: '100dvh', width: '100vw', overflow: 'hidden', position: 'relative' }}>
+      <Box sx={{ height: '100dvh', width: '100vw', overflow: 'hidden', position: 'relative',
+        '& .mapboxgl-ctrl-geolocate': { display: 'none !important' }
+      }}>
         <Box ref={mapContainer} sx={{ position: 'absolute', top: 56, bottom: 0, width: '100%' }} />
         <Button
           onClick={() => setShowFilters(!showFilters)}
@@ -1441,14 +1451,26 @@ function App() {
 
         {/* Location Button */}
         <IconButton
-          onClick={handleLocationClick}
+          onClick={() => {
+            // Trigger built-in geolocate with heading; falls back to custom if unavailable
+            if (geolocateControlRef.current) {
+              geolocateControlRef.current.trigger();
+            } else {
+              handleLocationClick();
+            }
+          }}
           sx={{
             position: 'absolute',
             bottom: { xs: 110, sm: 40 },
-            right: 20,
+            right: {
+              xs: 20,
+              sm: selectedTree ? 420 : 20,
+              md: selectedTree ? 520 : 20,
+              lg: selectedTree ? 620 : 20,
+            },
             backgroundColor: 'white',
             boxShadow: 2,
-            zIndex: 1000, // ensure it's always on top
+            zIndex: 2000, // ensure it's always on top of sidebar/summary
             width: 48,
             height: 48,
             '&:hover': { backgroundColor: '#f5f5f5' }
@@ -1456,6 +1478,10 @@ function App() {
         >
           <MyLocation />
         </IconButton>
+        {/* Hide built-in geolocate control button */}
+        <Box sx={{
+          '& .mapboxgl-ctrl-geolocate': { display: 'none' }
+        }} />
         <>
           {isMobile && selectedTree && !showFullTreeDetails && (
             <TreeSummaryBar

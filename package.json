@@ -10,7 +10,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "GIT_SSH_COMMAND='ssh -o IdentityAgent=none -o IdentitiesOnly=yes -i ~/.ssh/id_ed25519_github_personal' gh-pages -d dist -b gh-pages -r git@github.com-shaan:shaanvaidya/SanFranciscoStreetTreeMap.git"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
