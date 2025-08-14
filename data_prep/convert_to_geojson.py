@@ -39,9 +39,27 @@ def genus_to_color_map():
     return genus_colors
 
 def convert_to_geojson():
+    # Read the cleaned removal notifications CSV to get tree IDs to remove
+    print("Reading cleaned removal notifications...")
+    try:
+        removal_df = pd.read_csv('cleaned_removal_notifications.csv')
+        tree_ids_to_remove = set(removal_df['CleanedTreeID'].dropna().astype(int))
+        print(f"Found {len(tree_ids_to_remove)} trees marked for removal")
+    except FileNotFoundError:
+        print("Cleaned removal notifications file not found, proceeding without removals...")
+        tree_ids_to_remove = set()
+    
     # Read the cleaned CSV file
     print("Reading cleaned CSV file...")
     df = pd.read_csv('cleaned_street_trees.csv')
+    
+    # Filter out trees marked for removal
+    if tree_ids_to_remove:
+        initial_count = len(df)
+        df = df[~df['Tree ID'].isin(tree_ids_to_remove)]
+        removed_count = initial_count - len(df)
+        print(f"Filtered out {removed_count} trees marked for removal")
+    
     genus_color_map = genus_to_color_map()
 
     # Load neighborhood mapping

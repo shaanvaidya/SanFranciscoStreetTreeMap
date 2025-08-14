@@ -151,6 +151,8 @@ tippecanoe -o trees.mbtiles \
 
 **Output:** `trees.mbtiles`
 
+**Important:** After generating the mbtiles file, it must be uploaded to Mapbox Studio to replace the existing tileset (`shaanvaidya.4j2s4npu`) that the web application references. The app uses this Mapbox-hosted tileset for map rendering via the URL `mapbox://shaanvaidya.4j2s4npu` in `src/App.tsx`.
+
 ### Step 7: Lookup Data Generation
 **Script:** `data_prep/generate-trees-lookup.cjs` (Node.js)
 
@@ -163,6 +165,22 @@ tippecanoe -o trees.mbtiles \
 - Format with readable JSON (2-space indentation)
 
 **Output:** `trees-lookup.json`
+
+### Step 8: Deployment Updates
+**Purpose:** Ensure web application uses the latest processed data
+
+**Required Actions:**
+1. **Upload mbtiles to Mapbox Studio:**
+   - Upload `data_prep/trees.mbtiles` to Mapbox Studio
+   - Replace existing tileset `shaanvaidya.4j2s4npu`
+   - Update tileset ID in `src/App.tsx` if it changes
+
+2. **Copy lookup data to public folder:**
+   - Copy `data_prep/trees-lookup.json` to `public/trees-lookup.json`
+   - This file is fetched by the React app for filtering and tree details
+
+3. **Deploy web application:**
+   - Run `npm run build && npm run deploy` to deploy updated app
 
 ## Final File Structure
 
