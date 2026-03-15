@@ -17,6 +17,7 @@ import os
 import sys
 import time
 
+import boto3
 import requests
 
 USERNAME = "shaanvaidya"
@@ -43,21 +44,25 @@ def main() -> None:
     creds = r.json()
     print(f"  Bucket: {creds['bucket']}  Key: {creds['key']}")
 
-    # Step 2: Upload to S3 via presigned PUT URL
+    # Step 2: Upload to S3 using temporary AWS credentials
     mbtiles_size = os.path.getsize(MBTILES_PATH)
     print(f"Uploading {MBTILES_PATH} ({mbtiles_size / 1_048_576:.1f} MB) to S3...")
-    with open(MBTILES_PATH, "rb") as f:
-        r = requests.put(creds["url"], data=f, timeout=300)
-    r.raise_for_status()
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=creds["accessKeyId"],
+        aws_secret_access_key=creds["secretAccessKey"],
+        aws_session_token=creds["sessionToken"],
+        region_name="us-east-1",
+    )
+    s3.upload_file(MBTILES_PATH, creds["bucket"], creds["key"])
     print("  S3 upload complete.")
 
     # Step 3: Create Mapbox upload job
     print(f"Creating Mapbox upload (tileset: {TILESET_ID})...")
-    s3_url = f"s3://{creds['bucket']}/{creds['key']}"
     r = requests.post(
         f"{BASE}/{USERNAME}",
         params={"access_token": TOKEN},
-        json={"url": s3_url, "tileset": TILESET_ID, "name": "SF Street Trees"},
+        json={"url": creds["url"], "tileset": TILESET_ID, "name": "SF Street Trees"},
         timeout=30,
     )
     r.raise_for_status()

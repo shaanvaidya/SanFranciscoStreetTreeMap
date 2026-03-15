@@ -20,7 +20,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python dependencies
-        run: pip install pandas geopandas shapely requests
+        run: pip install pandas geopandas shapely requests boto3
 
       - uses: actions/setup-node@v4
         with:
