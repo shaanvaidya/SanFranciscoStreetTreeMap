@@ -10,7 +10,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "GIT_SSH_COMMAND='ssh -o IdentityAgent=none -o IdentitiesOnly=yes -i ~/.ssh/id_ed25519_github_personal' gh-pages -d dist -b gh-pages -r git@github.com-shaan:shaanvaidya/SanFranciscoStreetTreeMap.git"
+    "deploy": "GIT_SSH_COMMAND='ssh -o IdentityAgent=none -o IdentitiesOnly=yes -i ~/.ssh/id_ed25519' gh-pages -d dist -b gh-pages -r git@github.com-shaan:shaanvaidya/SanFranciscoStreetTreeMap.git"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
@@ -32,7 +32,7 @@
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
-    "gh-pages": "^6.1.1",
+    "gh-pages": "^6.3.0",
     "typescript": "^5.2.2",
     "vite": "^5.1.0"
   }
