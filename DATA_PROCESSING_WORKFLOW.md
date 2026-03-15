@@ -1,136 +1,93 @@
 # San Francisco Street Tree Data Processing Workflow
 
-This document outlines the complete data processing pipeline used to transform the raw San Francisco Department of Public Works (DPW) street tree dataset into web-optimized formats for the interactive map application.
-
-## Overview
-
-The workflow takes the original CSV dataset from SF DPW and processes it through multiple stages to create optimized GeoJSON, vector tiles, and lookup files for fast web performance.
+Transforms raw SF DPW street tree CSVs into optimized GeoJSON, vector tiles, and lookup files for the interactive map.
 
 ## Source Data
 
-**Original Dataset:** `Street_Tree_List_20250323.csv`
-- **Source:** San Francisco Department of Public Works (DPW)
-- **Size:** ~198,386 street trees
-- **Contains:** Tree species, coordinates, addresses, DBH measurements, planting dates, legal status, neighborhood codes
+Download the latest versions from SF Open Data:
+- **Street trees:** [Street Tree List](https://data.sfgov.org/City-Infrastructure/Street-Tree-List/tkzw-k3nq) → save as `data_prep/Street_Tree_List_YYYYMMDD.csv`
+- **Removal notifications:** [Street Tree Removal Notifications](https://data.sfgov.org/City-Infrastructure/Street-Tree-Removal-Notifications/qrwx-q4gg) → save as `data_prep/Street_Tree_Removal_Notifications_YYYYMMDD.csv`
+- **Neighborhoods:** [Analysis Neighborhoods](https://data.sfgov.org/City-Infrastructure/Analysis-Neighborhoods/p5b7-5n3h) → save as `data_prep/Analysis_Neighborhoods_YYYYMMDD.csv`
 
 ## Processing Pipeline
 
+All scripts are in `data_prep/`. Run from that directory.
+
 ### Step 1: Initial Data Cleaning
-**Script:** `data_prep/clean_trees.py`
-
-**Purpose:** Basic data sanitization and type conversion
-
-**Operations:**
-- Convert date columns (`PlantDate`) to proper datetime format
-- Clean species names (remove extra spaces, standardize case to Title Case)
-- Clean address fields (`qAddress`, `SiteOrder`, `qSiteInfo`)
-- Convert numeric columns to proper types:
-  - `DBH` (Diameter at Breast Height)
-  - `Latitude`, `Longitude`
-  - `XCoord`, `YCoord`
-- Remove completely empty rows
+```bash
+python 01_initial_clean.py Street_Tree_List_YYYYMMDD.csv
+```
+- Standardizes column types (dates, numerics)
+- Title-cases species names
+- Drops completely empty rows
 
 **Output:** `cleaned_trees.csv`
 
-### Step 2: Advanced Data Cleanup
-**Script:** `data_prep/cleanupData.py`
+---
 
-**Purpose:** Field restructuring, data validation, and species name standardization
-
-**Operations:**
-- **Column Renaming:** Improve readability
-  - `TreeID` → `Tree ID`
-  - `qLegalStatus` → `Legal Status`
-  - `qSpecies` → `Species`
-  - `qAddress` → `Address`
-  - `qSiteInfo` → `Site Info`
-  - `PlantDate` → `Plant Date`
-
-- **Field Removal:** Drop unnecessary columns
-  - `SiteOrder`, `PlantType`, `qCaretaker`, `qCareAssistant`
-  - `PlotSize`, `PermitNotes`, `XCoord`, `YCoord`
-
-- **DBH Data Cleaning:**
-  - Replace empty values with default of 10 inches
-  - Set minimum value of 1 inch for all trees
-  - Convert to float type
-
-- **Species Name Standardization:**
-  - Fix common misspellings and inconsistencies
-  - Standardize format from "scientific name :: common name" to "common name (scientific name)"
-  - Handle edge cases like missing names, "Tree(s)", "To Be Determine"
-
-- **Data Filtering:**
-  - Remove "Potential Site" entries (not actual planted trees)
+### Step 2: Advanced Cleanup
+```bash
+python 02_advanced_clean.py
+```
+- Renames columns for readability (`qSpecies` → `Species`, etc.)
+- Drops unused columns (`SiteOrder`, `PlantType`, `qCaretaker`, etc.)
+- Normalizes DBH: fills missing → 10 inches, min 1, **cap at 60 inches** (larger values are data-entry errors that cause oversized map dots)
+- Applies species name corrections (see `SPECIES_CORRECTIONS` dict)
+- Deduplicates species: where the same scientific name has multiple common names, picks the most frequent (skips genus-level `Spp` entries)
+- Removes "Potential Site" entries
 
 **Output:** `cleaned_street_trees.csv`
 
-### Step 3: Neighborhood Processing
-**Script:** `data_prep/extract_neighborhoods.py`
+---
 
-**Purpose:** Create neighborhood code-to-name mappings
+### Step 3: Neighborhood Spatial Join
+```bash
+python 03_extract_neighborhoods.py --neighborhoods Analysis_Neighborhoods_YYYYMMDD.csv
+```
+- Builds `neighborhood_mapping.json` (float index → name, used by frontend filter dropdowns)
+- Does a point-in-polygon spatial join to assign `neighborhood_name` to each tree (the SF dataset no longer includes this column directly)
 
-**Operations:**
-- Process `Analysis_Neighborhoods_20250329.csv`
-- Create index-based mapping (1.0: "Bayview Hunters Point", etc.)
-- Sort neighborhoods alphabetically for consistent indexing
+**Output:** `neighborhood_mapping.json`, updates `cleaned_street_trees.csv` in-place
 
-**Output:** `neighborhood_mapping.json`
+---
 
-### Step 4: Species Analysis and Color Generation
-**Script:** `data_prep/get_different_species.py`
+### Step 4: Clean Removal Notifications
+```bash
+python 04_clean_removals.py --input Street_Tree_Removal_Notifications_YYYYMMDD.csv
+```
+- Extracts clean numeric Tree IDs (handles both plain integers and `TRE-XXXXXX` format)
+- Note: removal notifications mean a permit has been *filed*, not that the tree is confirmed removed
 
-**Purpose:** Analyze species diversity and generate color mappings for visualization
+**Output:** `cleaned_removal_notifications.csv`
 
-**Operations:**
-- Extract unique species and group by genus
-- Parse scientific names to identify genus (first word of scientific name)
-- Generate color mappings using HSL color space:
-  - Distribute hues evenly across 360° spectrum
-  - Use consistent saturation (40%) and lightness (60%)
-  - Sort genera alphabetically for consistent color assignment
+---
 
-**Outputs:**
-- `genus_list.json` - List of all unique genera
-- `genus_to_species.json` - Mapping of genus to all species in that genus
+### Step 5: Species & Genus Analysis
+```bash
+python 05_get_species.py
+```
+- Groups species by genus
+- Generates HSL color map (hues evenly distributed across genera, sorted alphabetically for consistency)
 
-### Step 5: GeoJSON Conversion
-**Script:** `data_prep/convert_to_geojson.py`
+**Outputs:** `genus_list.json`, `genus_to_species.json`
 
-**Purpose:** Convert CSV data to web-friendly GeoJSON format with optimizations
+---
 
-**Operations:**
-- **Coordinate Processing:**
-  - Round latitude/longitude to 6 decimal places (~0.1m precision)
-  - Skip rows with invalid coordinates
+### Step 6: Convert to GeoJSON
+```bash
+python 06_convert_to_geojson.py
+```
+- Tags trees with removal permit as `markedForRemoval: true` (does not remove them)
+- Assigns genus-based colors
+- Assigns neighborhood names from spatial join
+- Rounds coordinates to 6 decimal places
+- Skips trees with missing coordinates
 
-- **Species Processing:**
-  - Extract common name and scientific name
-  - Determine genus for color assignment
-  - Apply title case formatting
+**Output:** `trees.geojson`
 
-- **Color Assignment:**
-  - Assign hex colors based on genus using generated color map
-  - Default to black (#000000) for unknown genera
+---
 
-- **Property Optimization:**
-  - Include essential fields: id, species, address, dbh, plantDate, siteInfo, legalStatus
-  - Add computed fields: color, neighborhood_name
-  - Round numeric values for file size optimization
-
-- **Data Validation:**
-  - Filter out "Potential Site" entries
-  - Skip rows with invalid coordinates
-  - Handle missing values gracefully
-
-**Output:** `trees.geojson` (optimized with minimal whitespace)
-
-### Step 6: Vector Tile Generation
-**Tool:** Tippecanoe
-
-**Purpose:** Create optimized Mapbox vector tiles for fast map rendering
-
-**Command:**
+### Step 7: Generate Vector Tiles
 ```bash
 tippecanoe -o trees.mbtiles \
   --layer=trees \
@@ -143,88 +100,51 @@ tippecanoe -o trees.mbtiles \
   --force \
   trees.geojson
 ```
-
-**Configuration:**
-- **Zoom Levels:** 10-16 (city-wide to street-level detail)
-- **Density Management:** Drop densest points when needed to maintain performance
-- **No Limits:** Preserve all features and tile sizes for data completeness
+Then upload `trees.mbtiles` to Mapbox Studio → replace tileset `shaanvaidya.6gtq3t4j`. If the tileset ID changes, update `src/App.tsx`.
 
 **Output:** `trees.mbtiles`
 
-**Important:** After generating the mbtiles file, it must be uploaded to Mapbox Studio to replace the existing tileset (`shaanvaidya.4j2s4npu`) that the web application references. The app uses this Mapbox-hosted tileset for map rendering via the URL `mapbox://shaanvaidya.4j2s4npu` in `src/App.tsx`.
+---
 
-### Step 7: Lookup Data Generation
-**Script:** `data_prep/generate-trees-lookup.cjs` (Node.js)
-
-**Purpose:** Create simplified JSON for fast client-side operations
-
-**Operations:**
-- Extract essential properties from GeoJSON features
-- Remove geometry data (coordinates handled separately)
-- Create flat array structure for efficient filtering/searching
-- Format with readable JSON (2-space indentation)
+### Step 8: Generate Lookup JSON
+```bash
+node generate-trees-lookup.cjs
+```
+- Extracts flat array of tree metadata from GeoJSON (no geometry)
+- Used by the frontend for filtering, search, and tree details panel
 
 **Output:** `trees-lookup.json`
 
-### Step 8: Deployment Updates
-**Purpose:** Ensure web application uses the latest processed data
+---
 
-**Required Actions:**
-1. **Upload mbtiles to Mapbox Studio:**
-   - Upload `data_prep/trees.mbtiles` to Mapbox Studio
-   - Replace existing tileset `shaanvaidya.4j2s4npu`
-   - Update tileset ID in `src/App.tsx` if it changes
+### Step 9: Deploy
+```bash
+cp data_prep/trees-lookup.json public/trees-lookup.json
+npm run deploy
+```
 
-2. **Copy lookup data to public folder:**
-   - Copy `data_prep/trees-lookup.json` to `public/trees-lookup.json`
-   - This file is fetched by the React app for filtering and tree details
-
-3. **Deploy web application:**
-   - Run `npm run build && npm run deploy` to deploy updated app
-
-## Final File Structure
+## File Structure
 
 ```
 data_prep/
-├── Street_Tree_List_20250323.csv    # Original DPW dataset
-├── cleaned_trees.csv                # Step 1 output
-├── cleaned_street_trees.csv         # Step 2 output
-├── neighborhood_mapping.json        # Step 3 output
-├── genus_list.json                  # Step 4 output
-├── genus_to_species.json           # Step 4 output
-├── trees.geojson                   # Step 5 output
-├── trees.mbtiles                   # Step 6 output
-└── trees-lookup.json               # Step 7 output
+├── Street_Tree_List_YYYYMMDD.csv              # Raw SF DPW dataset
+├── Street_Tree_Removal_Notifications_YYYYMMDD.csv
+├── Analysis_Neighborhoods_YYYYMMDD.csv
+├── cleaned_trees.csv                          # Step 1 output
+├── cleaned_street_trees.csv                   # Steps 2 & 3 output
+├── cleaned_removal_notifications.csv          # Step 4 output
+├── genus_list.json                            # Step 5 output
+├── genus_to_species.json                      # Step 5 output
+├── trees.geojson                              # Step 6 output
+├── trees.mbtiles                              # Step 7 output
+└── trees-lookup.json                          # Step 8 output
+
+public/
+└── trees-lookup.json                          # Copied from data_prep, served to frontend
 ```
-
-## Web Application Integration
-
-The processed files are used by the React application as follows:
-
-- **`trees.mbtiles`:** Served as Mapbox vector tiles for map rendering
-- **`trees-lookup.json`:** Loaded for filtering, search, and tree details
-- **`neighborhood_mapping.json`:** Used for neighborhood filter options
-- **`genus_to_species.json`:** Used for species filter options
-
-## Performance Optimizations
-
-1. **Coordinate Precision:** Rounded to 6 decimal places (~0.1m accuracy)
-2. **Vector Tiles:** Enable fast rendering at multiple zoom levels
-3. **Lookup JSON:** Separate geometry from attributes for efficient client operations
-4. **Color Pre-computation:** Colors calculated during processing, not runtime
-5. **Data Validation:** Invalid entries removed to reduce file sizes
-
-## Data Quality Measures
-
-- **Species Standardization:** 50+ manual corrections for common naming issues
-- **Coordinate Validation:** Invalid coordinates filtered out
-- **DBH Normalization:** Minimum/maximum bounds applied
-- **Duplicate Handling:** Unique tree IDs ensure no duplicates
-- **Missing Data:** Graceful handling with appropriate defaults
 
 ## Tools and Dependencies
 
-- **Python:** pandas, numpy, json, colorsys
-- **Node.js:** fs module for JSON processing
-- **Tippecanoe:** Vector tile generation
-- **External Data:** SF neighborhood boundaries, botanical databases
+- **Python:** pandas, geopandas, shapely, colorsys
+- **Node.js:** fs module
+- **Tippecanoe:** vector tile generation (`brew install tippecanoe`)
