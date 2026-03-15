@@ -26,8 +26,6 @@ Needs a `VITE_MAPBOX_TOKEN` env var (falls back to a hardcoded public token if n
 npm run deploy  # builds and pushes dist/ to gh-pages branch
 ```
 
-Uses SSH key `~/.ssh/id_ed25519` with host alias `github.com-shaan` — see `~/.ssh/config`.
-
 ## Data
 
 Tree data comes from the [SF DPW Street Tree List](https://data.sfgov.org/City-Infrastructure/Street-Tree-List/tkzw-k3nq), updated regularly. Two outputs power the map:
