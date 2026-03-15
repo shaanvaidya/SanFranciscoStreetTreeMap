@@ -143,8 +143,24 @@ public/
 └── trees-lookup.json                          # Copied from data_prep, served to frontend
 ```
 
+## Automated Pipeline
+
+The full pipeline runs automatically via GitHub Actions (`.github/workflows/update-tree-data.yml`) on the 1st of every month, or manually from the Actions tab.
+
+It handles everything: downloading fresh SF data, running steps 1–8, uploading the new tileset to Mapbox, and deploying to GitHub Pages.
+
+**Required GitHub repository secrets** (`Settings → Secrets → Actions → New repository secret`):
+- `MAPBOX_SECRET_TOKEN` — Mapbox secret token (`sk.*`). Needs scopes: `UPLOADS:READ`, `UPLOADS:LIST`, `UPLOADS:WRITE`, `TILESETS:READ`, `TILESETS:LIST`, `TILESETS:WRITE`
+- `VITE_MAPBOX_TOKEN` — public Mapbox token (`pk.*`), same value as in `.env.local`
+
+**Gotchas:**
+- The Socrata API returns lowercase column names (`qspecies`, `treeid`) — `download_data.py` normalizes these to match what the processing scripts expect
+- The neighborhoods dataset (`p5b7-5n3h`) returns no geometry via the Socrata API — `Analysis_Neighborhoods.csv` is committed as a static file instead and won't need updating unless SF redraws neighborhood boundaries
+- Mapbox's credentials endpoint returns AWS temp credentials, not a presigned URL — the S3 upload uses `boto3` to sign the request properly
+- The Mapbox upload job expects the `url` field from the credentials response directly (not a constructed `s3://` URL)
+
 ## Tools and Dependencies
 
-- **Python:** pandas, geopandas, shapely, colorsys
+- **Python:** pandas, geopandas, shapely, colorsys, boto3, requests
 - **Node.js:** fs module
 - **Tippecanoe:** vector tile generation (`brew install tippecanoe`)
