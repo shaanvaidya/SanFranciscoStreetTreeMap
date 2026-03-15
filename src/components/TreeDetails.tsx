@@ -1,6 +1,7 @@
 import { Box, Typography, IconButton, Chip, Button } from '@mui/material'
 import { Nature, LocationOn, CalendarToday, Straighten, Policy, MapOutlined, ContentCopy, Close as CloseIcon, Launch as LaunchIcon, WarningAmber } from '@mui/icons-material'
 import { TreeInfo } from '../types/tree'
+import { SuggestEdit } from './SuggestEdit'
 
 const subtitleStyle = {
   color: '#2e7d32',
@@ -351,6 +352,7 @@ export const TreeDetails = ({
             </Box>
           </Box>
         </Box>
+        <SuggestEdit tree={selectedTree} />
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
             <MapOutlined sx={{ color: '#4caf50', fontSize: 20 }} />
