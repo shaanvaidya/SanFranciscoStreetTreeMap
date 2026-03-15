@@ -70,7 +70,7 @@ function App() {
       // Add the GeoJSON source
       map.current.addSource('trees', {
         type: 'vector',
-        url: 'mapbox://shaanvaidya.a9iy9ch2'
+        url: 'mapbox://shaanvaidya.6gtq3t4j'
       })
 
       // Add source for user location
@@ -261,8 +261,9 @@ function App() {
         setSelectedTreeId(props.id)
 
         // Set the selected tree for the sidebar
-        const scientificName = props.species.split('(')[1].replace(')', '')
-        const commonName = props.species.split('(')[0]
+        const speciesParts = props.species?.split('(') ?? []
+        const scientificName = speciesParts[1]?.replace(')', '') ?? ''
+        const commonName = speciesParts[0]?.trim() ?? props.species ?? ''
         console.log(scientificName, commonName)
         setSelectedTree({
           id: props.id,
@@ -272,11 +273,11 @@ function App() {
           plantDate: props.plantDate,
           siteInfo: props.siteInfo,
           legalStatus: props.legalStatus,
-          neighborhood: props.neighborhood,
           color: props.color,
           latitude: props.latitude,
           longitude: props.longitude,
           neighborhood_name: props.neighborhood_name,
+          markedForRemoval: props.markedForRemoval ?? false,
           common_name: commonName,
           scientific_name: scientificName
         })

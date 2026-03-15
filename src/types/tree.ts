@@ -6,11 +6,11 @@ export interface TreeInfo {
   plantDate: string | null
   siteInfo: string | null
   legalStatus: string | null
-  neighborhood: string | null
   color: string
   latitude: number
   longitude: number
   neighborhood_name: string | null
+  markedForRemoval: boolean
   common_name: string
   scientific_name: string
 }

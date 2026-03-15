@@ -7,3 +7,4 @@ data_prep/trees-lookup.json filter=lfs diff=lfs merge=lfs -text
 trees-lookup.json filter=lfs diff=lfs merge=lfs -text
 public/trees-lookup.json filter=lfs diff=lfs merge=lfs -text
 trees.geojson filter=lfs diff=lfs merge=lfs -text
+*.mbtiles filter=lfs diff=lfs merge=lfs -text

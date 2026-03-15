@@ -15,11 +15,11 @@ const simplified = raw.features.map((f) => {
         plantDate: p.plantDate,
         siteInfo: p.siteInfo,
         legalStatus: p.legalStatus,
-        neighborhood: p.neighborhood,
         color: p.color,
         latitude: p.latitude,
         longitude: p.longitude,
         neighborhood_name: p.neighborhood_name,
+        markedForRemoval: p.markedForRemoval ?? false,
     };
 });
 

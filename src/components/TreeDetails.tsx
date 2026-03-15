@@ -1,5 +1,5 @@
 import { Box, Typography, IconButton, Chip, Button } from '@mui/material'
-import { Nature, LocationOn, CalendarToday, Straighten, Policy, MapOutlined, ContentCopy, Close as CloseIcon, Launch as LaunchIcon } from '@mui/icons-material'
+import { Nature, LocationOn, CalendarToday, Straighten, Policy, MapOutlined, ContentCopy, Close as CloseIcon, Launch as LaunchIcon, WarningAmber } from '@mui/icons-material'
 import { TreeInfo } from '../types/tree'
 
 const subtitleStyle = {
@@ -170,6 +170,48 @@ export const TreeDetails = ({
         <CloseIcon />
       </IconButton>
     </Box>
+
+    {selectedTree.markedForRemoval && (
+      <Box sx={{
+        mb: 2,
+        p: 2,
+        borderRadius: 2,
+        backgroundColor: 'rgba(237, 108, 2, 0.08)',
+        border: '1px solid rgba(237, 108, 2, 0.3)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0.75,
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningAmber sx={{ color: '#ed6c02', fontSize: 18 }} />
+          <Typography variant="body2" sx={{ fontWeight: 600, color: '#b45309' }}>
+            Removal permit filed
+          </Typography>
+        </Box>
+        <Typography variant="caption" sx={{ color: '#92400e', lineHeight: 1.5 }}>
+          A permit has been submitted to remove this tree. It may still be standing — this does not confirm removal.
+        </Typography>
+        <Button
+          variant="text"
+          size="small"
+          component="a"
+          href="https://sfpublicworks.org/index.php/services/tree-removal-notifications"
+          target="_blank"
+          rel="noopener noreferrer"
+          startIcon={<LaunchIcon sx={{ fontSize: 13 }} />}
+          sx={{
+            color: '#ed6c02',
+            fontSize: '0.75rem',
+            p: 0,
+            minHeight: 'auto',
+            alignSelf: 'flex-start',
+            '&:hover': { backgroundColor: 'transparent', textDecoration: 'underline' }
+          }}
+        >
+          SF Public Works — Street Trees
+        </Button>
+      </Box>
+    )}
 
     <Box
       sx={{

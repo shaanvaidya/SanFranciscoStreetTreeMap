@@ -5,7 +5,7 @@ from datetime import datetime
 def clean_trees_data():
     # Read the CSV file
     print("Reading CSV file...")
-    df = pd.read_csv('Street_Tree_List_20250323.csv')
+    df = pd.read_csv('Street_Tree_List_20260315.csv')
     
     # Print initial information
     print("\nInitial data shape:", df.shape)
