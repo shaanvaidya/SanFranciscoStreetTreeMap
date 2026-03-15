@@ -1,6 +1,6 @@
 # SanFranciscoStreetTreeMap
 
-Interactive map of SF's ~220k street trees. Built with React + Vite + TypeScript + Mapbox GL JS + MUI.
+Interactive map of SF's ~195k street trees. Built with React + Vite + TypeScript + Mapbox GL JS + MUI.
 
 ## Dev
 
@@ -17,8 +17,6 @@ npm run deploy
 # live at shaanvaidya.github.io/SanFranciscoStreetTreeMap/
 ```
 
-Uses a specific SSH key (`~/.ssh/id_ed25519_github_personal`) — if deploy fails with SSH error, check that key exists.
-
 ## Architecture
 
 - `src/App.tsx` — main map component, loads tree data, handles filters
@@ -30,23 +28,18 @@ Uses a specific SSH key (`~/.ssh/id_ed25519_github_personal`) — if deploy fail
 
 Two data sources:
 
-**1. Mapbox vector tileset** — renders the ~220k tree dots on the map
-- Tileset: `mapbox://shaanvaidya.a9iy9ch2`
+**1. Mapbox vector tileset** — renders the tree dots on the map
+- Tileset: `mapbox://shaanvaidya.6gtq3t4j`
 - Source layer: `trees`
 - Hosted on Mapbox (free tier)
 
 **2. `public/trees-lookup.json`** — tree metadata (species, address, etc.)
 - Fetched at runtime from GitHub Pages
-- Tracked via Git LFS in the `gh-pages` branch
+- Tracked via Git LFS
 
 ## Regenerating data (if SF updates their dataset)
 
-1. Download latest data from SF Open Data → `data_prep/sf_street_trees.csv`
-2. Run pipeline scripts in `data_prep/` (see `DATA_PROCESSING_WORKFLOW.md`)
-3. Upload new `data_prep/trees.mbtiles` to Mapbox → Tilesets → Replace
-4. If the tileset ID changes, update `src/App.tsx` line 73
-5. Copy new `data_prep/trees-lookup.json` → `public/trees-lookup.json`
-6. `npm run deploy`
+See `DATA_PROCESSING_WORKFLOW.md` for the full pipeline.
 
 ## Mapbox token
 
