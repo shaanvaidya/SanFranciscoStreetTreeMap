@@ -38,19 +38,19 @@ jobs:
       # ── Data download ─────────────────────────────────────────────────────
       - name: Download SF Open Data
         working-directory: data_prep
-        run: python download_data.py
+        run: python3 download_data.py
 
       # ── Processing pipeline ───────────────────────────────────────────────
       - name: Run processing pipeline
         working-directory: data_prep
         run: |
           DATE=$(cat DATA_DATE.txt)
-          python 01_initial_clean.py Street_Tree_List_${DATE}.csv
-          python 02_advanced_clean.py
-          python 03_extract_neighborhoods.py --neighborhoods Analysis_Neighborhoods_${DATE}.csv
-          python 04_clean_removals.py --input Street_Tree_Removal_Notifications_${DATE}.csv
-          python 05_get_species.py
-          python 06_convert_to_geojson.py
+          python3 01_initial_clean.py Street_Tree_List_${DATE}.csv
+          python3 02_advanced_clean.py
+          python3 03_extract_neighborhoods.py --neighborhoods Analysis_Neighborhoods.csv
+          python3 04_clean_removals.py --input Street_Tree_Removal_Notifications_${DATE}.csv
+          python3 05_get_species.py
+          python3 06_convert_to_geojson.py
 
       # ── Vector tiles ──────────────────────────────────────────────────────
       - name: Generate vector tiles
@@ -72,7 +72,7 @@ jobs:
         working-directory: data_prep
         env:
           MAPBOX_SECRET_TOKEN: ${{ secrets.MAPBOX_SECRET_TOKEN }}
-        run: python upload_to_mapbox.py
+        run: python3 upload_to_mapbox.py
 
       # ── Lookup JSON + deploy ──────────────────────────────────────────────
       - name: Generate lookup JSON
