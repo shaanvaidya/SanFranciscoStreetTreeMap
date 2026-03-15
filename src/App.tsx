@@ -13,7 +13,7 @@ import HeaderBar from './components/HeaderBar'
 import FiltersPanel from './components/Filters/FiltersPanel'
 
 
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1Ijoic2hhYW52YWlkeWEiLCJhIjoiY20zc2FzeWtyMGV6dzJqb2oyNjcxc2k2dCJ9.kqxE189voII-7Ua8TFpVgw'
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
 // theme moved to ./theme
  
