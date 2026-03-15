@@ -29,7 +29,6 @@ Ideas and future work, roughly grouped by theme.
 
 - **Adopt a tree** — let people claim a tree and leave public notes
 - **Photos** — community-submitted photos per tree, shown in the details panel (like Google Maps)
-- **Suggest edit → confirm** — cross-reference removal notifications against the latest SF dataset export to automatically mark trees as "confirmed removed" vs "permit pending"
 
 ## Features
 
