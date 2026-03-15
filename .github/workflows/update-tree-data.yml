@@ -1,0 +1,95 @@
+name: Update Tree Data
+
+on:
+  schedule:
+    # 1st of every month at 6:00 UTC
+    - cron: "0 6 1 * *"
+  workflow_dispatch: # allow manual trigger from the Actions tab
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # needed to push to gh-pages
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install pandas geopandas shapely requests
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install tippecanoe
+        run: |
+          sudo apt-get install -y build-essential libsqlite3-dev zlib1g-dev
+          git clone --depth=1 https://github.com/felt/tippecanoe.git /tmp/tippecanoe
+          cd /tmp/tippecanoe && make -j$(nproc) && sudo make install
+
+      # ── Data download ─────────────────────────────────────────────────────
+      - name: Download SF Open Data
+        working-directory: data_prep
+        run: python download_data.py
+
+      # ── Processing pipeline ───────────────────────────────────────────────
+      - name: Run processing pipeline
+        working-directory: data_prep
+        run: |
+          DATE=$(cat DATA_DATE.txt)
+          python 01_initial_clean.py Street_Tree_List_${DATE}.csv
+          python 02_advanced_clean.py
+          python 03_extract_neighborhoods.py --neighborhoods Analysis_Neighborhoods_${DATE}.csv
+          python 04_clean_removals.py --input Street_Tree_Removal_Notifications_${DATE}.csv
+          python 05_get_species.py
+          python 06_convert_to_geojson.py
+
+      # ── Vector tiles ──────────────────────────────────────────────────────
+      - name: Generate vector tiles
+        working-directory: data_prep
+        run: |
+          tippecanoe -o trees.mbtiles \
+            --layer=trees \
+            --minimum-zoom=10 \
+            --maximum-zoom=16 \
+            --drop-densest-as-needed \
+            --extend-zooms-if-still-dropping \
+            --no-feature-limit \
+            --no-tile-size-limit \
+            --force \
+            trees.geojson
+
+      # ── Mapbox upload ─────────────────────────────────────────────────────
+      - name: Upload tileset to Mapbox
+        working-directory: data_prep
+        env:
+          MAPBOX_SECRET_TOKEN: ${{ secrets.MAPBOX_SECRET_TOKEN }}
+        run: python upload_to_mapbox.py
+
+      # ── Lookup JSON + deploy ──────────────────────────────────────────────
+      - name: Generate lookup JSON
+        working-directory: data_prep
+        run: node generate-trees-lookup.cjs
+
+      - name: Copy lookup to public/
+        run: cp data_prep/trees-lookup.json public/trees-lookup.json
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN }}
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
