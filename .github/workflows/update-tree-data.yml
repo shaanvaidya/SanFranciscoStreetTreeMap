@@ -15,6 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Pull neighborhoods LFS file
+        run: git lfs pull --include="data_prep/Analysis_Neighborhoods.csv"
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
