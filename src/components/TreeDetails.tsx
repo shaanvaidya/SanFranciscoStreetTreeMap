@@ -356,7 +356,7 @@ export const TreeDetails = ({
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
             <MapOutlined sx={{ color: '#4caf50', fontSize: 20 }} />
-            <Typography variant="subtitle2" sx={subtitleStyle as any}>
+            <Typography variant="subtitle2" sx={subtitleStyle}>
               Street View
             </Typography>
           </Box>
@@ -384,7 +384,7 @@ export const TreeDetails = ({
               style={{ border: 0 }}
               loading="lazy"
               allowFullScreen
-              src={`https://www.google.com/maps/embed/v1/streetview?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyDA-b6A5qwlxK2_YnNilM0XRIvMttvD7o4'}&location=${selectedTree.latitude},${selectedTree.longitude}&heading=0&pitch=10&fov=90`}
+              src={`https://www.google.com/maps/embed/v1/streetview?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&location=${selectedTree.latitude},${selectedTree.longitude}&heading=0&pitch=10&fov=90`}
             ></iframe>
           </Box>
           <Typography 

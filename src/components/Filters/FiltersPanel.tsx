@@ -2,6 +2,12 @@ import { Box, Button, TextField, Autocomplete, Chip } from '@mui/material'
 import { useEffect, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 
+type MapboxGeocodingFeature = {
+  id: string
+  place_name: string
+  center: [number, number]
+}
+
 type Props = {
   species: string[]
   neighborhoods: string[]
@@ -35,7 +41,7 @@ const FiltersPanel = ({
   showFilters,
   setShowFilters,
 }: Props) => {
-  const [addressResults, setAddressResults] = useState<any[]>([])
+  const [addressResults, setAddressResults] = useState<MapboxGeocodingFeature[]>([])
 
   useEffect(() => {
     const fetchSuggestions = async () => {

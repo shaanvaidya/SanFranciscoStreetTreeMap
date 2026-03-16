@@ -1,57 +1,41 @@
 import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import { ThemeProvider } from '@mui/material/styles'
-import { Box, CssBaseline, IconButton, Snackbar, Alert } from '@mui/material'
+import { Box, CssBaseline, IconButton, LinearProgress, Snackbar, Alert, useMediaQuery } from '@mui/material'
 import { MyLocation } from '@mui/icons-material'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import type { Feature, FeatureCollection, Point, GeoJsonProperties } from 'geojson';
 import { theme } from './theme'
 import { TreeInfo } from './types/tree'
 import TreeDetails from './components/TreeDetails'
 import TreeSummaryBar from './components/TreeSummaryBar'
 import HeaderBar from './components/HeaderBar'
 import FiltersPanel from './components/Filters/FiltersPanel'
-
+import { useTreeData } from './hooks/useTreeData'
+import { useTreeFilters } from './hooks/useTreeFilters'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
-
-// theme moved to ./theme
- 
- 
-// TreeDetails and TreeSummaryBar moved to components
-
 
 function App() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const geolocateControlRef = useRef<mapboxgl.GeolocateControl | null>(null)
+
+  const isMobile = useMediaQuery('(max-width:600px)')
+
   const [selectedTree, setSelectedTree] = useState<TreeInfo | null>(null)
-  const [species, setSpecies] = useState<string[]>([])
-  const [selectedSpecies, setSelectedSpecies] = useState<string | null>(null)
-  const [neighborhoods, setNeighborhoods] = useState<string[]>([])
-  const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null)
+  const [showFullTreeDetails, setShowFullTreeDetails] = useState(!isMobile)
+  const [showFilters, setShowFilters] = useState(false)
+  const [addressQuery, setAddressQuery] = useState('')
+  const [toast, setToast] = useState<{ message: string; severity: 'success' | 'error' } | null>(null)
 
-  const [selectedTreeId, setSelectedTreeId] = useState<number | null>(null)
-
-  const [speciesCounts, setSpeciesCounts] = useState<Record<string, number>>({})
-  const [neighborhoodCounts, setNeighborhoodCounts] = useState<Record<string, number>>({})
-
-  const [filteredGeoJSON, setFilteredGeoJSON] = useState<FeatureCollection<Point>>({
-    type: 'FeatureCollection',
-    features: []
-  });
-  const [allTrees, setAllTrees] = useState<TreeInfo[]>([]);
-  const [addressQuery, setAddressQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-  const isMobile = window.innerWidth < 600;
-  const [showFullTreeDetails, setShowFullTreeDetails] = useState(!isMobile);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { allTrees, species, neighborhoods, speciesCounts, neighborhoodCounts, loading, error } = useTreeData()
+  const { selectedSpecies, setSelectedSpecies, selectedNeighborhood, setSelectedNeighborhood } = useTreeFilters(map, allTrees)
 
   useEffect(() => {
     if (selectedTree) {
-      setShowFullTreeDetails(!isMobile);
+      setShowFullTreeDetails(!isMobile)
     }
-  }, [selectedTree]);
+  }, [selectedTree, isMobile])
 
   // Initialize map
   useEffect(() => {
@@ -61,33 +45,27 @@ function App() {
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/light-v11',
       center: [-122.44244459744075, 37.76038462356057],
-      zoom: 11.5
+      zoom: 11.5,
     })
 
     map.current.on('load', () => {
       if (!map.current) return
 
-      // Add the GeoJSON source
       map.current.addSource('trees', {
         type: 'vector',
-        url: 'mapbox://shaanvaidya.6gtq3t4j'
+        url: 'mapbox://shaanvaidya.6gtq3t4j',
       })
 
-      // Add source for user location
       map.current.addSource('user-location', {
         type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: []
-        }
+        data: { type: 'FeatureCollection', features: [] },
       })
 
       map.current.loadImage('https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png', (error, image) => {
-        if (error || !image) return;
+        if (error || !image) return
         if (!map.current?.hasImage('custom-marker')) {
-          map.current?.addImage('custom-marker', image);
+          map.current?.addImage('custom-marker', image)
         }
-
         map.current?.addLayer({
           id: 'searched-location-pin',
           type: 'symbol',
@@ -96,27 +74,22 @@ function App() {
             'icon-image': 'custom-marker',
             'icon-size': 0.5,
             'icon-anchor': 'bottom',
-          }
-        });
-      });
+          },
+        })
+      })
 
       map.current.addSource('searched-location', {
         type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: []
-        }
-      });
+        data: { type: 'FeatureCollection', features: [] },
+      })
 
-      // Initialize GeolocateControl for heading/tracking and add it (we will hide its UI)
       geolocateControlRef.current = new mapboxgl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },
         trackUserLocation: true,
-        showUserHeading: true
-      });
-      map.current.addControl(geolocateControlRef.current, 'bottom-right');
+        showUserHeading: true,
+      })
+      map.current.addControl(geolocateControlRef.current, 'bottom-right')
 
-      // Add layer for user location
       map.current.addLayer({
         id: 'user-location',
         type: 'circle',
@@ -127,144 +100,41 @@ function App() {
           'circle-opacity': 1,
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff',
-          'circle-stroke-opacity': 1
-        }
+          'circle-stroke-opacity': 1,
+        },
       })
 
-      // Add the tree layer
-      map.current.addLayer({
-        id: 'tree-points',
-        type: 'circle',
-        source: 'trees',
-        'source-layer': 'trees',
-        paint: {
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            10, [
-              'interpolate',
-              ['linear'],
-              ['min', ['coalesce', ['get', 'dbh'], 0], 60],
-              0, 2,
-              30, 2.5,
-              60, 3
-            ],
-            16, [
-              'interpolate',
-              ['linear'],
-              ['min', ['coalesce', ['get', 'dbh'], 0], 60],
-              0, 6,
-              30, 7,
-              60, 8
-            ]
-          ],
-          'circle-color': ['get', 'color'],
-          'circle-opacity': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            10, 0.6,
-            15, 0.8,
-            20, 1
-          ],
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff',
-          'circle-stroke-opacity': 0.8
-        }
-      })
+      const treeCircleRadius = [
+        'interpolate', ['linear'], ['zoom'],
+        10, ['interpolate', ['linear'], ['min', ['coalesce', ['get', 'dbh'], 0], 60], 0, 2, 30, 2.5, 60, 3],
+        16, ['interpolate', ['linear'], ['min', ['coalesce', ['get', 'dbh'], 0], 60], 0, 6, 30, 7, 60, 8],
+      ]
+      const treeCircleOpacity = ['interpolate', ['linear'], ['zoom'], 10, 0.6, 15, 0.8, 20, 1]
+      const treeCirclePaint: mapboxgl.CirclePaint = {
+        'circle-radius': treeCircleRadius as mapboxgl.Expression,
+        'circle-color': ['get', 'color'],
+        'circle-opacity': treeCircleOpacity as mapboxgl.Expression,
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#ffffff',
+        'circle-stroke-opacity': 0.8,
+      }
+
+      map.current.addLayer({ id: 'tree-points', type: 'circle', source: 'trees', 'source-layer': 'trees', paint: treeCirclePaint })
 
       map.current.addSource('filtered-trees', {
         type: 'geojson',
-        data: filteredGeoJSON
-      });
+        data: { type: 'FeatureCollection', features: [] },
+      })
+      map.current.addLayer({ id: 'filtered-tree-points', type: 'circle', source: 'filtered-trees', paint: treeCirclePaint })
 
-      map.current.addLayer({
-        id: 'filtered-tree-points',
-        type: 'circle',
-        source: 'filtered-trees',
-        paint: {
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            10, [
-              'interpolate',
-              ['linear'],
-              ['min', ['coalesce', ['get', 'dbh'], 0], 60],
-              0, 2,
-              30, 2.5,
-              60, 3
-            ],
-            16, [
-              'interpolate',
-              ['linear'],
-              ['min', ['coalesce', ['get', 'dbh'], 0], 60],
-              0, 6,
-              30, 7,
-              60, 8
-            ]
-          ],
-          'circle-color': ['get', 'color'],
-          'circle-opacity': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            10, 0.6,
-            15, 0.8,
-            20, 1
-          ],
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff',
-          'circle-stroke-opacity': 0.8
-        }
-      });
-
-      // Extract unique species and neighborhoods, and count occurrences
-      fetch('trees-lookup.json')
-        .then(response => response.json())
-        .then((data: TreeInfo[]) => {
-          setAllTrees(data);
-          const uniqueSpecies = new Set<string>();
-          const uniqueNeighborhoods = new Set<string>();
-          const speciesCounts: Record<string, number> = {};
-          const neighborhoodCounts: Record<string, number> = {};
-
-          data.forEach(tree => {
-            if (tree.species) {
-              uniqueSpecies.add(tree.species);
-              speciesCounts[tree.species] = (speciesCounts[tree.species] || 0) + 1;
-            }
-
-            if (tree.neighborhood_name) {
-              uniqueNeighborhoods.add(tree.neighborhood_name);
-              neighborhoodCounts[tree.neighborhood_name] = (neighborhoodCounts[tree.neighborhood_name] || 0) + 1;
-            }
-          });
-
-          setSpecies(Array.from(uniqueSpecies).sort());
-          setNeighborhoods(Array.from(uniqueNeighborhoods).sort());
-          setSpeciesCounts(speciesCounts);
-          setNeighborhoodCounts(neighborhoodCounts);
-        })
-        .catch(error => {
-          console.error('Error loading tree metadata:', error);
-        });
-
-      // Add click event
+      // Click a tree to select it
       map.current.on('click', 'tree-points', (e) => {
         if (!e.features?.[0]?.properties) return
-
         const props = e.features[0].properties
-
-        // Set the selected tree ID for highlighting
-        setSelectedTreeId(props.id)
-
-        // Set the selected tree for the sidebar
         const speciesParts = props.species?.split('(') ?? []
         const scientificName = speciesParts[1]?.replace(')', '') ?? ''
         const commonName = speciesParts[0]?.trim() ?? props.species ?? ''
-        console.log(scientificName, commonName)
+
         setSelectedTree({
           id: props.id,
           species: props.species,
@@ -279,210 +149,69 @@ function App() {
           neighborhood_name: props.neighborhood_name,
           markedForRemoval: props.markedForRemoval ?? false,
           common_name: commonName,
-          scientific_name: scientificName
+          scientific_name: scientificName,
         })
 
-        // Animate to the tree location
-        const isMobile = window.innerWidth < 600;
-
-        const sidebarOffset = isMobile
-          ? [0, window.innerHeight * 0.1] // push tree lower on mobile, close to the bottom bar
-          : [-window.innerWidth * 0.2, 0]; // push tree left on desktop
+        const mobile = window.innerWidth < 600
+        const sidebarOffset: [number, number] = mobile
+          ? [0, window.innerHeight * 0.1]
+          : [-window.innerWidth * 0.2, 0]
 
         map.current?.flyTo({
           center: [props.longitude, props.latitude],
           zoom: 18,
           duration: 1000,
           essential: true,
-          offset: sidebarOffset as [number, number],
-        });
+          offset: sidebarOffset,
+        })
       })
 
-      // // Add a layer for highlighted trees
       map.current.addLayer({
         id: 'highlighted-trees',
         type: 'circle',
         source: 'trees',
         'source-layer': 'trees',
         paint: {
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            10, [
-              'interpolate',
-              ['linear'],
-              ['min', ['coalesce', ['get', 'dbh'], 0], 60],
-              0, 2,
-              30, 2.5,
-              60, 3
-            ],
-            16, [
-              'interpolate',
-              ['linear'],
-              ['min', ['coalesce', ['get', 'dbh'], 0], 60],
-              0, 6,
-              30, 7,
-              60, 8
-            ]
-          ],
+          'circle-radius': treeCircleRadius as mapboxgl.Expression,
           'circle-color': ['get', 'color'],
           'circle-opacity': 1,
           'circle-stroke-width': 5,
           'circle-stroke-color': 'rgba(51, 51, 0, 1)',
           'circle-stroke-opacity': 1,
-          'circle-pitch-alignment': 'map'
+          'circle-pitch-alignment': 'map',
         },
-        filter: ['==', ['get', 'id'], selectedTreeId || -1],
-        layout: {
-          visibility: 'visible'
-        }
+        filter: ['==', ['get', 'id'], -1],
+        layout: { visibility: 'visible' },
       })
-
-      // Move the highlighted layer to the top
       map.current.moveLayer('highlighted-trees')
 
-      // Change cursor on hover
       map.current.on('mouseenter', 'tree-points', () => {
         if (map.current) map.current.getCanvas().style.cursor = 'pointer'
       })
-
       map.current.on('mouseleave', 'tree-points', () => {
         if (map.current) map.current.getCanvas().style.cursor = ''
       })
-
-      // Reset cursor when moving over non-tree areas
       map.current.on('mousemove', (e) => {
         if (!map.current) return
-
-        const features = map.current.queryRenderedFeatures(e.point, {
-          layers: ['tree-points']
-        })
-
+        const features = map.current.queryRenderedFeatures(e.point, { layers: ['tree-points'] })
         map.current.getCanvas().style.cursor = features.length ? 'pointer' : ''
       })
-
-
     })
 
-    return () => {
-      map.current?.remove()
-    }
+    return () => { map.current?.remove() }
   }, [])
 
-  // Handle species and neighborhood filter changes
+  // Update highlight ring when selected tree changes
   useEffect(() => {
-    if (!map.current) return
+    if (!map.current || !map.current.getLayer('highlighted-trees')) return
+    map.current.setFilter('highlighted-trees', ['==', ['get', 'id'], selectedTree?.id ?? -1])
+  }, [selectedTree])
 
-    const applyFilter = () => {
-      if (!map.current) return;
-
-      try {
-        const filters = []
-
-        if (selectedSpecies) {
-          filters.push(['==', ['get', 'species'], selectedSpecies])
-        }
-
-        if (selectedNeighborhood) {
-          filters.push(['==', ['get', 'neighborhood_name'], selectedNeighborhood])
-        }
-
-        const hasActiveFilter = !!selectedSpecies || !!selectedNeighborhood;
-
-        if (filters.length === 0) {
-          map.current.setFilter('tree-points', null)
-        } else if (filters.length === 1) {
-          map.current.setFilter('tree-points', filters[0])
-        } else {
-          map.current.setFilter('tree-points', ['all', ...filters])
-        }
-
-        const filteredTrees = hasActiveFilter
-          ? allTrees.filter(tree => {
-            return (
-              (!selectedSpecies || tree.species === selectedSpecies) &&
-              (!selectedNeighborhood || tree.neighborhood_name === selectedNeighborhood)
-            );
-          }).slice(0, 500)
-          : [];
-
-        const features: Feature<Point, GeoJsonProperties>[] = filteredTrees.map(tree => ({
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [tree.longitude, tree.latitude]
-          },
-          properties: { ...tree }
-        }));
-
-        const featureCollection: FeatureCollection<Point, GeoJsonProperties> = {
-          type: "FeatureCollection",
-          features
-        };
-
-        setFilteredGeoJSON(featureCollection);
-
-        const source = map.current.getSource('filtered-trees');
-        if (source && 'setData' in source) {
-          source.setData(featureCollection);
-        }
-        // ✅ Set overlay visibility only if there's an active filter
-        if (map.current.getLayer('filtered-tree-points')) {
-          map.current.setLayoutProperty(
-            'filtered-tree-points',
-            'visibility',
-            hasActiveFilter ? 'visible' : 'none'
-          );
-        }
-      } catch (error) {
-        console.error('Error applying filter:', error)
-      }
-    }
-
-    // Apply filter immediately
-    applyFilter();
-
-    // Cleanup function to remove filter when component unmounts or filters change
-    return () => {
-      if (map.current && map.current.isStyleLoaded()) {
-        try {
-          if (map.current.getLayer('tree-points')) {
-            map.current.setFilter('tree-points', null);
-          }
-          if (map.current.getLayer('filtered-tree-points')) {
-            map.current.setLayoutProperty('filtered-tree-points', 'visibility', 'none');
-          }
-        } catch (error) {
-          console.error('Error removing filter:', error);
-        }
-      }
-    };
-  }, [selectedSpecies, selectedNeighborhood, allTrees]);
-
-  // address geocoding moved into FiltersPanel
-
-
-  // Add this effect to update the highlight filter when selectedTreeId changes
-  useEffect(() => {
-    if (!map.current || !map.current.getLayer('highlighted-trees')) return;
-
-    map.current.setFilter('highlighted-trees', [
-      '==',
-      ['get', 'id'],
-      selectedTreeId ?? -1
-    ]);
-  }, [selectedTreeId]);
-
-  // Update the drawer close handler to clear the highlight
   const handleDrawerClose = () => {
     if (isMobile && showFullTreeDetails) {
-      // Just collapse to summary on mobile
-      setShowFullTreeDetails(false);
+      setShowFullTreeDetails(false)
     } else {
-      // Fully close on desktop or from summary
-      setSelectedTree(null);
-      setSelectedTreeId(null);
+      setSelectedTree(null)
     }
   }
 
@@ -490,36 +219,32 @@ function App() {
     if (!map.current) return
 
     const updateUserLocationOnMap = (location: [number, number]) => {
-      const source = map.current?.getSource('user-location');
+      const source = map.current?.getSource('user-location')
       if (source && 'setData' in source) {
-        source.setData({
+        (source as mapboxgl.GeoJSONSource).setData({
           type: 'FeatureCollection',
-          features: [{
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: location },
-            properties: {}
-          }]
-        });
+          features: [{ type: 'Feature', geometry: { type: 'Point', coordinates: location }, properties: {} }],
+        })
       }
-    };
+    }
 
     if (!('geolocation' in navigator)) {
-      alert('Geolocation is not supported by your browser.');
-      return;
+      setToast({ message: 'Geolocation is not supported by your browser.', severity: 'error' })
+      return
     }
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const location: [number, number] = [position.coords.longitude, position.coords.latitude];
-        updateUserLocationOnMap(location);
-        map.current?.flyTo({ center: location, zoom: Math.max(map.current.getZoom(), 16), duration: 800 });
+        const location: [number, number] = [position.coords.longitude, position.coords.latitude]
+        updateUserLocationOnMap(location)
+        map.current?.flyTo({ center: location, zoom: Math.max(map.current.getZoom(), 16), duration: 800 })
       },
-      (error) => {
-        console.error('Error getting location:', error);
-        setToastMessage(`Location error (${error.code}): ${error.message}`);
+      (err) => {
+        console.error('Error getting location:', err)
+        setToast({ message: `Location error: ${err.message}`, severity: 'error' })
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
-    );
+    )
   }
 
   return (
@@ -527,64 +252,67 @@ function App() {
       <CssBaseline />
       <HeaderBar />
 
-      <Box sx={{ height: '100dvh', width: '100vw', overflow: 'hidden', position: 'relative',
-        '& .mapboxgl-ctrl-geolocate': { display: 'none !important' }
+      {loading && (
+        <LinearProgress
+          sx={{
+            position: 'fixed',
+            top: 56,
+            left: 0,
+            right: 0,
+            zIndex: 1100,
+            height: 2,
+            backgroundColor: 'rgba(46, 125, 50, 0.1)',
+            '& .MuiLinearProgress-bar': { backgroundColor: '#2e7d32' },
+          }}
+        />
+      )}
+
+      <Box sx={{
+        height: '100dvh', width: '100vw', overflow: 'hidden', position: 'relative',
+        '& .mapboxgl-ctrl-geolocate': { display: 'none !important' },
       }}>
         <Box ref={mapContainer} sx={{ position: 'absolute', top: 56, bottom: 0, width: '100%' }} />
-                 <FiltersPanel
-           species={species}
-           neighborhoods={neighborhoods}
-           speciesCounts={speciesCounts}
-           neighborhoodCounts={neighborhoodCounts}
-           selectedSpecies={selectedSpecies}
-           setSelectedSpecies={setSelectedSpecies}
-           selectedNeighborhood={selectedNeighborhood}
-           setSelectedNeighborhood={setSelectedNeighborhood}
-           addressQuery={addressQuery}
-           setAddressQuery={setAddressQuery}
-           onGeocode={({ center, place_name }) => {
-             const [lng, lat] = center
-             const source = map.current?.getSource('searched-location');
-             if (source && 'setData' in source) {
-               source.setData({
-                 type: 'FeatureCollection',
-                 features: [
-                   {
-                     type: 'Feature',
-                     geometry: { type: 'Point', coordinates: [lng, lat] },
-                     properties: {}
-                   }
-                 ]
-               });
-             }
-             map.current?.flyTo({ center: [lng, lat], zoom: 17 });
-             setAddressQuery(place_name);
-           }}
-           onClearAll={() => {
-             setSelectedSpecies(null);
-             setSelectedNeighborhood(null);
-             setAddressQuery('');
-             const searchedSource = map.current?.getSource('searched-location');
-             if (searchedSource && 'setData' in searchedSource) {
-               searchedSource.setData({
-                 type: 'FeatureCollection',
-                 features: []
-               });
-             }
-           }}
-           showFilters={showFilters}
-           setShowFilters={setShowFilters}
-         />
 
+        <FiltersPanel
+          species={species}
+          neighborhoods={neighborhoods}
+          speciesCounts={speciesCounts}
+          neighborhoodCounts={neighborhoodCounts}
+          selectedSpecies={selectedSpecies}
+          setSelectedSpecies={setSelectedSpecies}
+          selectedNeighborhood={selectedNeighborhood}
+          setSelectedNeighborhood={setSelectedNeighborhood}
+          addressQuery={addressQuery}
+          setAddressQuery={setAddressQuery}
+          onGeocode={({ center, place_name }) => {
+            const [lng, lat] = center
+            const source = map.current?.getSource('searched-location')
+            if (source && 'setData' in source) {
+              (source as mapboxgl.GeoJSONSource).setData({
+                type: 'FeatureCollection',
+                features: [{ type: 'Feature', geometry: { type: 'Point', coordinates: [lng, lat] }, properties: {} }],
+              })
+            }
+            map.current?.flyTo({ center: [lng, lat], zoom: 17 })
+            setAddressQuery(place_name)
+          }}
+          onClearAll={() => {
+            setAddressQuery('')
+            const source = map.current?.getSource('searched-location')
+            if (source && 'setData' in source) {
+              (source as mapboxgl.GeoJSONSource).setData({ type: 'FeatureCollection', features: [] })
+            }
+          }}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+        />
 
-        {/* Location Button */}
         <IconButton
           onClick={() => {
-            // Trigger built-in geolocate with heading; falls back to custom if unavailable
             if (geolocateControlRef.current) {
-              geolocateControlRef.current.trigger();
+              geolocateControlRef.current.trigger()
             } else {
-              handleLocationClick();
+              handleLocationClick()
             }
           }}
           sx={{
@@ -598,27 +326,21 @@ function App() {
             },
             backgroundColor: 'white',
             boxShadow: 2,
-            zIndex: 500, // below full-screen tree details but above map
+            zIndex: 500,
             width: 48,
             height: 48,
-            '&:hover': { backgroundColor: '#f5f5f5' }
+            '&:hover': { backgroundColor: '#f5f5f5' },
           }}
         >
           <MyLocation />
         </IconButton>
-        {/* Hide built-in geolocate control button */}
-        <Box sx={{
-          '& .mapboxgl-ctrl-geolocate': { display: 'none' }
-        }} />
+
         <>
           {isMobile && selectedTree && !showFullTreeDetails && (
             <TreeSummaryBar
               tree={selectedTree}
               onMoreDetails={() => setShowFullTreeDetails(true)}
-              onClose={() => {
-                setSelectedTree(null);
-                setSelectedTreeId(null);
-              }}
+              onClose={() => setSelectedTree(null)}
             />
           )}
 
@@ -629,16 +351,8 @@ function App() {
               top: { xs: 'auto', sm: 0 },
               left: { xs: 0, sm: 'auto' },
               right: 0,
-              width: {
-                xs: '100%',
-                sm: 400,
-                md: 500,
-                lg: 600,
-              },
-              height: {
-                xs: '100%',
-                sm: '100%',
-              },
+              width: { xs: '100%', sm: 400, md: 500, lg: 600 },
+              height: { xs: '100%', sm: '100%' },
               backgroundColor: 'rgba(248, 249, 250, 0.95)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
@@ -649,10 +363,7 @@ function App() {
               flexDirection: 'column',
               p: { xs: 0, sm: 3 },
               transform: {
-                xs:
-                  selectedTree && showFullTreeDetails
-                    ? 'translateY(0%)'
-                    : 'translateY(100%)',
+                xs: selectedTree && showFullTreeDetails ? 'translateY(0%)' : 'translateY(100%)',
                 sm: selectedTree ? 'translateX(0)' : 'translateX(100%)',
               },
               opacity: {
@@ -673,39 +384,44 @@ function App() {
                 setSelectedSpecies={setSelectedSpecies}
                 setSelectedNeighborhood={setSelectedNeighborhood}
                 handleDrawerClose={() => {
-                  setShowFullTreeDetails(false);
-                  handleDrawerClose();
+                  setShowFullTreeDetails(false)
+                  handleDrawerClose()
                 }}
-                setToastMessage={setToastMessage}
+                setToastMessage={(message) => setToast({ message, severity: 'success' })}
               />
             )}
           </Box>
         </>
       </Box>
-      
-      {/* Toast Notification */}
+
+      {error && (
+        <Snackbar open anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+          <Alert severity="error" sx={{ width: '100%' }}>{error}</Alert>
+        </Snackbar>
+      )}
+
       <Snackbar
-        open={!!toastMessage}
+        open={!!toast}
         autoHideDuration={3000}
-        onClose={() => setToastMessage(null)}
+        onClose={() => setToast(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={() => setToastMessage(null)} 
-          severity="success" 
-          sx={{ 
+        <Alert
+          onClose={() => setToast(null)}
+          severity={toast?.severity ?? 'success'}
+          sx={{
             width: '100%',
-            backgroundColor: '#4caf50',
-            color: 'white',
-            '& .MuiAlert-icon': {
-              color: 'white'
-            }
+            ...(toast?.severity === 'success' && {
+              backgroundColor: '#4caf50',
+              color: 'white',
+              '& .MuiAlert-icon': { color: 'white' },
+            }),
           }}
         >
-          {toastMessage}
+          {toast?.message}
         </Alert>
       </Snackbar>
-    </ThemeProvider >
+    </ThemeProvider>
   )
 }
 
