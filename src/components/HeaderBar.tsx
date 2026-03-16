@@ -1,7 +1,8 @@
 import { useState, forwardRef } from 'react'
-import { Box, Typography, IconButton, Button, Dialog, DialogTitle, DialogContent, Slide } from '@mui/material'
-import { InfoOutlined as InfoOutlinedIcon, Close as CloseIcon, BugReport as BugReportIcon } from '@mui/icons-material'
+import { Box, Typography, IconButton, Dialog, DialogTitle, DialogContent, Slide } from '@mui/material'
+import { InfoOutlined as InfoOutlinedIcon, Close as CloseIcon, DarkMode, LightMode } from '@mui/icons-material'
 import { TransitionProps } from '@mui/material/transitions'
+import { useTheme } from '@mui/material/styles'
 
 const Transition = forwardRef(function Transition(
   props: TransitionProps & { children: React.ReactElement },
@@ -10,8 +11,20 @@ const Transition = forwardRef(function Transition(
   return <Slide direction="down" ref={ref} {...props} />;
 });
 
-const HeaderBar = () => {
+type Props = {
+  mode: 'light' | 'dark'
+  onToggleTheme: () => void
+}
+
+const HeaderBar = ({ mode, onToggleTheme }: Props) => {
   const [openInfo, setOpenInfo] = useState(false)
+  const theme = useTheme()
+  const isDark = mode === 'dark'
+
+  const headerBg = isDark ? 'rgba(18, 18, 18, 0.9)' : 'rgba(248, 249, 250, 0.9)'
+  const borderColor = isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'
+  const dialogBg = isDark ? '#1e1e1e' : '#f8f9fa'
+  const dialogBorder = isDark ? 'rgba(255,255,255,0.08)' : '#ddd'
 
   return (
     <>
@@ -23,10 +36,10 @@ const HeaderBar = () => {
           right: 0,
           height: 56,
           px: 2,
-          backgroundColor: 'rgba(248, 249, 250, 0.9)',
+          backgroundColor: headerBg,
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
-          borderBottom: '1px solid #e0e0e0',
+          borderBottom: `1px solid ${borderColor}`,
           zIndex: 3,
           display: 'flex',
           alignItems: 'center',
@@ -38,7 +51,7 @@ const HeaderBar = () => {
             variant="h6"
             sx={{
               fontWeight: 700,
-              color: '#2e7d32',
+              color: theme.palette.primary.main,
               fontSize: { xs: '1rem', sm: '1.25rem' },
               whiteSpace: 'nowrap',
               overflow: 'hidden',
@@ -50,45 +63,23 @@ const HeaderBar = () => {
           <IconButton
             size="small"
             onClick={() => setOpenInfo(true)}
-            sx={{ color: '#2e7d32', ml: 1 }}
+            sx={{ color: theme.palette.primary.main, ml: 1 }}
             aria-label="Learn more about this map"
           >
             <InfoOutlinedIcon />
           </IconButton>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', ml: 1, gap: 0.5 }}>
           <IconButton
-            component="a"
-            href="https://github.com/shaanvaidya/SanFranciscoStreetTreeMap/issues/new?title=Feedback:+&body=Please+describe+your+request+or+bug+here."
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{
-              display: { xs: 'inline-flex', sm: 'none' },
-              color: '#2e7d32'
-            }}
+            onClick={onToggleTheme}
+            size="small"
+            sx={{ color: theme.palette.primary.main }}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            <BugReportIcon />
+            {isDark ? <LightMode fontSize="small" /> : <DarkMode fontSize="small" />}
           </IconButton>
 
-          <Button
-            component="a"
-            href="https://github.com/shaanvaidya/SanFranciscoStreetTreeMap/issues/new?title=Feedback:+&body=Please+describe+your+request+or+bug+here."
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="outlined"
-            size="small"
-            sx={{
-              display: { xs: 'none', sm: 'inline-flex' },
-              color: '#2e7d32',
-              borderColor: '#2e7d32',
-              ml: 1,
-              whiteSpace: 'nowrap'
-            }}
-          >
-            <BugReportIcon sx={{ mr: 0.5 }} />
-            Give Feedback
-          </Button>
         </Box>
       </Box>
 
@@ -122,9 +113,9 @@ const HeaderBar = () => {
             justifyContent: 'space-between',
             px: 2,
             py: 1,
-            backgroundColor: '#f8f9fa',
-            borderBottom: '1px solid #ddd',
-            color: 'rgba(5, 117, 36, 0.87)'
+            backgroundColor: dialogBg,
+            borderBottom: `1px solid ${dialogBorder}`,
+            color: theme.palette.primary.main,
           }}
         >
           <Typography variant="h6">About This Map</Typography>
@@ -135,7 +126,15 @@ const HeaderBar = () => {
         <DialogContent dividers sx={{ flexDirection: 'column', justifyContent: 'center' }}>
           <Typography variant="body1" sx={{ mb: 1 }}>
             This interactive map shows street trees in San Francisco. You can filter by species,
-            neighborhood, search by address, or go to your current location. Tree data is sourced from the <a href="https://data.sfgov.org/City-Infrastructure/Street-Tree-List/tkzw-k3nq/about_data" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#2e7d32' }}>San Francisco Public Works Street Tree List</a>.
+            neighborhood, search by address, or go to your current location. Tree data is sourced from the{' '}
+            <a
+              href="https://data.sfgov.org/City-Infrastructure/Street-Tree-List/tkzw-k3nq/about_data"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none', color: theme.palette.primary.main }}
+            >
+              San Francisco Public Works Street Tree List
+            </a>.
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Built with ❤️ using Mapbox and React.
@@ -147,5 +146,3 @@ const HeaderBar = () => {
 }
 
 export default HeaderBar
-
-

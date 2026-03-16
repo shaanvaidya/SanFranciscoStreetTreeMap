@@ -1,5 +1,6 @@
 import { Box, Button, TextField, Autocomplete, Chip } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { useTheme } from '@mui/material/styles'
 import mapboxgl from 'mapbox-gl'
 
 type MapboxGeocodingFeature = {
@@ -42,6 +43,17 @@ const FiltersPanel = ({
   setShowFilters,
 }: Props) => {
   const [addressResults, setAddressResults] = useState<MapboxGeocodingFeature[]>([])
+  const theme = useTheme()
+  const isDark = theme.palette.mode === 'dark'
+
+  const accentColor = theme.palette.primary.main
+  const btnBg = isDark ? '#1e1e1e' : 'white'
+  const btnHoverBg = isDark ? '#2a2a2a' : '#f5f5f5'
+  const panelBg = isDark ? 'rgba(18, 18, 18, 0.95)' : 'rgba(255, 255, 255, 0.95)'
+  const panelBorder = isDark ? 'rgba(76, 175, 80, 0.15)' : 'rgba(46, 125, 50, 0.1)'
+  const dropdownBg = isDark ? '#1e1e1e' : 'white'
+  const dropdownHover = isDark ? '#2a2a2a' : '#f0f0f0'
+  const badgeBg = isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(29, 120, 80, 0.2)'
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -73,12 +85,12 @@ const FiltersPanel = ({
         variant="outlined"
         size="small"
         sx={{
-          borderColor: '#2e7d32',
-          color: '#2e7d32',
-          backgroundColor: 'white',
+          borderColor: accentColor,
+          color: accentColor,
+          backgroundColor: btnBg,
           '&:hover': {
-            backgroundColor: '#f5f5f5',
-            borderColor: '#27662c',
+            backgroundColor: btnHoverBg,
+            borderColor: accentColor,
           },
           display: { xs: 'block', sm: 'block' },
           position: 'absolute',
@@ -95,8 +107,8 @@ const FiltersPanel = ({
             position: 'absolute',
             top: 70,
             left: 'calc(20px + 140px)',
-            backgroundColor: 'rgba(29, 120, 80, 0.2)',
-            color: 'gray',
+            backgroundColor: badgeBg,
+            color: 'text.secondary',
             padding: '5px 10px',
             borderRadius: '15px',
             fontSize: '14px',
@@ -116,12 +128,12 @@ const FiltersPanel = ({
             right: 20,
             maxWidth: { xs: '90%', sm: 340 },
             p: { xs: 2, sm: 2.5 },
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backgroundColor: panelBg,
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
             borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-            border: '1px solid rgba(46, 125, 50, 0.1)',
+            boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.12)',
+            border: `1px solid ${panelBorder}`,
             display: 'flex',
             flexDirection: 'column',
             gap: 2,
@@ -189,7 +201,7 @@ const FiltersPanel = ({
                   top: '100%',
                   left: 0,
                   right: 0,
-                  backgroundColor: 'white',
+                  backgroundColor: dropdownBg,
                   boxShadow: 2,
                   borderRadius: 1,
                   maxHeight: 200,
@@ -204,7 +216,8 @@ const FiltersPanel = ({
                       px: 2,
                       py: 1,
                       cursor: 'pointer',
-                      '&:hover': { backgroundColor: '#f0f0f0' }
+                      color: 'text.primary',
+                      '&:hover': { backgroundColor: dropdownHover }
                     }}
                     onClick={() => {
                       onGeocode({ id: result.id, place_name: result.place_name, center: result.center })
@@ -239,5 +252,3 @@ const FiltersPanel = ({
 }
 
 export default FiltersPanel
-
-

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Box, Typography, Button, TextField, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from '@mui/material'
 import { EditNote, Close as CloseIcon } from '@mui/icons-material'
+import { useTheme } from '@mui/material/styles'
 import { TreeInfo } from '../types/tree'
 
 const ISSUE_TYPES = [
@@ -13,15 +14,22 @@ const ISSUE_TYPES = [
 
 const CONTACT_EMAIL = 'me@shaanvaidya.com'
 
-const focusGreen = {
-  '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: '#2e7d32' } },
-  '& .MuiInputLabel-root.Mui-focused': { color: '#2e7d32' },
-}
-
 export const SuggestEdit = ({ tree }: { tree: TreeInfo }) => {
   const [open, setOpen] = useState(false)
   const [issueType, setIssueType] = useState('')
   const [notes, setNotes] = useState('')
+  const theme = useTheme()
+  const isDark = theme.palette.mode === 'dark'
+
+  const accentColor = theme.palette.primary.main
+  const headingColor = isDark ? '#c8e6c9' : '#1b5e20'
+  const cardBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.95)'
+  const cardBorder = isDark ? 'rgba(76,175,80,0.15)' : 'rgba(46, 125, 50, 0.1)'
+
+  const focusGreen = {
+    '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: accentColor } },
+    '& .MuiInputLabel-root.Mui-focused': { color: accentColor },
+  }
 
   const handleClose = () => {
     setOpen(false)
@@ -51,18 +59,18 @@ export const SuggestEdit = ({ tree }: { tree: TreeInfo }) => {
       <Box sx={{
         p: 2.5,
         borderRadius: 3,
-        border: '1px solid rgba(46, 125, 50, 0.1)',
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        border: `1px solid ${cardBorder}`,
+        backgroundColor: cardBg,
+        boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.08)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
         <Box>
-          <Typography variant="body2" sx={{ fontWeight: 600, color: '#1b5e20' }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
             Something look wrong?
           </Typography>
-          <Typography variant="caption" sx={{ color: '#666' }}>
+          <Typography variant="caption" color="text.secondary">
             Help us improve the data
           </Typography>
         </Box>
@@ -72,12 +80,12 @@ export const SuggestEdit = ({ tree }: { tree: TreeInfo }) => {
           startIcon={<EditNote />}
           onClick={() => setOpen(true)}
           sx={{
-            borderColor: '#2e7d32',
-            color: '#2e7d32',
+            borderColor: accentColor,
+            color: accentColor,
             textTransform: 'none',
             fontWeight: 600,
             borderRadius: 2,
-            '&:hover': { borderColor: '#1b5e20', backgroundColor: 'rgba(46, 125, 50, 0.04)' },
+            '&:hover': { borderColor: accentColor, backgroundColor: isDark ? 'rgba(76,175,80,0.08)' : 'rgba(46, 125, 50, 0.04)' },
           }}
         >
           Suggest Edit
@@ -90,14 +98,14 @@ export const SuggestEdit = ({ tree }: { tree: TreeInfo }) => {
         <DialogTitle sx={{ pb: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: '#1b5e20' }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: headingColor }}>
                 Suggest an Edit
               </Typography>
-              <Typography variant="caption" sx={{ color: '#666' }}>
+              <Typography variant="caption" color="text.secondary">
                 Tree #{tree.id} · {tree.common_name} · {tree.address}
               </Typography>
             </Box>
-            <IconButton size="small" onClick={handleClose} sx={{ color: '#666', mt: -0.5 }}>
+            <IconButton size="small" onClick={handleClose} sx={{ color: 'text.secondary', mt: -0.5 }}>
               <CloseIcon fontSize="small" />
             </IconButton>
           </Box>
@@ -130,13 +138,13 @@ export const SuggestEdit = ({ tree }: { tree: TreeInfo }) => {
             sx={focusGreen}
           />
 
-          <Typography variant="caption" sx={{ color: '#999', mt: -1 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: -1 }}>
             Clicking "Open in Mail" will open a pre-filled email in your mail client.
           </Typography>
         </DialogContent>
 
         <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
-          <Button onClick={handleClose} sx={{ color: '#666', textTransform: 'none' }}>
+          <Button onClick={handleClose} sx={{ color: 'text.secondary', textTransform: 'none' }}>
             Cancel
           </Button>
           <Button
@@ -144,9 +152,9 @@ export const SuggestEdit = ({ tree }: { tree: TreeInfo }) => {
             disabled={!issueType}
             onClick={handleSubmit}
             sx={{
-              backgroundColor: '#2e7d32',
-              '&:hover': { backgroundColor: '#1b5e20' },
-              '&:disabled': { backgroundColor: 'rgba(46, 125, 50, 0.3)' },
+              backgroundColor: accentColor,
+              '&:hover': { backgroundColor: theme.palette.primary.dark },
+              '&:disabled': { backgroundColor: isDark ? 'rgba(76,175,80,0.3)' : 'rgba(46, 125, 50, 0.3)' },
               borderRadius: 2,
               textTransform: 'none',
               fontWeight: 600,

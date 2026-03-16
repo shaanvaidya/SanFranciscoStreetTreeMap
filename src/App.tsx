@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import { ThemeProvider } from '@mui/material/styles'
 import { Box, CssBaseline, IconButton, LinearProgress, Snackbar, Alert, useMediaQuery } from '@mui/material'
 import { MyLocation } from '@mui/icons-material'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { theme } from './theme'
+import { createAppTheme } from './theme'
 import { TreeInfo } from './types/tree'
 import TreeDetails from './components/TreeDetails'
 import TreeSummaryBar from './components/TreeSummaryBar'
@@ -15,14 +15,142 @@ import { useTreeFilters } from './hooks/useTreeFilters'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
+function initMapLayers(mapInstance: mapboxgl.Map, isDark: boolean) {
+  mapInstance.addSource('trees', {
+    type: 'vector',
+    url: 'mapbox://shaanvaidya.6gtq3t4j',
+  })
+
+  mapInstance.addSource('user-location', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: [] },
+  })
+
+  mapInstance.addSource('searched-location', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: [] },
+  })
+
+  mapInstance.addSource('filtered-trees', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: [] },
+  })
+
+  mapInstance.loadImage('https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png', (error, image) => {
+    if (error || !image) return
+    if (!mapInstance.hasImage('custom-marker')) {
+      mapInstance.addImage('custom-marker', image)
+    }
+    if (!mapInstance.getLayer('searched-location-pin')) {
+      mapInstance.addLayer({
+        id: 'searched-location-pin',
+        type: 'symbol',
+        source: 'searched-location',
+        layout: {
+          'icon-image': 'custom-marker',
+          'icon-size': 0.5,
+          'icon-anchor': 'bottom',
+        },
+      })
+    }
+  })
+
+  mapInstance.addLayer({
+    id: 'user-location',
+    type: 'circle',
+    source: 'user-location',
+    paint: {
+      'circle-radius': 8,
+      'circle-color': '#2196F3',
+      'circle-opacity': 1,
+      'circle-stroke-width': 2,
+      'circle-stroke-color': isDark ? '#121212' : '#ffffff',
+      'circle-stroke-opacity': 1,
+    },
+  })
+
+  const treeCircleRadius = [
+    'interpolate', ['linear'], ['zoom'],
+    10, ['interpolate', ['linear'], ['min', ['coalesce', ['get', 'dbh'], 0], 60], 0, 2, 30, 2.5, 60, 3],
+    16, ['interpolate', ['linear'], ['min', ['coalesce', ['get', 'dbh'], 0], 60], 0, 6, 30, 7, 60, 8],
+  ]
+  const treeCircleOpacity = ['interpolate', ['linear'], ['zoom'], 10, 0.6, 15, 0.8, 20, 1]
+  const treeCirclePaint: mapboxgl.CirclePaint = {
+    'circle-radius': treeCircleRadius as mapboxgl.Expression,
+    'circle-color': ['get', 'color'],
+    'circle-opacity': treeCircleOpacity as mapboxgl.Expression,
+    'circle-stroke-width': 2,
+    'circle-stroke-color': isDark ? 'rgba(18, 18, 18, 0.7)' : '#ffffff',
+    'circle-stroke-opacity': 0.8,
+  }
+
+  mapInstance.addLayer({ id: 'tree-points', type: 'circle', source: 'trees', 'source-layer': 'trees', paint: treeCirclePaint })
+  mapInstance.addLayer({ id: 'filtered-tree-points', type: 'circle', source: 'filtered-trees', paint: treeCirclePaint })
+
+  mapInstance.addLayer({
+    id: 'highlighted-trees',
+    type: 'circle',
+    source: 'trees',
+    'source-layer': 'trees',
+    paint: {
+      'circle-radius': treeCircleRadius as mapboxgl.Expression,
+      'circle-color': ['get', 'color'],
+      'circle-opacity': 1,
+      'circle-stroke-width': 5,
+      'circle-stroke-color': isDark ? 'rgba(255, 220, 0, 0.9)' : 'rgba(51, 51, 0, 1)',
+      'circle-stroke-opacity': 1,
+      'circle-pitch-alignment': 'map',
+    },
+    filter: ['==', ['get', 'id'], -1],
+    layout: { visibility: 'visible' },
+  })
+  mapInstance.moveLayer('highlighted-trees')
+}
+
 function App() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const geolocateControlRef = useRef<mapboxgl.GeolocateControl | null>(null)
+  const mapInitialized = useRef(false)
 
   const isMobile = useMediaQuery('(max-width:600px)')
+  const prefersDark = useMediaQuery('(prefers-color-scheme: dark)')
+
+  const [userOverride, setUserOverride] = useState<'light' | 'dark' | null>(() => {
+    const stored = localStorage.getItem('theme-mode')
+    return stored === 'light' || stored === 'dark' ? stored : null
+  })
+
+  // Follow system preference when no explicit override is set
+  useEffect(() => {
+    if (userOverride === null) return
+  }, [userOverride])
+
+  const mode: 'light' | 'dark' = userOverride ?? (prefersDark ? 'dark' : 'light')
+  const modeRef = useRef(mode)
+  modeRef.current = mode
+
+  const toggleTheme = () => {
+    const next = mode === 'light' ? 'dark' : 'light'
+    setUserOverride(next)
+    localStorage.setItem('theme-mode', next)
+  }
+
+  const appTheme = useMemo(() => createAppTheme(mode), [mode])
+
+  // Sync color-scheme and meta theme-color with current mode
+  useEffect(() => {
+    document.documentElement.style.colorScheme = mode
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', mode === 'dark' ? '#121212' : '#2e7d32')
+    }
+  }, [mode])
 
   const [selectedTree, setSelectedTree] = useState<TreeInfo | null>(null)
+  const selectedTreeRef = useRef<TreeInfo | null>(null)
+  selectedTreeRef.current = selectedTree
+
   const [showFullTreeDetails, setShowFullTreeDetails] = useState(!isMobile)
   const [showFilters, setShowFilters] = useState(false)
   const [addressQuery, setAddressQuery] = useState('')
@@ -43,7 +171,7 @@ function App() {
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
+      style: modeRef.current === 'dark' ? 'mapbox://styles/mapbox/dark-v11' : 'mapbox://styles/mapbox/light-v11',
       center: [-122.44244459744075, 37.76038462356057],
       zoom: 11.5,
     })
@@ -51,37 +179,8 @@ function App() {
     map.current.on('load', () => {
       if (!map.current) return
 
-      map.current.addSource('trees', {
-        type: 'vector',
-        url: 'mapbox://shaanvaidya.6gtq3t4j',
-      })
-
-      map.current.addSource('user-location', {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] },
-      })
-
-      map.current.loadImage('https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png', (error, image) => {
-        if (error || !image) return
-        if (!map.current?.hasImage('custom-marker')) {
-          map.current?.addImage('custom-marker', image)
-        }
-        map.current?.addLayer({
-          id: 'searched-location-pin',
-          type: 'symbol',
-          source: 'searched-location',
-          layout: {
-            'icon-image': 'custom-marker',
-            'icon-size': 0.5,
-            'icon-anchor': 'bottom',
-          },
-        })
-      })
-
-      map.current.addSource('searched-location', {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] },
-      })
+      initMapLayers(map.current, modeRef.current === 'dark')
+      mapInitialized.current = true
 
       geolocateControlRef.current = new mapboxgl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },
@@ -89,43 +188,6 @@ function App() {
         showUserHeading: true,
       })
       map.current.addControl(geolocateControlRef.current, 'bottom-right')
-
-      map.current.addLayer({
-        id: 'user-location',
-        type: 'circle',
-        source: 'user-location',
-        paint: {
-          'circle-radius': 8,
-          'circle-color': '#2196F3',
-          'circle-opacity': 1,
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff',
-          'circle-stroke-opacity': 1,
-        },
-      })
-
-      const treeCircleRadius = [
-        'interpolate', ['linear'], ['zoom'],
-        10, ['interpolate', ['linear'], ['min', ['coalesce', ['get', 'dbh'], 0], 60], 0, 2, 30, 2.5, 60, 3],
-        16, ['interpolate', ['linear'], ['min', ['coalesce', ['get', 'dbh'], 0], 60], 0, 6, 30, 7, 60, 8],
-      ]
-      const treeCircleOpacity = ['interpolate', ['linear'], ['zoom'], 10, 0.6, 15, 0.8, 20, 1]
-      const treeCirclePaint: mapboxgl.CirclePaint = {
-        'circle-radius': treeCircleRadius as mapboxgl.Expression,
-        'circle-color': ['get', 'color'],
-        'circle-opacity': treeCircleOpacity as mapboxgl.Expression,
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#ffffff',
-        'circle-stroke-opacity': 0.8,
-      }
-
-      map.current.addLayer({ id: 'tree-points', type: 'circle', source: 'trees', 'source-layer': 'trees', paint: treeCirclePaint })
-
-      map.current.addSource('filtered-trees', {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] },
-      })
-      map.current.addLayer({ id: 'filtered-tree-points', type: 'circle', source: 'filtered-trees', paint: treeCirclePaint })
 
       // Click a tree to select it
       map.current.on('click', 'tree-points', (e) => {
@@ -166,25 +228,6 @@ function App() {
         })
       })
 
-      map.current.addLayer({
-        id: 'highlighted-trees',
-        type: 'circle',
-        source: 'trees',
-        'source-layer': 'trees',
-        paint: {
-          'circle-radius': treeCircleRadius as mapboxgl.Expression,
-          'circle-color': ['get', 'color'],
-          'circle-opacity': 1,
-          'circle-stroke-width': 5,
-          'circle-stroke-color': 'rgba(51, 51, 0, 1)',
-          'circle-stroke-opacity': 1,
-          'circle-pitch-alignment': 'map',
-        },
-        filter: ['==', ['get', 'id'], -1],
-        layout: { visibility: 'visible' },
-      })
-      map.current.moveLayer('highlighted-trees')
-
       map.current.on('mouseenter', 'tree-points', () => {
         if (map.current) map.current.getCanvas().style.cursor = 'pointer'
       })
@@ -200,6 +243,20 @@ function App() {
 
     return () => { map.current?.remove() }
   }, [])
+
+  // Switch Mapbox style when dark mode changes (after map is initialized)
+  useEffect(() => {
+    if (!map.current || !mapInitialized.current) return
+    const style = mode === 'dark' ? 'mapbox://styles/mapbox/dark-v11' : 'mapbox://styles/mapbox/light-v11'
+    map.current.setStyle(style)
+    map.current.once('style.load', () => {
+      if (!map.current) return
+      initMapLayers(map.current, mode === 'dark')
+      if (map.current.getLayer('highlighted-trees')) {
+        map.current.setFilter('highlighted-trees', ['==', ['get', 'id'], selectedTreeRef.current?.id ?? -1])
+      }
+    })
+  }, [mode])
 
   // Update highlight ring when selected tree changes
   useEffect(() => {
@@ -247,10 +304,12 @@ function App() {
     )
   }
 
+  const isDark = mode === 'dark'
+
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={appTheme}>
       <CssBaseline />
-      <HeaderBar />
+      <HeaderBar mode={mode} onToggleTheme={toggleTheme} />
 
       {loading && (
         <LinearProgress
@@ -262,7 +321,7 @@ function App() {
             zIndex: 1100,
             height: 2,
             backgroundColor: 'rgba(46, 125, 50, 0.1)',
-            '& .MuiLinearProgress-bar': { backgroundColor: '#2e7d32' },
+            '& .MuiLinearProgress-bar': { backgroundColor: appTheme.palette.primary.main },
           }}
         />
       )}
@@ -324,12 +383,12 @@ function App() {
               md: selectedTree ? 520 : 20,
               lg: selectedTree ? 620 : 20,
             },
-            backgroundColor: 'white',
+            backgroundColor: isDark ? '#1e1e1e' : 'white',
             boxShadow: 2,
             zIndex: 500,
             width: 48,
             height: 48,
-            '&:hover': { backgroundColor: '#f5f5f5' },
+            '&:hover': { backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5' },
           }}
         >
           <MyLocation />
@@ -353,11 +412,11 @@ function App() {
               right: 0,
               width: { xs: '100%', sm: 400, md: 500, lg: 600 },
               height: { xs: '100%', sm: '100%' },
-              backgroundColor: 'rgba(248, 249, 250, 0.95)',
+              backgroundColor: isDark ? 'rgba(18, 18, 18, 0.95)' : 'rgba(248, 249, 250, 0.95)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              borderLeft: { sm: '1px solid #e0e0e0' },
+              borderLeft: { sm: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'}` },
               zIndex: 1000,
               display: 'flex',
               flexDirection: 'column',
@@ -412,7 +471,7 @@ function App() {
           sx={{
             width: '100%',
             ...(toast?.severity === 'success' && {
-              backgroundColor: '#4caf50',
+              backgroundColor: appTheme.palette.primary.main,
               color: 'white',
               '& .MuiAlert-icon': { color: 'white' },
             }),
