@@ -112,6 +112,8 @@ function App() {
   const map = useRef<mapboxgl.Map | null>(null)
   const geolocateControlRef = useRef<mapboxgl.GeolocateControl | null>(null)
   const mapInitialized = useRef(false)
+  const [mapReady, setMapReady] = useState(false)
+  const initialTreeId = useRef<string | null>(new URLSearchParams(window.location.search).get('tree'))
 
   const isMobile = useMediaQuery('(max-width:600px)')
   const prefersDark = useMediaQuery('(prefers-color-scheme: dark)')
@@ -147,17 +149,52 @@ function App() {
     }
   }, [mode])
 
+  const { allTrees, species, neighborhoods, speciesCounts, neighborhoodCounts, loading, error } = useTreeData()
+  const { selectedSpecies, setSelectedSpecies, selectedNeighborhood, setSelectedNeighborhood } = useTreeFilters(map, allTrees)
+
   const [selectedTree, setSelectedTree] = useState<TreeInfo | null>(null)
   const selectedTreeRef = useRef<TreeInfo | null>(null)
   selectedTreeRef.current = selectedTree
+
+  // Sync selected tree id to URL
+  useEffect(() => {
+    // Don't clear the param if we haven't yet loaded the initial tree from it
+    if (!selectedTree && initialTreeId.current) return
+    const params = new URLSearchParams(window.location.search)
+    if (selectedTree) {
+      params.set('tree', String(selectedTree.id))
+    } else {
+      params.delete('tree')
+    }
+    const newSearch = params.toString()
+    const newUrl = newSearch ? `${window.location.pathname}?${newSearch}` : window.location.pathname
+    window.history.replaceState(null, '', newUrl)
+  }, [selectedTree])
+
+  // On load: auto-select tree from URL once data is ready
+  useEffect(() => {
+    if (allTrees.length === 0 || !mapReady) return
+    const treeId = initialTreeId.current
+    if (!treeId) return
+    initialTreeId.current = null
+    const tree = allTrees.find(t => String(t.id) === treeId)
+    if (!tree) return
+    const speciesParts = tree.species?.split('(') ?? []
+    const enriched = {
+      ...tree,
+      common_name: tree.common_name || speciesParts[0]?.trim() || tree.species || '',
+      scientific_name: tree.scientific_name || speciesParts[1]?.replace(')', '') || '',
+    }
+    setSelectedTree(enriched)
+    const mobile = window.innerWidth < 600
+    const sidebarOffset: [number, number] = mobile ? [0, window.innerHeight * 0.1] : [-window.innerWidth * 0.2, 0]
+    map.current?.flyTo({ center: [tree.longitude, tree.latitude], zoom: 18, duration: 1000, essential: true, offset: sidebarOffset })
+  }, [allTrees, mapReady])
 
   const [showFullTreeDetails, setShowFullTreeDetails] = useState(!isMobile)
   const [showFilters, setShowFilters] = useState(false)
   const [addressQuery, setAddressQuery] = useState('')
   const [toast, setToast] = useState<{ message: string; severity: 'success' | 'error' } | null>(null)
-
-  const { allTrees, species, neighborhoods, speciesCounts, neighborhoodCounts, loading, error } = useTreeData()
-  const { selectedSpecies, setSelectedSpecies, selectedNeighborhood, setSelectedNeighborhood } = useTreeFilters(map, allTrees)
 
   useEffect(() => {
     if (selectedTree) {
@@ -181,6 +218,7 @@ function App() {
 
       initMapLayers(map.current, modeRef.current === 'dark')
       mapInitialized.current = true
+      setMapReady(true)
 
       geolocateControlRef.current = new mapboxgl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },

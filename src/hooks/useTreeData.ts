@@ -21,7 +21,7 @@ export function useTreeData(): TreeDataState {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('trees-lookup.json')
+    fetch(`${import.meta.env.BASE_URL}trees-lookup.json`)
       .then(r => r.json())
       .then((data: TreeInfo[]) => {
         const uniqueSpecies = new Set<string>()
