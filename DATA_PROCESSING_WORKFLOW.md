@@ -159,6 +159,84 @@ It handles everything: downloading fresh SF data, running steps 1–8, uploading
 - Mapbox's credentials endpoint returns AWS temp credentials, not a presigned URL — the S3 upload uses `boto3` to sign the request properly
 - The Mapbox upload job expects the `url` field from the credentials response directly (not a constructed `s3://` URL)
 
+---
+
+## Landmark Trees Dataset (`public/landmarks.json`)
+
+A curated collection of notable SF trees compiled by **Mike Sullivan** ([sftrees.com](https://www.sftrees.com/landmark-trees)). This is separate from the city street tree dataset — it includes private, park, and street trees that Mike considers noteworthy.
+
+> **Status (March 2026):** Prototype only. Need to contact Mike Sullivan for permission before taking live. Credit him prominently with a link to sftrees.com.
+
+### Sources
+
+Two complementary datasets from the same curator:
+
+1. **BatchGeo KML export** (`public/landmarks-raw-kml.json`) — downloaded from https://batchgeo.com/map/dca3bf889d8a8ad669b487d252dc0ded
+   - 238 trees with GPS coordinates, scientific name, common name, street address
+   - 95 entries have personal detail notes ("only one in SF", walking directions, etc.)
+   - 60 entries have photo URLs (imgur and postimg)
+
+2. **sftrees.com text** (`public/landmarks-raw-sftrees.txt`) — scraped from https://www.sftrees.com/landmark-trees
+   - ~265 entries with prose descriptions, neighborhood context, multiple location examples
+   - No coordinates
+   - Scraped in two passes: G–Z was in the initial scrape; A–F required a second fetch
+
+### How `landmarks.json` was compiled
+
+**Step 1 — Parse KML**
+```python
+import xml.etree.ElementTree as ET
+# Parse Placemarks: extract name, Scientific Name (ExtendedData), address, coordinates,
+# Detail note, Image URL, Closeup Photo
+```
+
+**Step 2 — Parse sftrees.com text**
+Each line has the format `Genus species (common name): description`. Parsed with regex line-by-line. A–F and G–Z were parsed separately due to format differences and merged by scientific name key.
+
+**Step 3 — Merge by scientific name**
+Normalized scientific names (lowercase, strip non-word chars) used as join key. KML is the primary source (has GPS); sftrees.com description added where matched. ~100 entries have both GPS + description; ~145 are KML-only.
+
+**Step 4 — Match to city street tree dataset**
+For each of the 238 GPS landmarks, searched `trees-lookup.json` for the nearest street tree of the **same species** within 100m (haversine distance). Grid-indexed for speed.
+- **88 confident matches** (`match_type: 'species'`) → assigned real `tree_id`
+- **150 unmatched** (private/park trees, or species not in city dataset) → assigned synthetic negative IDs (-1, -2, …)
+
+**Step 5 — Geocode no-GPS entries**
+45 sftrees.com-only entries had no KML match. Addresses extracted from description text via regex, then geocoded using Nominatim (OpenStreetMap). All 283 entries now have GPS coordinates.
+
+### Schema
+
+```json
+{
+  "common_name": "monkey puzzle",
+  "scientific_name": "Araucaria araucana",
+  "address": "2261 Jackson Street",
+  "latitude": 37.7908,
+  "longitude": -122.4346,
+  "detail": "Mike's personal note about this specific tree",
+  "description": "Fuller sftrees.com prose with neighborhood context",
+  "image_url": "https://imgur.com/EQcDKd6",
+  "closeup_url": "",
+  "curator": "Mike Sullivan (sftrees.com)",
+  "tree_id": 12345,         // real city tree ID if species-confirmed match, else negative synthetic ID
+  "match_type": "species",  // 'species' | 'nearest' | 'no_street_tree' | 'no_gps'
+  "match_distance_m": 18.3
+}
+```
+
+### Re-generating
+
+To update if Mike adds new trees:
+1. Re-download the BatchGeo KML (same URL, assuming Mike keeps it updated)
+2. Re-scrape https://www.sftrees.com/landmark-trees (two fetches: A–F and G–Z due to page length)
+3. Re-run the merge/match/geocode steps above (all logic was done in ad-hoc Python scripts in the Claude conversation — consider formalizing into `data_prep/compile_landmarks.py`)
+
+### Modularity note
+
+`landmarks.json` is intentionally separate from the city dataset. Future landmark collections (e.g. city-designated heritage trees, community lists) should be additional JSON files with the same schema, loaded by the frontend independently via a `useLandmarkCollections` hook.
+
+---
+
 ## Tools and Dependencies
 
 - **Python:** pandas, geopandas, shapely, colorsys, boto3, requests

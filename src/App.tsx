@@ -6,12 +6,16 @@ import { MyLocation } from '@mui/icons-material'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { createAppTheme } from './theme'
 import { TreeInfo } from './types/tree'
+import { LandmarkInfo } from './types/landmark'
 import TreeDetails from './components/TreeDetails'
 import TreeSummaryBar from './components/TreeSummaryBar'
 import HeaderBar from './components/HeaderBar'
 import FiltersPanel from './components/Filters/FiltersPanel'
+import LandmarkDetails from './components/LandmarkDetails'
 import { useTreeData } from './hooks/useTreeData'
 import { useTreeFilters } from './hooks/useTreeFilters'
+import { useLandmarks } from './hooks/useLandmarks'
+import { LANDMARKS_ENABLED } from './flags'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -87,6 +91,27 @@ function initMapLayers(mapInstance: mapboxgl.Map, isDark: boolean) {
   mapInstance.addLayer({ id: 'tree-points', type: 'circle', source: 'trees', 'source-layer': 'trees', paint: treeCirclePaint })
   mapInstance.addLayer({ id: 'filtered-tree-points', type: 'circle', source: 'filtered-trees', paint: treeCirclePaint })
 
+  if (LANDMARKS_ENABLED) {
+    mapInstance.addSource('landmarks', {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] },
+    })
+    mapInstance.addLayer({
+      id: 'landmark-points',
+      type: 'circle',
+      source: 'landmarks',
+      paint: {
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 6, 16, 12],
+        'circle-color': '#FFD700',
+        'circle-opacity': 0.92,
+        'circle-stroke-width': 2,
+        'circle-stroke-color': isDark ? '#1a1a1a' : '#fff',
+        'circle-stroke-opacity': 1,
+      },
+      layout: { visibility: 'none' },
+    })
+  }
+
   mapInstance.addLayer({
     id: 'highlighted-trees',
     type: 'circle',
@@ -151,6 +176,15 @@ function App() {
 
   const { allTrees, species, neighborhoods, speciesCounts, neighborhoodCounts, loading, error } = useTreeData()
   const { selectedSpecies, setSelectedSpecies, selectedNeighborhood, setSelectedNeighborhood } = useTreeFilters(map, allTrees)
+  const { landmarks, landmarksByTreeId } = useLandmarks(LANDMARKS_ENABLED)
+
+  const landmarksRef = useRef<LandmarkInfo[]>([])
+  landmarksRef.current = landmarks
+  const allTreesRef = useRef<TreeInfo[]>([])
+  allTreesRef.current = allTrees
+
+  const [showLandmarks, setShowLandmarks] = useState(false)
+  const [selectedLandmark, setSelectedLandmark] = useState<LandmarkInfo | null>(null)
 
   const [selectedTree, setSelectedTree] = useState<TreeInfo | null>(null)
   const selectedTreeRef = useRef<TreeInfo | null>(null)
@@ -197,10 +231,10 @@ function App() {
   const [toast, setToast] = useState<{ message: string; severity: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
-    if (selectedTree) {
+    if (selectedTree || selectedLandmark) {
       setShowFullTreeDetails(!isMobile)
     }
-  }, [selectedTree, isMobile])
+  }, [selectedTree, selectedLandmark, isMobile])
 
   // Initialize map
   useEffect(() => {
@@ -266,15 +300,54 @@ function App() {
         })
       })
 
+      // Click a landmark marker
+      if (LANDMARKS_ENABLED) map.current.on('click', 'landmark-points', (e) => {
+        if (!e.features?.[0]?.properties) return
+        const { index, tree_id } = e.features[0].properties as { index: number; tree_id: number }
+        const landmark = landmarksRef.current[index]
+        if (!landmark) return
+
+        setSelectedLandmark(landmark)
+
+        if (tree_id > 0) {
+          // Linked to a real street tree — find and select it
+          const tree = allTreesRef.current.find(t => t.id === tree_id)
+          if (tree) {
+            const speciesParts = tree.species?.split('(') ?? []
+            setSelectedTree({
+              ...tree,
+              common_name: tree.common_name || speciesParts[0]?.trim() || tree.species || '',
+              scientific_name: tree.scientific_name || speciesParts[1]?.replace(')', '') || '',
+            })
+          }
+        } else {
+          // Private/park tree — clear any street tree selection
+          setSelectedTree(null)
+        }
+
+        const mobile = window.innerWidth < 600
+        const sidebarOffset: [number, number] = mobile ? [0, window.innerHeight * 0.1] : [-window.innerWidth * 0.2, 0]
+        map.current?.flyTo({ center: [landmark.longitude, landmark.latitude], zoom: 18, duration: 1000, essential: true, offset: sidebarOffset })
+      })
+
       map.current.on('mouseenter', 'tree-points', () => {
         if (map.current) map.current.getCanvas().style.cursor = 'pointer'
       })
       map.current.on('mouseleave', 'tree-points', () => {
         if (map.current) map.current.getCanvas().style.cursor = ''
       })
+      if (LANDMARKS_ENABLED) {
+        map.current.on('mouseenter', 'landmark-points', () => {
+          if (map.current) map.current.getCanvas().style.cursor = 'pointer'
+        })
+        map.current.on('mouseleave', 'landmark-points', () => {
+          if (map.current) map.current.getCanvas().style.cursor = ''
+        })
+      }
       map.current.on('mousemove', (e) => {
         if (!map.current) return
-        const features = map.current.queryRenderedFeatures(e.point, { layers: ['tree-points'] })
+        const layers = LANDMARKS_ENABLED ? ['tree-points', 'landmark-points'] : ['tree-points']
+        const features = map.current.queryRenderedFeatures(e.point, { layers })
         map.current.getCanvas().style.cursor = features.length ? 'pointer' : ''
       })
     })
@@ -302,11 +375,42 @@ function App() {
     map.current.setFilter('highlighted-trees', ['==', ['get', 'id'], selectedTree?.id ?? -1])
   }, [selectedTree])
 
+  // Populate landmark GeoJSON source when landmarks load
+  useEffect(() => {
+    if (!LANDMARKS_ENABLED || !mapReady || landmarks.length === 0) return
+    const source = map.current?.getSource('landmarks')
+    if (source && 'setData' in source) {
+      (source as mapboxgl.GeoJSONSource).setData({
+        type: 'FeatureCollection',
+        features: landmarks.map(l => ({
+          type: 'Feature' as const,
+          geometry: { type: 'Point' as const, coordinates: [l.longitude, l.latitude] },
+          properties: { index: l.index, tree_id: l.tree_id },
+        })),
+      })
+    }
+  }, [landmarks, mapReady])
+
+  // Show/hide landmark layer and dim regular trees when toggled
+  useEffect(() => {
+    if (!LANDMARKS_ENABLED || !mapReady || !map.current) return
+    const visibility = showLandmarks ? 'visible' : 'none'
+    if (map.current.getLayer('landmark-points')) {
+      map.current.setLayoutProperty('landmark-points', 'visibility', visibility)
+    }
+    if (map.current.getLayer('tree-points')) {
+      map.current.setPaintProperty('tree-points', 'circle-opacity', showLandmarks
+        ? ['interpolate', ['linear'], ['zoom'], 10, 0.25, 15, 0.35, 20, 0.5]
+        : ['interpolate', ['linear'], ['zoom'], 10, 0.6, 15, 0.8, 20, 1])
+    }
+  }, [showLandmarks, mapReady])
+
   const handleDrawerClose = () => {
     if (isMobile && showFullTreeDetails) {
       setShowFullTreeDetails(false)
     } else {
       setSelectedTree(null)
+      setSelectedLandmark(null)
     }
   }
 
@@ -402,6 +506,9 @@ function App() {
           }}
           showFilters={showFilters}
           setShowFilters={setShowFilters}
+          landmarksEnabled={LANDMARKS_ENABLED}
+          showLandmarks={showLandmarks}
+          setShowLandmarks={setShowLandmarks}
         />
 
         <IconButton
@@ -433,61 +540,91 @@ function App() {
         </IconButton>
 
         <>
-          {isMobile && selectedTree && !showFullTreeDetails && (
+          {isMobile && (selectedTree || selectedLandmark) && !showFullTreeDetails && (
             <TreeSummaryBar
-              tree={selectedTree}
+              tree={selectedTree ?? {
+                id: selectedLandmark!.tree_id,
+                species: selectedLandmark!.scientific_name,
+                address: selectedLandmark!.address,
+                dbh: null,
+                plantDate: null,
+                siteInfo: null,
+                legalStatus: null,
+                color: '#FFD700',
+                latitude: selectedLandmark!.latitude,
+                longitude: selectedLandmark!.longitude,
+                neighborhood_name: null,
+                markedForRemoval: false,
+                common_name: selectedLandmark!.common_name,
+                scientific_name: selectedLandmark!.scientific_name,
+              }}
               onMoreDetails={() => setShowFullTreeDetails(true)}
-              onClose={() => setSelectedTree(null)}
+              onClose={() => { setSelectedTree(null); setSelectedLandmark(null) }}
             />
           )}
 
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: { xs: 0, sm: 'auto' },
-              top: { xs: 'auto', sm: 0 },
-              left: { xs: 0, sm: 'auto' },
-              right: 0,
-              width: { xs: '100%', sm: 400, md: 500, lg: 600 },
-              height: { xs: '100%', sm: '100%' },
-              backgroundColor: isDark ? 'rgba(18, 18, 18, 0.95)' : 'rgba(248, 249, 250, 0.95)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              borderLeft: { sm: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'}` },
-              zIndex: 1000,
-              display: 'flex',
-              flexDirection: 'column',
-              p: { xs: 0, sm: 3 },
-              transform: {
-                xs: selectedTree && showFullTreeDetails ? 'translateY(0%)' : 'translateY(100%)',
-                sm: selectedTree ? 'translateX(0)' : 'translateX(100%)',
-              },
-              opacity: {
-                xs: selectedTree && showFullTreeDetails ? 1 : 0,
-                sm: selectedTree ? 1 : 0,
-              },
-              transition: 'transform 0.35s ease-in-out, opacity 0.3s ease-in-out',
-              pointerEvents: {
-                xs: selectedTree && showFullTreeDetails ? 'auto' : 'none',
-                sm: selectedTree ? 'auto' : 'none',
-              },
-            }}
-          >
-            {selectedTree && (
-              <TreeDetails
-                selectedTree={selectedTree}
-                speciesCounts={speciesCounts}
-                setSelectedSpecies={setSelectedSpecies}
-                setSelectedNeighborhood={setSelectedNeighborhood}
-                handleDrawerClose={() => {
-                  setShowFullTreeDetails(false)
-                  handleDrawerClose()
+          {(() => {
+            const panelOpen = !!selectedTree || (!!selectedLandmark && !selectedTree)
+            return (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: { xs: 0, sm: 'auto' },
+                  top: { xs: 'auto', sm: 0 },
+                  left: { xs: 0, sm: 'auto' },
+                  right: 0,
+                  width: { xs: '100%', sm: 400, md: 500, lg: 600 },
+                  height: { xs: '100%', sm: '100%' },
+                  backgroundColor: isDark ? 'rgba(18, 18, 18, 0.95)' : 'rgba(248, 249, 250, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  borderLeft: { sm: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'}` },
+                  zIndex: 1000,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  p: { xs: 0, sm: 3 },
+                  transform: {
+                    xs: panelOpen && showFullTreeDetails ? 'translateY(0%)' : 'translateY(100%)',
+                    sm: panelOpen ? 'translateX(0)' : 'translateX(100%)',
+                  },
+                  opacity: {
+                    xs: panelOpen && showFullTreeDetails ? 1 : 0,
+                    sm: panelOpen ? 1 : 0,
+                  },
+                  transition: 'transform 0.35s ease-in-out, opacity 0.3s ease-in-out',
+                  pointerEvents: {
+                    xs: panelOpen && showFullTreeDetails ? 'auto' : 'none',
+                    sm: panelOpen ? 'auto' : 'none',
+                  },
                 }}
-                setToastMessage={(message) => setToast({ message, severity: 'success' })}
-              />
-            )}
-          </Box>
+              >
+                {selectedTree && (
+                  <TreeDetails
+                    selectedTree={selectedTree}
+                    speciesCounts={speciesCounts}
+                    setSelectedSpecies={setSelectedSpecies}
+                    setSelectedNeighborhood={setSelectedNeighborhood}
+                    handleDrawerClose={() => {
+                      setShowFullTreeDetails(false)
+                      handleDrawerClose()
+                    }}
+                    setToastMessage={(message) => setToast({ message, severity: 'success' })}
+                    landmark={LANDMARKS_ENABLED ? (selectedLandmark ?? landmarksByTreeId.get(selectedTree.id)) : undefined}
+                  />
+                )}
+                {LANDMARKS_ENABLED && !selectedTree && selectedLandmark && (
+                  <LandmarkDetails
+                    landmark={selectedLandmark}
+                    onClose={() => {
+                      setShowFullTreeDetails(false)
+                      setSelectedLandmark(null)
+                    }}
+                  />
+                )}
+              </Box>
+            )
+          })()}
         </>
       </Box>
 

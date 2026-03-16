@@ -2,7 +2,9 @@ import { Box, Typography, IconButton, Chip, Button } from '@mui/material'
 import { Nature, LocationOn, CalendarToday, Straighten, Policy, MapOutlined, ContentCopy, Close as CloseIcon, Launch as LaunchIcon, WarningAmber } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import { TreeInfo } from '../types/tree'
+import { LandmarkInfo } from '../types/landmark'
 import { SuggestEdit } from './SuggestEdit'
+import { LandmarkBanner } from './LandmarkBanner'
 
 export const TreeDetails = ({
   selectedTree,
@@ -10,7 +12,8 @@ export const TreeDetails = ({
   setSelectedSpecies,
   setSelectedNeighborhood,
   handleDrawerClose,
-  setToastMessage
+  setToastMessage,
+  landmark,
 }: {
   selectedTree: TreeInfo
   speciesCounts: Record<string, number>
@@ -18,6 +21,7 @@ export const TreeDetails = ({
   setSelectedNeighborhood: (val: string) => void
   handleDrawerClose: () => void
   setToastMessage: (message: string) => void
+  landmark?: LandmarkInfo
 }) => {
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
@@ -188,6 +192,8 @@ export const TreeDetails = ({
           <CloseIcon />
         </IconButton>
       </Box>
+
+      {landmark && <LandmarkBanner landmark={landmark} />}
 
       {selectedTree.markedForRemoval && (
         <Box sx={{

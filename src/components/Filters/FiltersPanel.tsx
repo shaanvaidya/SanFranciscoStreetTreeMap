@@ -1,4 +1,5 @@
-import { Box, Button, TextField, Autocomplete, Chip } from '@mui/material'
+import { Box, Button, TextField, Autocomplete, Chip, Switch, Typography } from '@mui/material'
+import { Star } from '@mui/icons-material'
 import { useEffect, useState } from 'react'
 import { useTheme } from '@mui/material/styles'
 import mapboxgl from 'mapbox-gl'
@@ -24,6 +25,9 @@ type Props = {
   onClearAll: () => void
   showFilters: boolean
   setShowFilters: (v: boolean) => void
+  showLandmarks: boolean
+  setShowLandmarks: (v: boolean) => void
+  landmarksEnabled: boolean
 }
 
 const FiltersPanel = ({
@@ -41,6 +45,9 @@ const FiltersPanel = ({
   onClearAll,
   showFilters,
   setShowFilters,
+  showLandmarks,
+  setShowLandmarks,
+  landmarksEnabled,
 }: Props) => {
   const [addressResults, setAddressResults] = useState<MapboxGeocodingFeature[]>([])
   const theme = useTheme()
@@ -245,6 +252,35 @@ const FiltersPanel = ({
           >
             Clear All
           </Button>
+
+          {landmarksEnabled && <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            pt: 1,
+            borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Star sx={{ fontSize: 16, color: '#FFD700' }} />
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem', lineHeight: 1.2 }}>
+                  Notable Trees
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.68rem' }}>
+                  Mike Sullivan's curated list
+                </Typography>
+              </Box>
+            </Box>
+            <Switch
+              size="small"
+              checked={showLandmarks}
+              onChange={e => setShowLandmarks(e.target.checked)}
+              sx={{
+                '& .MuiSwitch-switchBase.Mui-checked': { color: '#FFD700' },
+                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#FFD700' },
+              }}
+            />
+          </Box>}
         </Box>
       )}
     </>
