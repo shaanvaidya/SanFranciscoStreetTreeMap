@@ -138,6 +138,7 @@ function App() {
   const map = useRef<mapboxgl.Map | null>(null)
   const geolocateControlRef = useRef<mapboxgl.GeolocateControl | null>(null)
   const mapInitialized = useRef(false)
+  const paddingInitialized = useRef(false)
   const [mapReady, setMapReady] = useState(false)
   const initialTreeId = useRef<string | null>(new URLSearchParams(window.location.search).get('tree'))
 
@@ -187,6 +188,8 @@ function App() {
   const [showLandmarks, setShowLandmarks] = useState(false)
   const [selectedLandmark, setSelectedLandmark] = useState<LandmarkInfo | null>(null)
 
+  const [statsOpen, setStatsOpen] = useState(true)
+  const [mobileStatsOpen, setMobileStatsOpen] = useState(false)
   const [selectedTree, setSelectedTree] = useState<TreeInfo | null>(null)
   const selectedTreeRef = useRef<TreeInfo | null>(null)
   selectedTreeRef.current = selectedTree
@@ -250,6 +253,11 @@ function App() {
 
     map.current.on('load', () => {
       if (!map.current) return
+
+      // Apply sidebar padding instantly before revealing data layers
+      const w = window.innerWidth
+      const rightPad = w >= 1200 ? 600 : w >= 900 ? 500 : w >= 600 ? 400 : 0
+      map.current.easeTo({ padding: { top: 56, right: rightPad, bottom: 0, left: 0 }, duration: 0 })
 
       initMapLayers(map.current, modeRef.current === 'dark')
       mapInitialized.current = true
@@ -406,6 +414,20 @@ function App() {
     }
   }, [showLandmarks, mapReady])
 
+  // Sync map padding with sidebar open/close (skip initial run — handled by Map constructor)
+  useEffect(() => {
+    if (!map.current || !mapReady) return
+    if (!paddingInitialized.current) {
+      paddingInitialized.current = true
+      return
+    }
+    const panelOpen = !isMobile && (!!selectedTree || !!selectedLandmark || statsOpen)
+    const w = window.innerWidth
+    const sidebarWidth = w >= 1200 ? 600 : w >= 900 ? 500 : 400
+    const rightPad = panelOpen ? sidebarWidth : 0
+    map.current.easeTo({ padding: { top: 56, right: rightPad, bottom: 0, left: 0 }, duration: 350 })
+  }, [statsOpen, selectedTree, selectedLandmark, mapReady, isMobile])
+
   const handleDrawerClose = () => {
     if (isMobile && showFullTreeDetails) {
       setShowFullTreeDetails(false)
@@ -452,7 +474,17 @@ function App() {
   return (
     <ThemeProvider theme={appTheme}>
       <CssBaseline />
-      <HeaderBar mode={mode} onToggleTheme={toggleTheme} />
+      <HeaderBar
+        mode={mode}
+        onToggleTheme={toggleTheme}
+        onInfoClick={() => {
+          if (isMobile) {
+            setMobileStatsOpen(true)
+          } else {
+            setStatsOpen(prev => !prev)
+          }
+        }}
+      />
 
       {loading && (
         <LinearProgress
@@ -473,7 +505,14 @@ function App() {
         height: '100dvh', width: '100vw', overflow: 'hidden', position: 'relative',
         '& .mapboxgl-ctrl-geolocate': { display: 'none !important' },
       }}>
-        <Box ref={mapContainer} sx={{ position: 'absolute', top: 56, bottom: 0, width: '100%' }} />
+        <Box
+          ref={mapContainer}
+          sx={{
+            position: 'absolute', top: 56, bottom: 0, width: '100%',
+            opacity: mapReady ? 1 : 0,
+            transition: 'opacity 0.3s ease-in-out',
+          }}
+        />
 
         <FiltersPanel
           species={species}
@@ -525,9 +564,9 @@ function App() {
             bottom: { xs: selectedTree ? 120 : 30, sm: 40 },
             right: {
               xs: 20,
-              sm: allTrees.length > 0 ? 420 : 20,
-              md: allTrees.length > 0 ? 520 : 20,
-              lg: allTrees.length > 0 ? 620 : 20,
+              sm: (allTrees.length > 0 && (!!selectedTree || !!selectedLandmark || statsOpen)) ? 420 : 20,
+              md: (allTrees.length > 0 && (!!selectedTree || !!selectedLandmark || statsOpen)) ? 520 : 20,
+              lg: (allTrees.length > 0 && (!!selectedTree || !!selectedLandmark || statsOpen)) ? 620 : 20,
             },
             backgroundColor: isDark ? '#1e1e1e' : 'white',
             boxShadow: 2,
@@ -565,74 +604,118 @@ function App() {
           )}
 
           {(() => {
-            const mobilePanelOpen = (!!selectedTree || !!selectedLandmark) && showFullTreeDetails
-            const desktopPanelOpen = allTrees.length > 0
+            const mobilePanelOpen = ((!!selectedTree || !!selectedLandmark) && showFullTreeDetails) || mobileStatsOpen
+            const desktopPanelOpen = !isMobile && (!!selectedTree || !!selectedLandmark || statsOpen)
             return (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  bottom: { xs: 0, sm: 'auto' },
-                  top: { xs: 'auto', sm: 0 },
-                  left: { xs: 0, sm: 'auto' },
-                  right: 0,
-                  width: { xs: '100%', sm: 400, md: 500, lg: 600 },
-                  height: { xs: '100%', sm: '100%' },
-                  backgroundColor: isDark ? 'rgba(18, 18, 18, 0.95)' : 'rgba(248, 249, 250, 0.95)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  borderLeft: { sm: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'}` },
-                  zIndex: 1000,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  p: { xs: 0, sm: 0 },
-                  transform: {
-                    xs: mobilePanelOpen ? 'translateY(0%)' : 'translateY(100%)',
-                    sm: desktopPanelOpen ? 'translateX(0)' : 'translateX(100%)',
-                  },
-                  opacity: {
-                    xs: mobilePanelOpen ? 1 : 0,
-                    sm: desktopPanelOpen ? 1 : 0,
-                  },
-                  transition: 'transform 0.35s ease-in-out, opacity 0.3s ease-in-out',
-                  pointerEvents: {
-                    xs: mobilePanelOpen ? 'auto' : 'none',
-                    sm: desktopPanelOpen ? 'auto' : 'none',
-                  },
-                }}
-              >
-                {selectedTree && (
-                  <TreeDetails
-                    selectedTree={selectedTree}
-                    speciesCounts={speciesCounts}
-                    setSelectedSpecies={setSelectedSpecies}
-                    setSelectedNeighborhood={setSelectedNeighborhood}
-                    handleDrawerClose={() => {
-                      setShowFullTreeDetails(false)
-                      handleDrawerClose()
+              <>
+                {/* Reopen tab — shown on desktop when panel is closed and no tree selected */}
+                {!isMobile && !desktopPanelOpen && (
+                  <Box
+                    onClick={() => setStatsOpen(true)}
+                    sx={{
+                      display: { xs: 'none', sm: 'flex' },
+                      position: 'absolute',
+                      top: 'calc(50% + 28px)',
+                      right: 0,
+                      transform: 'translateY(-50%)',
+                      zIndex: 999,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 28,
+                      height: 64,
+                      borderRadius: '6px 0 0 6px',
+                      backgroundColor: isDark ? 'rgba(18,18,18,0.95)' : 'rgba(248,249,250,0.95)',
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'}`,
+                      borderRight: 'none',
+                      boxShadow: '-2px 0 8px rgba(0,0,0,0.1)',
+                      cursor: 'pointer',
+                      color: isDark ? '#a5d6a7' : '#4caf50',
+                      fontSize: 12,
+                      backdropFilter: 'blur(10px)',
+                      '&:hover': { color: isDark ? '#c8e6c9' : '#1b5e20' },
+                      transition: 'color 0.2s',
                     }}
-                    setToastMessage={(message) => setToast({ message, severity: 'success' })}
-                    landmark={LANDMARKS_ENABLED ? (selectedLandmark ?? landmarksByTreeId.get(selectedTree.id)) : undefined}
-                  />
+                  >
+                    ‹
+                  </Box>
                 )}
-                {LANDMARKS_ENABLED && !selectedTree && selectedLandmark && (
-                  <LandmarkDetails
-                    landmark={selectedLandmark}
-                    onClose={() => {
-                      setShowFullTreeDetails(false)
-                      setSelectedLandmark(null)
-                    }}
-                  />
-                )}
-                {!selectedTree && !selectedLandmark && (
-                  <ForestStats
-                    totalTrees={allTrees.length}
-                    speciesCounts={speciesCounts}
-                    allTrees={allTrees}
-                    setSelectedSpecies={setSelectedSpecies}
-                  />
-                )}
-              </Box>
+
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: { xs: 0, sm: 'auto' },
+                    top: { xs: 'auto', sm: 56 },
+                    left: { xs: 0, sm: 'auto' },
+                    right: 0,
+                    width: { xs: '100%', sm: 400, md: 500, lg: 600 },
+                    height: { xs: '100%', sm: 'calc(100% - 56px)' },
+                    backgroundColor: isDark ? 'rgba(18, 18, 18, 0.95)' : 'rgba(248, 249, 250, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    borderLeft: { sm: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'}` },
+                    zIndex: 1000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    p: { xs: 0, sm: 0 },
+                    transform: {
+                      xs: mobilePanelOpen ? 'translateY(0%)' : 'translateY(100%)',
+                      sm: desktopPanelOpen ? 'translateX(0)' : 'translateX(100%)',
+                    },
+                    opacity: {
+                      xs: mobilePanelOpen ? 1 : 0,
+                      sm: desktopPanelOpen ? 1 : 0,
+                    },
+                    transition: 'transform 0.35s ease-in-out, opacity 0.3s ease-in-out',
+                    pointerEvents: {
+                      xs: mobilePanelOpen ? 'auto' : 'none',
+                      sm: desktopPanelOpen ? 'auto' : 'none',
+                    },
+                  }}
+                >
+                  {selectedTree && (
+                    <TreeDetails
+                      selectedTree={selectedTree}
+                      speciesCounts={speciesCounts}
+                      setSelectedSpecies={setSelectedSpecies}
+                      setSelectedNeighborhood={setSelectedNeighborhood}
+                      handleDrawerClose={() => {
+                        setShowFullTreeDetails(false)
+                        setStatsOpen(false)
+                        handleDrawerClose()
+                      }}
+                      setToastMessage={(message) => setToast({ message, severity: 'success' })}
+                      landmark={LANDMARKS_ENABLED ? (selectedLandmark ?? landmarksByTreeId.get(selectedTree.id)) : undefined}
+                    />
+                  )}
+                  {LANDMARKS_ENABLED && !selectedTree && selectedLandmark && (
+                    <LandmarkDetails
+                      landmark={selectedLandmark}
+                      onClose={() => {
+                        setShowFullTreeDetails(false)
+                        setSelectedLandmark(null)
+                      }}
+                    />
+                  )}
+                  {!selectedTree && !selectedLandmark && (isMobile ? mobileStatsOpen : true) && (
+                    <ForestStats
+                      totalTrees={allTrees.length}
+                      speciesCounts={speciesCounts}
+                      allTrees={allTrees}
+                      neighborhoodCounts={neighborhoodCounts}
+                      loading={loading}
+                      setSelectedSpecies={(s) => {
+                        setSelectedSpecies(s)
+                        setMobileStatsOpen(false)
+                      }}
+                      onClose={() => {
+                        setStatsOpen(false)
+                        setMobileStatsOpen(false)
+                      }}
+                    />
+                  )}
+                </Box>
+              </>
             )
           })()}
         </>

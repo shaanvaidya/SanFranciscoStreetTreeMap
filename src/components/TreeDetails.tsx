@@ -1,5 +1,5 @@
 import { Box, Typography, IconButton, Chip, Button } from '@mui/material'
-import { Nature, LocationOn, CalendarToday, Straighten, Policy, MapOutlined, ContentCopy, Close as CloseIcon, Launch as LaunchIcon, WarningAmber } from '@mui/icons-material'
+import { Nature, LocationOn, CalendarToday, Straighten, Policy, MapOutlined, ContentCopy, ChevronRight, Launch as LaunchIcon, WarningAmber } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import { TreeInfo } from '../types/tree'
 import { LandmarkInfo } from '../types/landmark'
@@ -188,7 +188,7 @@ export const TreeDetails = ({
           onClick={handleDrawerClose}
           sx={{ color: accentColor, '&:hover': { backgroundColor: isDark ? 'rgba(76,175,80,0.12)' : 'rgba(46, 125, 50, 0.08)' }, position: 'absolute', top: 10, right: 10 }}
         >
-          <CloseIcon />
+          <ChevronRight />
         </IconButton>
       </Box>
 

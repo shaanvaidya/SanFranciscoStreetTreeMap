@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
-import { Box, Typography, LinearProgress } from '@mui/material'
+import { Box, Typography, LinearProgress, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import { ChevronRight } from '@mui/icons-material'
 import { TreeInfo } from '../types/tree'
 
 const TOP_N = 8
@@ -8,13 +9,19 @@ const TOP_N = 8
 export const ForestStats = ({
   totalTrees,
   speciesCounts,
+  neighborhoodCounts,
   allTrees,
+  loading,
   setSelectedSpecies,
+  onClose,
 }: {
   totalTrees: number
   speciesCounts: Record<string, number>
+  neighborhoodCounts: Record<string, number>
   allTrees: TreeInfo[]
+  loading: boolean
   setSelectedSpecies: (s: string) => void
+  onClose: () => void
 }) => {
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
@@ -39,6 +46,10 @@ export const ForestStats = ({
   const topSpecies = useMemo(() =>
     Object.entries(speciesCounts)
       .sort(([, a], [, b]) => b - a)
+      .filter(([species]) => {
+        const name = (speciesCommonName[species] ?? species).toLowerCase()
+        return !name.includes('unknown') && name !== '' && species !== ''
+      })
       .slice(0, TOP_N)
       .map(([species, count]) => ({
         species,
@@ -49,7 +60,19 @@ export const ForestStats = ({
     [speciesCounts, speciesCommonName, totalTrees]
   )
 
-  const speciesCount = Object.keys(speciesCounts).length
+  const speciesCount = useMemo(() =>
+    Object.keys(speciesCounts).filter(s => {
+      const name = (speciesCommonName[s] ?? s).toLowerCase()
+      return !name.includes('unknown') && s !== ''
+    }).length,
+    [speciesCounts, speciesCommonName]
+  )
+
+  const topNeighborhood = useMemo(() => {
+    const entries = Object.entries(neighborhoodCounts)
+    if (!entries.length) return null
+    return entries.sort(([, a], [, b]) => b - a)[0]
+  }, [neighborhoodCounts])
 
   return (
     <Box sx={{
@@ -64,27 +87,54 @@ export const ForestStats = ({
     }}>
 
       {/* Header */}
-      <Box sx={{ mb: 3, pb: 3, borderBottom: `1px solid ${dividerColor}` }}>
+      <Box sx={{ mb: 3, pb: 3, borderBottom: `1px solid ${dividerColor}`, position: 'relative' }}>
+        <IconButton
+          onClick={onClose}
+          size="small"
+          title="Collapse panel"
+          sx={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            color: subtleText,
+            '&:hover': { color: accentColor, backgroundColor: 'transparent' },
+          }}
+        >
+          <ChevronRight />
+        </IconButton>
+
         <Typography variant="h5" sx={{
           fontWeight: 700,
           color: headingColor,
-          fontSize: { xs: '1.4rem', sm: '1.7rem' },
+          fontSize: { xs: '1.4rem', sm: '1.65rem' },
           lineHeight: 1.2,
-          mb: 0.5,
+          mb: 1,
+          pr: 4,
         }}>
-          San Francisco Urban Forest
+          San Francisco's Urban Forest
         </Typography>
-        <Typography variant="body2" sx={{ color: subtleText }}>
-          Click any tree on the map to explore it
+        <Typography variant="body2" sx={{ color: subtleText, lineHeight: 1.6 }}>
+          San Francisco's streets are lined with over 195,000 city-maintained trees — planted in sidewalks,
+          medians, and public right-of-ways across every neighborhood. This map covers trees managed by SF
+          Public Works. Click any tree to explore its species, planting history, and more.
         </Typography>
       </Box>
+
+      {loading && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: subtleText }}>
+          <LinearProgress sx={{ flex: 1, borderRadius: 1, height: 3 }} />
+          <Typography variant="caption">Loading tree data…</Typography>
+        </Box>
+      )}
+
+      {!loading && <>
 
       {/* Stat grid */}
       <Box sx={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
         gap: 2,
-        mb: 3,
+        mb: 2,
       }}>
         {[
           { value: totalTrees.toLocaleString(), label: 'Trees Mapped' },
@@ -112,6 +162,26 @@ export const ForestStats = ({
           </Box>
         ))}
       </Box>
+
+      {/* Extra stats row */}
+      {topNeighborhood && (
+        <Box sx={{ mb: 3 }}>
+          <Box sx={{
+            backgroundColor: cardBg,
+            border: `1px solid ${cardBorder}`,
+            borderRadius: 3,
+            p: 2,
+            backdropFilter: 'blur(8px)',
+          }}>
+            <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: headingColor, lineHeight: 1.3, mb: 0.25 }}>
+              {topNeighborhood[0]}
+            </Typography>
+            <Typography variant="caption" sx={{ color: subtleText }}>
+              Most trees — {topNeighborhood[1].toLocaleString()} street trees
+            </Typography>
+          </Box>
+        </Box>
+      )}
 
       {/* Top species */}
       <Box sx={{
@@ -174,6 +244,8 @@ export const ForestStats = ({
           ))}
         </Box>
       </Box>
+
+      </>}
     </Box>
   )
 }
