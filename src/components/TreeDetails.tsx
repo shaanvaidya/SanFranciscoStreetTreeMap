@@ -97,7 +97,6 @@ export const TreeDetails = ({
           </Typography>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-            <Nature sx={{ fontSize: 18, color: italicColor }} />
             <Typography variant="body1" sx={{
               color: italicColor,
               fontStyle: 'italic',
