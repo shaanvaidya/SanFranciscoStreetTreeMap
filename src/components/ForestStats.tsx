@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Box, Typography, LinearProgress, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { ChevronRight } from '@mui/icons-material'
+import { ChevronRight, Close as CloseIcon } from '@mui/icons-material'
 import { TreeInfo } from '../types/tree'
 
 const TOP_N = 8
@@ -83,24 +83,23 @@ export const ForestStats = ({
       overflowY: 'auto',
       '&::-webkit-scrollbar': { width: '6px' },
       '&::-webkit-scrollbar-track': { background: isDark ? 'rgba(255,255,255,0.06)' : '#f1f1f1' },
-      '&::-webkit-scrollbar-thumb': { background: accentColor, borderRadius: '3px' },
+      '&::-webkit-scrollbar-thumb': { background: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)', borderRadius: '3px' },
     }}>
 
       {/* Header */}
-      <Box sx={{ mb: 3, pb: 3, borderBottom: `1px solid ${dividerColor}`, position: 'relative' }}>
+      <Box sx={{ mb: 3, pb: 3, borderBottom: `1px solid ${dividerColor}` }}>
         <IconButton
           onClick={onClose}
-          size="small"
-          title="Collapse panel"
           sx={{
+            color: accentColor,
+            '&:hover': { backgroundColor: isDark ? 'rgba(76,175,80,0.12)' : 'rgba(46, 125, 50, 0.08)' },
             position: 'absolute',
-            top: 0,
-            right: 0,
-            color: subtleText,
-            '&:hover': { color: accentColor, backgroundColor: 'transparent' },
+            top: 10,
+            right: 10,
           }}
         >
-          <ChevronRight />
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'flex' } }}><ChevronRight /></Box>
+          <Box component="span" sx={{ display: { xs: 'flex', sm: 'none' } }}><CloseIcon /></Box>
         </IconButton>
 
         <Typography variant="h5" sx={{
