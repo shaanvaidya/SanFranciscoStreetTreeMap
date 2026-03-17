@@ -1,10 +1,12 @@
-import { Box, Typography, IconButton, Chip, Button } from '@mui/material'
-import { Nature, LocationOn, CalendarToday, Straighten, Policy, MapOutlined, ContentCopy, ChevronRight, Close as CloseIcon, Launch as LaunchIcon, WarningAmber } from '@mui/icons-material'
+import { Box, Typography, IconButton, Chip, Button, Tooltip } from '@mui/material'
+import { Nature, LocationOn, CalendarToday, Straighten, Policy, MapOutlined, ContentCopy, ChevronRight, Close as CloseIcon, Launch as LaunchIcon, WarningAmber, WaterDrop, ElectricBolt, Air, Park } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 import { TreeInfo } from '../types/tree'
 import { LandmarkInfo } from '../types/landmark'
 import { SuggestEdit } from './SuggestEdit'
 import { LandmarkBanner } from './LandmarkBanner'
+import { calculateEcoBenefits } from '../utils/ecoBenefits'
+import { ECO_BENEFITS_ENABLED } from '../flags'
 
 export const TreeDetails = ({
   selectedTree,
@@ -44,6 +46,8 @@ export const TreeDetails = ({
     letterSpacing: '0.5px',
     fontWeight: 600
   }
+
+  const ecoBenefits = ECO_BENEFITS_ENABLED ? calculateEcoBenefits(selectedTree.dbh) : null
 
   return (
     <Box sx={{
@@ -375,6 +379,87 @@ export const TreeDetails = ({
               </Box>
             </Box>
           </Box>
+          {ecoBenefits && (
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Park sx={{ color: italicColor, fontSize: 20 }} />
+                <Typography variant="subtitle2" sx={subtitleStyle}>
+                  Annual Ecological Benefits
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {[
+                  {
+                    icon: <WaterDrop sx={{ color: '#64b5f6', fontSize: 17 }} />,
+                    label: 'Stormwater intercepted',
+                    amount: `${Math.round(ecoBenefits.stormwaterGal).toLocaleString()} gal`,
+                    value: ecoBenefits.stormwaterValue,
+                  },
+                  {
+                    icon: <ElectricBolt sx={{ color: '#ffb74d', fontSize: 17 }} />,
+                    label: 'Energy conserved',
+                    amount: `${Math.round(ecoBenefits.energyKwh).toLocaleString()} kWh`,
+                    value: ecoBenefits.energyValue,
+                  },
+                  {
+                    icon: <Air sx={{ color: '#80cbc4', fontSize: 17 }} />,
+                    label: 'Air pollutants removed',
+                    amount: `${ecoBenefits.airLbs < 1 ? ecoBenefits.airLbs.toFixed(2) : Math.round(ecoBenefits.airLbs).toLocaleString()} lbs`,
+                    value: ecoBenefits.airValue,
+                  },
+                ].map(({ icon, label, amount, value }) => (
+                  <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ mt: 0.25 }}>{icon}</Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                        {label}
+                      </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mt: 0.25 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
+                          {amount}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: accentColor, fontWeight: 600 }}>
+                          ${value < 1 ? value.toFixed(2) : Math.round(value).toLocaleString()}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                ))}
+
+                <Box sx={{
+                  mt: 0.5,
+                  pt: 1.5,
+                  borderTop: `1px solid ${cardBorder}`,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: headingColor }}>
+                    Total annual value
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: accentColor, fontSize: '1.05rem' }}>
+                    ${Math.round(ecoBenefits.totalValue).toLocaleString()}
+                  </Typography>
+                </Box>
+
+                <Tooltip title="Estimates based on U.S. Forest Service i-Tree methodology, calibrated for San Francisco's climate and utility rates." arrow placement="top">
+                  <Typography variant="caption" sx={{
+                    color: 'text.disabled',
+                    fontSize: '0.7rem',
+                    lineHeight: 1.4,
+                    cursor: 'help',
+                    borderBottom: '1px dashed',
+                    borderColor: 'text.disabled',
+                    alignSelf: 'flex-start',
+                  }}>
+                    Estimates based on U.S. Forest Service methodology
+                  </Typography>
+                </Tooltip>
+              </Box>
+            </Box>
+          )}
+
           <SuggestEdit tree={selectedTree} />
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
