@@ -12,6 +12,7 @@ import TreeSummaryBar from './components/TreeSummaryBar'
 import HeaderBar from './components/HeaderBar'
 import FiltersPanel from './components/Filters/FiltersPanel'
 import LandmarkDetails from './components/LandmarkDetails'
+import ForestStats from './components/ForestStats'
 import { useTreeData } from './hooks/useTreeData'
 import { useTreeFilters } from './hooks/useTreeFilters'
 import { useLandmarks } from './hooks/useLandmarks'
@@ -524,9 +525,9 @@ function App() {
             bottom: { xs: selectedTree ? 120 : 30, sm: 40 },
             right: {
               xs: 20,
-              sm: selectedTree ? 420 : 20,
-              md: selectedTree ? 520 : 20,
-              lg: selectedTree ? 620 : 20,
+              sm: allTrees.length > 0 ? 420 : 20,
+              md: allTrees.length > 0 ? 520 : 20,
+              lg: allTrees.length > 0 ? 620 : 20,
             },
             backgroundColor: isDark ? '#1e1e1e' : 'white',
             boxShadow: 2,
@@ -564,7 +565,8 @@ function App() {
           )}
 
           {(() => {
-            const panelOpen = !!selectedTree || (!!selectedLandmark && !selectedTree)
+            const mobilePanelOpen = (!!selectedTree || !!selectedLandmark) && showFullTreeDetails
+            const desktopPanelOpen = allTrees.length > 0
             return (
               <Box
                 sx={{
@@ -583,19 +585,19 @@ function App() {
                   zIndex: 1000,
                   display: 'flex',
                   flexDirection: 'column',
-                  p: { xs: 0, sm: 3 },
+                  p: { xs: 0, sm: 0 },
                   transform: {
-                    xs: panelOpen && showFullTreeDetails ? 'translateY(0%)' : 'translateY(100%)',
-                    sm: panelOpen ? 'translateX(0)' : 'translateX(100%)',
+                    xs: mobilePanelOpen ? 'translateY(0%)' : 'translateY(100%)',
+                    sm: desktopPanelOpen ? 'translateX(0)' : 'translateX(100%)',
                   },
                   opacity: {
-                    xs: panelOpen && showFullTreeDetails ? 1 : 0,
-                    sm: panelOpen ? 1 : 0,
+                    xs: mobilePanelOpen ? 1 : 0,
+                    sm: desktopPanelOpen ? 1 : 0,
                   },
                   transition: 'transform 0.35s ease-in-out, opacity 0.3s ease-in-out',
                   pointerEvents: {
-                    xs: panelOpen && showFullTreeDetails ? 'auto' : 'none',
-                    sm: panelOpen ? 'auto' : 'none',
+                    xs: mobilePanelOpen ? 'auto' : 'none',
+                    sm: desktopPanelOpen ? 'auto' : 'none',
                   },
                 }}
               >
@@ -620,6 +622,14 @@ function App() {
                       setShowFullTreeDetails(false)
                       setSelectedLandmark(null)
                     }}
+                  />
+                )}
+                {!selectedTree && !selectedLandmark && (
+                  <ForestStats
+                    totalTrees={allTrees.length}
+                    speciesCounts={speciesCounts}
+                    allTrees={allTrees}
+                    setSelectedSpecies={setSelectedSpecies}
                   />
                 )}
               </Box>
