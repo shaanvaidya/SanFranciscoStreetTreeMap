@@ -6,7 +6,7 @@ Interactive map of SF's ~195k street trees. Built with React + Vite + TypeScript
 
 ```bash
 npm install   # first time only
-npm run dev   # http://localhost:5173/SanFranciscoStreetTreeMap/
+npm run dev   # http://localhost:5173/ (or next available port)
 ```
 
 ## Deploy
@@ -19,10 +19,21 @@ npm run deploy
 
 ## Architecture
 
-- `src/App.tsx` — main map component, loads tree data, handles filters
-- `src/components/` — HeaderBar, TreeDetails, TreeSummaryBar, FiltersPanel
+- `src/App.tsx` — main map component, loads tree data, handles filters and panel state
+- `src/components/` — HeaderBar, TreeDetails, TreeSummaryBar, FiltersPanel, ForestStats, LandmarkDetails
+- `src/hooks/` — useTreeData, useTreeFilters, useLandmarks
 - `src/types/tree.ts` — TreeInfo type
+- `src/types/landmark.ts` — LandmarkInfo type
 - `src/theme.ts` — MUI theme
+- `src/flags.ts` — feature flags (e.g. LANDMARKS_ENABLED)
+
+### Panel state model (`App.tsx`)
+
+The sidebar is driven by two state variables:
+- `panelView: 'stats' | 'tree' | 'landmark' | 'closed'` — what the panel displays
+- `mobileExpanded: boolean` — whether the mobile bottom sheet is fully expanded
+
+Derived: `desktopPanelOpen`, `mobilePanelOpen`, `showSummaryBar`
 
 ## Data
 
