@@ -12,8 +12,7 @@ const HeaderBar = ({ mode, onToggleTheme, onInfoClick }: Props) => {
   const theme = useTheme()
   const isDark = mode === 'dark'
 
-  const headerBg = isDark ? 'rgba(18, 18, 18, 0.9)' : 'rgba(248, 249, 250, 0.9)'
-  const borderColor = isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'
+  const headerBg = isDark ? 'rgba(22, 26, 23, 0.9)' : 'rgba(247, 245, 240, 0.9)'
 
   return (
     <>
@@ -23,12 +22,12 @@ const HeaderBar = ({ mode, onToggleTheme, onInfoClick }: Props) => {
           top: 0,
           left: 0,
           right: 0,
-          height: 56,
+          height: 52,
           px: 2,
           backgroundColor: headerBg,
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
-          borderBottom: `1px solid ${borderColor}`,
+          boxShadow: isDark ? '0 1px 4px rgba(0,0,0,0.25)' : '0 1px 4px rgba(0,0,0,0.06)',
           zIndex: 3,
           display: 'flex',
           alignItems: 'center',
@@ -52,7 +51,13 @@ const HeaderBar = ({ mode, onToggleTheme, onInfoClick }: Props) => {
           <IconButton
             size="small"
             onClick={onInfoClick}
-            sx={{ color: theme.palette.primary.main, ml: 1 }}
+            sx={{
+              color: theme.palette.primary.main,
+              ml: 1,
+              '&:hover': {
+                backgroundColor: isDark ? 'rgba(127,184,138,0.1)' : 'rgba(45,95,63,0.06)',
+              },
+            }}
             aria-label="About this map"
           >
             <InfoOutlinedIcon />
@@ -63,7 +68,12 @@ const HeaderBar = ({ mode, onToggleTheme, onInfoClick }: Props) => {
           <IconButton
             onClick={onToggleTheme}
             size="small"
-            sx={{ color: theme.palette.primary.main }}
+            sx={{
+              color: theme.palette.primary.main,
+              '&:hover': {
+                backgroundColor: isDark ? 'rgba(127,184,138,0.1)' : 'rgba(45,95,63,0.06)',
+              },
+            }}
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {isDark ? <LightMode fontSize="small" /> : <DarkMode fontSize="small" />}

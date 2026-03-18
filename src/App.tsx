@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import { ThemeProvider } from '@mui/material/styles'
 import { Box, CssBaseline, IconButton, LinearProgress, Snackbar, Alert, useMediaQuery } from '@mui/material'
-import { MyLocation } from '@mui/icons-material'
+import { MyLocation, ChevronLeft } from '@mui/icons-material'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { createAppTheme } from './theme'
 import { TreeInfo } from './types/tree'
@@ -172,7 +172,7 @@ function App() {
     document.documentElement.style.colorScheme = mode
     const metaThemeColor = document.querySelector('meta[name="theme-color"]')
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', mode === 'dark' ? '#121212' : '#2e7d32')
+      metaThemeColor.setAttribute('content', mode === 'dark' ? '#161a17' : '#2d5f3f')
     }
   }, [mode])
 
@@ -260,7 +260,7 @@ function App() {
       // Apply sidebar padding instantly before revealing data layers
       const w = window.innerWidth
       const rightPad = w >= 1200 ? 600 : w >= 900 ? 500 : w >= 600 ? 400 : 0
-      map.current.easeTo({ padding: { top: 56, right: rightPad, bottom: 0, left: 0 }, duration: 0 })
+      map.current.easeTo({ padding: { top: 52, right: rightPad, bottom: 0, left: 0 }, duration: 0 })
 
       initMapLayers(map.current, modeRef.current === 'dark')
       mapInitialized.current = true
@@ -433,7 +433,7 @@ function App() {
     const w = window.innerWidth
     const sidebarWidth = w >= 1200 ? 600 : w >= 900 ? 500 : 400
     const rightPad = panelOpen ? sidebarWidth : 0
-    map.current.easeTo({ padding: { top: 56, right: rightPad, bottom: 0, left: 0 }, duration: 350 })
+    map.current.easeTo({ padding: { top: 52, right: rightPad, bottom: 0, left: 0 }, duration: 350 })
   }, [panelView, mapReady, isMobile])
 
   const handleDrawerClose = () => {
@@ -496,7 +496,7 @@ function App() {
         <LinearProgress
           sx={{
             position: 'fixed',
-            top: 56,
+            top: 52,
             left: 0,
             right: 0,
             zIndex: 1100,
@@ -514,7 +514,7 @@ function App() {
         <Box
           ref={mapContainer}
           sx={{
-            position: 'absolute', top: 56, bottom: 0, width: '100%',
+            position: 'absolute', top: 52, bottom: 0, width: '100%',
             opacity: mapReady ? 1 : 0,
             transition: 'opacity 0.3s ease-in-out',
           }}
@@ -574,12 +574,18 @@ function App() {
               md: (allTrees.length > 0 && desktopPanelOpen) ? 520 : 20,
               lg: (allTrees.length > 0 && desktopPanelOpen) ? 620 : 20,
             },
-            backgroundColor: isDark ? '#1e1e1e' : 'white',
-            boxShadow: 2,
+            backgroundColor: isDark ? '#1e2320' : 'white',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+            border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)',
+            borderRadius: '50%',
             zIndex: 500,
             width: 48,
             height: 48,
-            '&:hover': { backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5' },
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              backgroundColor: isDark ? '#2a2f2b' : '#f5f5f5',
+              transform: 'scale(1.05)',
+            },
           }}
         >
           <MyLocation />
@@ -616,28 +622,30 @@ function App() {
               sx={{
                 display: { xs: 'none', sm: 'flex' },
                 position: 'absolute',
-                top: 'calc(50% + 28px)',
+                top: 'calc(50% + 26px)',
                 right: 0,
                 transform: 'translateY(-50%)',
                 zIndex: 999,
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: 28,
+                width: 32,
                 height: 64,
                 borderRadius: '6px 0 0 6px',
-                backgroundColor: isDark ? 'rgba(18,18,18,0.95)' : 'rgba(248,249,250,0.95)',
-                border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'}`,
+                backgroundColor: isDark ? 'rgba(22,26,23,0.95)' : 'rgba(247,245,240,0.95)',
+                border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
                 borderRight: 'none',
                 boxShadow: '-2px 0 8px rgba(0,0,0,0.1)',
                 cursor: 'pointer',
                 color: isDark ? '#a5d6a7' : '#4caf50',
-                fontSize: 12,
                 backdropFilter: 'blur(10px)',
-                '&:hover': { color: isDark ? '#c8e6c9' : '#1b5e20' },
-                transition: 'color 0.2s',
+                transition: 'all 0.2s',
+                '&:hover': {
+                  color: isDark ? '#c8e6c9' : '#1a3d2a',
+                  backgroundColor: isDark ? 'rgba(30,35,32,0.95)' : 'rgba(240,238,233,0.95)',
+                },
               }}
             >
-              ‹
+              <ChevronLeft sx={{ fontSize: 18 }} />
             </Box>
           )}
 
@@ -645,16 +653,15 @@ function App() {
             sx={{
               position: 'absolute',
               bottom: { xs: 0, sm: 'auto' },
-              top: { xs: 'auto', sm: 56 },
+              top: { xs: 'auto', sm: 52 },
               left: { xs: 0, sm: 'auto' },
               right: 0,
               width: { xs: '100%', sm: 400, md: 500, lg: 600 },
-              height: { xs: '100%', sm: 'calc(100% - 56px)' },
-              backgroundColor: isDark ? 'rgba(18, 18, 18, 0.95)' : 'rgba(248, 249, 250, 0.95)',
+              height: { xs: '100%', sm: 'calc(100% - 52px)' },
+              backgroundColor: isDark ? 'rgba(22, 26, 23, 0.95)' : 'rgba(247, 245, 240, 0.95)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              borderLeft: { sm: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'}` },
+              boxShadow: '0 -4px 24px rgba(0,0,0,0.12)',
               zIndex: 1000,
               display: 'flex',
               flexDirection: 'column',

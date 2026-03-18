@@ -26,12 +26,12 @@ export const ForestStats = ({
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
 
-  const headingColor = isDark ? '#c8e6c9' : '#1b5e20'
+  const headingColor = isDark ? '#c8e6c9' : '#1a3d2a'
   const accentColor = theme.palette.primary.main
   const subtleText = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)'
-  const cardBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.9)'
-  const cardBorder = isDark ? 'rgba(76,175,80,0.15)' : 'rgba(46, 125, 50, 0.12)'
-  const dividerColor = isDark ? 'rgba(76,175,80,0.15)' : 'rgba(46, 125, 50, 0.15)'
+  const cardBorder = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0, 0, 0, 0.06)'
+  const dividerColor = isDark ? 'rgba(127,184,138,0.15)' : 'rgba(45, 95, 63, 0.12)'
+  const statCardBg = isDark ? 'rgba(127, 184, 138, 0.1)' : 'rgba(45, 95, 63, 0.05)'
 
   const speciesCommonName = useMemo(() => {
     const map: Record<string, string> = {}
@@ -92,7 +92,7 @@ export const ForestStats = ({
           onClick={onClose}
           sx={{
             color: accentColor,
-            '&:hover': { backgroundColor: isDark ? 'rgba(76,175,80,0.12)' : 'rgba(46, 125, 50, 0.08)' },
+            '&:hover': { backgroundColor: isDark ? 'rgba(127,184,138,0.12)' : 'rgba(45, 95, 63, 0.08)' },
             position: 'absolute',
             top: 10,
             right: 10,
@@ -103,7 +103,6 @@ export const ForestStats = ({
         </IconButton>
 
         <Typography variant="h5" sx={{
-          fontWeight: 700,
           color: headingColor,
           fontSize: { xs: '1.4rem', sm: '1.65rem' },
           lineHeight: 1.2,
@@ -140,16 +139,15 @@ export const ForestStats = ({
           { value: speciesCount.toLocaleString(), label: 'Species' },
         ].map(({ value, label }) => (
           <Box key={label} sx={{
-            backgroundColor: cardBg,
+            backgroundColor: statCardBg,
             border: `1px solid ${cardBorder}`,
-            borderRadius: 3,
-            p: 2.5,
-            backdropFilter: 'blur(8px)',
+            borderRadius: '10px',
+            p: 2,
           }}>
             <Typography sx={{
-              fontSize: '1.8rem',
+              fontSize: '2rem',
               fontWeight: 700,
-              color: headingColor,
+              color: accentColor,
               lineHeight: 1,
               mb: 0.5,
             }}>
@@ -166,11 +164,9 @@ export const ForestStats = ({
       {topNeighborhood && (
         <Box sx={{ mb: 3 }}>
           <Box sx={{
-            backgroundColor: cardBg,
             border: `1px solid ${cardBorder}`,
-            borderRadius: 3,
+            borderRadius: '10px',
             p: 2,
-            backdropFilter: 'blur(8px)',
           }}>
             <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: headingColor, lineHeight: 1.3, mb: 0.25 }}>
               {topNeighborhood[0]}
@@ -184,28 +180,29 @@ export const ForestStats = ({
 
       {/* Top species */}
       <Box sx={{
-        backgroundColor: cardBg,
         border: `1px solid ${cardBorder}`,
-        borderRadius: 3,
-        p: 2.5,
-        backdropFilter: 'blur(8px)',
+        borderRadius: '10px',
+        p: 2,
         flex: 1,
       }}>
         <Typography variant="subtitle2" sx={{
           color: accentColor,
-          fontWeight: 600,
-          letterSpacing: '0.5px',
           mb: 2,
         }}>
           Most Common Species
         </Typography>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
-          {topSpecies.map(({ species, commonName, count, pct }) => (
+          {topSpecies.map(({ species, commonName, count, pct }, index) => (
             <Box
               key={species}
               onClick={() => setSelectedSpecies(species)}
-              sx={{ cursor: 'pointer', '&:hover .species-name': { color: headingColor } }}
+              sx={{
+                cursor: 'pointer',
+                '&:hover .species-name': { color: headingColor },
+                animation: 'fadeInUp 0.3s ease both',
+                animationDelay: `${index * 0.04}s`,
+              }}
             >
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.5 }}>
                 <Typography
@@ -232,7 +229,7 @@ export const ForestStats = ({
                 sx={{
                   height: 4,
                   borderRadius: 2,
-                  backgroundColor: isDark ? 'rgba(76,175,80,0.12)' : 'rgba(46,125,50,0.1)',
+                  backgroundColor: isDark ? 'rgba(127,184,138,0.12)' : 'rgba(45,95,63,0.1)',
                   '& .MuiLinearProgress-bar': {
                     borderRadius: 2,
                     backgroundColor: accentColor,
