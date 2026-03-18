@@ -49,6 +49,9 @@ export const TreeDetails = ({
 
   const ecoBenefits = ECO_BENEFITS_ENABLED ? calculateEcoBenefits(selectedTree.dbh) : null
 
+  const emptyValueSx = { fontWeight: 400, color: 'text.disabled', fontStyle: 'italic' as const }
+  const filledValueSx = { fontWeight: 600, color: headingColor }
+
   return (
     <Box sx={{
       transition: 'transform 0.3s ease-in-out',
@@ -330,7 +333,7 @@ export const TreeDetails = ({
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                     Trunk Size
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
+                  <Typography variant="body2" sx={selectedTree.dbh ? filledValueSx : emptyValueSx}>
                     {selectedTree.dbh ? `${selectedTree.dbh} inches` : 'Not recorded'}
                   </Typography>
                 </Box>
@@ -342,7 +345,7 @@ export const TreeDetails = ({
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                     Date Planted
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
+                  <Typography variant="body2" sx={selectedTree.plantDate ? filledValueSx : emptyValueSx}>
                     {selectedTree.plantDate
                       ? new Date(selectedTree.plantDate).toLocaleDateString('en-US', {
                           year: 'numeric',
@@ -360,8 +363,8 @@ export const TreeDetails = ({
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                     Site Type
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
-                    {selectedTree.siteInfo || 'Standard'}
+                  <Typography variant="body2" sx={selectedTree.siteInfo ? filledValueSx : emptyValueSx}>
+                    {selectedTree.siteInfo || 'Not recorded'}
                   </Typography>
                 </Box>
               </Box>
@@ -372,9 +375,15 @@ export const TreeDetails = ({
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                     Maintenance
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
-                    {selectedTree.legalStatus || 'City Maintained'}
-                  </Typography>
+                  {(() => {
+                    const val = selectedTree.legalStatus || 'Not recorded'
+                    const isEmpty = !selectedTree.legalStatus || val === 'Undocumented' || val === 'Not recorded'
+                    return (
+                      <Typography variant="body2" sx={isEmpty ? emptyValueSx : filledValueSx}>
+                        {val}
+                      </Typography>
+                    )
+                  })()}
                 </Box>
               </Box>
             </Box>
