@@ -28,26 +28,25 @@ export const TreeDetails = ({
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
 
-  const headingColor = isDark ? '#c8e6c9' : '#1b5e20'
+  const headingColor = isDark ? '#c8e6c9' : '#1a3d2a'
   const accentColor = theme.palette.primary.main
   const italicColor = isDark ? '#a5d6a7' : '#4caf50'
-  const iconColor = '#81c784'
-  const cardBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.95)'
-  const cardBorder = isDark ? 'rgba(76,175,80,0.15)' : 'rgba(46, 125, 50, 0.1)'
-  const cardBorderHover = isDark ? 'rgba(76,175,80,0.3)' : 'rgba(46, 125, 50, 0.2)'
-  const chipBg = isDark ? 'rgba(76,175,80,0.2)' : 'rgba(46, 125, 50, 0.1)'
-  const dividerColor = isDark ? 'rgba(76,175,80,0.2)' : 'rgba(46, 125, 50, 0.2)'
+  const iconColor = '#7fb88a'
+  const cardBorder = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0, 0, 0, 0.06)'
+  const chipBg = isDark ? 'rgba(127,184,138,0.2)' : 'rgba(45, 95, 63, 0.1)'
+  const dividerColor = isDark ? 'rgba(127,184,138,0.2)' : 'rgba(45, 95, 63, 0.2)'
   const scrollTrack = isDark ? 'rgba(255,255,255,0.06)' : '#f1f1f1'
-  const streetViewBg = isDark ? '#2a2a2a' : '#f5f5f5'
+  const streetViewBg = isDark ? '#2a2f2b' : '#f5f5f5'
 
   const subtitleStyle = {
     color: accentColor,
     mb: 0.5,
-    letterSpacing: '0.5px',
-    fontWeight: 600
   }
 
   const ecoBenefits = ECO_BENEFITS_ENABLED ? calculateEcoBenefits(selectedTree.dbh) : null
+
+  const emptyValueSx = { fontWeight: 400, color: 'text.disabled', fontStyle: 'italic' as const }
+  const filledValueSx = { fontWeight: 600, color: headingColor }
 
   return (
     <Box sx={{
@@ -63,11 +62,12 @@ export const TreeDetails = ({
           alignItems: 'flex-start',
           mb: 3,
           pb: 3,
-          borderBottom: `1px solid ${dividerColor}`
+          borderBottom: `1px solid ${dividerColor}`,
+          animation: 'fadeInUp 0.3s ease both',
         }}
       >
         <Box sx={{ flex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
             <Chip
               label={`Tree #${selectedTree.id}`}
               size="small"
@@ -91,7 +91,6 @@ export const TreeDetails = ({
           </Box>
 
           <Typography variant="h5" sx={{
-            fontWeight: 700,
             color: headingColor,
             mb: 0.5,
             fontSize: { xs: '1.5rem', sm: '2.0rem' },
@@ -138,7 +137,9 @@ export const TreeDetails = ({
                 gap: 0.5,
                 background: 'none',
                 border: 'none',
-                padding: '4px 0',
+                borderRadius: '20px',
+                px: 1.5,
+                py: 0.5,
                 cursor: 'pointer',
                 textDecoration: 'underline',
                 textDecorationColor: 'transparent',
@@ -146,6 +147,7 @@ export const TreeDetails = ({
                 '&:hover': {
                   textDecorationColor: accentColor,
                   color: headingColor,
+                  backgroundColor: chipBg,
                 },
               }}
             >
@@ -171,7 +173,9 @@ export const TreeDetails = ({
                   gap: 0.5,
                   background: 'none',
                   border: 'none',
-                  padding: '4px 0',
+                  borderRadius: '20px',
+                  px: 1.5,
+                  py: 0.5,
                   cursor: 'pointer',
                   textDecoration: 'underline',
                   textDecorationColor: 'transparent',
@@ -179,6 +183,7 @@ export const TreeDetails = ({
                   '&:hover': {
                     textDecorationColor: accentColor,
                     color: headingColor,
+                    backgroundColor: chipBg,
                   },
                 }}
               >
@@ -190,7 +195,7 @@ export const TreeDetails = ({
         </Box>
         <IconButton
           onClick={handleDrawerClose}
-          sx={{ color: accentColor, '&:hover': { backgroundColor: isDark ? 'rgba(76,175,80,0.12)' : 'rgba(46, 125, 50, 0.08)' }, position: 'absolute', top: 10, right: 10 }}
+          sx={{ color: accentColor, '&:hover': { backgroundColor: isDark ? 'rgba(127,184,138,0.12)' : 'rgba(45, 95, 63, 0.08)' }, position: 'absolute', top: 10, right: 10 }}
         >
           <Box component="span" sx={{ display: { xs: 'none', sm: 'flex' } }}><ChevronRight /></Box>
           <Box component="span" sx={{ display: { xs: 'flex', sm: 'none' } }}><CloseIcon /></Box>
@@ -252,24 +257,16 @@ export const TreeDetails = ({
         <Box
           sx={{
             display: 'grid',
-            gap: 2.5,
+            gap: 2,
             '& > div': {
-              backgroundColor: cardBg,
-              backdropFilter: 'blur(8px)',
-              p: 2.5,
-              borderRadius: 3,
-              boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.08)',
+              p: 2,
+              borderRadius: '10px',
               border: `1px solid ${cardBorder}`,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                boxShadow: isDark ? '0 4px 16px rgba(0,0,0,0.4)' : '0 4px 16px rgba(0,0,0,0.12)',
-                borderColor: cardBorderHover,
-              }
             }
           }}
         >
-          <Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Box sx={{ animation: 'fadeInUp 0.3s ease both', animationDelay: '0.05s' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <LocationOn sx={{ color: iconColor, fontSize: 18 }} />
                 <Box sx={{ flex: 1 }}>
@@ -294,7 +291,7 @@ export const TreeDetails = ({
                       sx={{
                         color: accentColor,
                         p: 0.5,
-                        '&:hover': { backgroundColor: isDark ? 'rgba(76,175,80,0.15)' : 'rgba(46,125,50,0.1)' },
+                        '&:hover': { backgroundColor: isDark ? 'rgba(127,184,138,0.15)' : 'rgba(45,95,63,0.1)' },
                       }}
                     >
                       <ContentCopy sx={{ fontSize: 16 }} />
@@ -315,7 +312,7 @@ export const TreeDetails = ({
                       p: 0,
                       minHeight: 'auto',
                       '&:hover': {
-                        backgroundColor: isDark ? 'rgba(76,175,80,0.08)' : 'rgba(46, 125, 50, 0.04)',
+                        backgroundColor: isDark ? 'rgba(127,184,138,0.08)' : 'rgba(45, 95, 63, 0.04)',
                       }
                     }}
                   >
@@ -330,7 +327,7 @@ export const TreeDetails = ({
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                     Trunk Size
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
+                  <Typography variant="body2" sx={selectedTree.dbh ? filledValueSx : emptyValueSx}>
                     {selectedTree.dbh ? `${selectedTree.dbh} inches` : 'Not recorded'}
                   </Typography>
                 </Box>
@@ -342,7 +339,7 @@ export const TreeDetails = ({
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                     Date Planted
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
+                  <Typography variant="body2" sx={selectedTree.plantDate ? filledValueSx : emptyValueSx}>
                     {selectedTree.plantDate
                       ? new Date(selectedTree.plantDate).toLocaleDateString('en-US', {
                           year: 'numeric',
@@ -360,8 +357,8 @@ export const TreeDetails = ({
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                     Site Type
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
-                    {selectedTree.siteInfo || 'Standard'}
+                  <Typography variant="body2" sx={selectedTree.siteInfo ? filledValueSx : emptyValueSx}>
+                    {selectedTree.siteInfo || 'Not recorded'}
                   </Typography>
                 </Box>
               </Box>
@@ -372,9 +369,15 @@ export const TreeDetails = ({
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                     Maintenance
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
-                    {selectedTree.legalStatus || 'City Maintained'}
-                  </Typography>
+                  {(() => {
+                    const val = selectedTree.legalStatus || 'Not recorded'
+                    const isEmpty = !selectedTree.legalStatus || val === 'Undocumented' || val === 'Not recorded'
+                    return (
+                      <Typography variant="body2" sx={isEmpty ? emptyValueSx : filledValueSx}>
+                        {val}
+                      </Typography>
+                    )
+                  })()}
                 </Box>
               </Box>
             </Box>
@@ -461,7 +464,7 @@ export const TreeDetails = ({
           )}
 
           <SuggestEdit tree={selectedTree} />
-          <Box>
+          <Box sx={{ animation: 'fadeInUp 0.3s ease both', animationDelay: '0.1s' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
               <MapOutlined sx={{ color: italicColor, fontSize: 20 }} />
               <Typography variant="subtitle2" sx={subtitleStyle}>
