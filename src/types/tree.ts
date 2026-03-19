@@ -6,6 +6,7 @@ export interface TreeInfo {
   plantDate: string | null
   siteInfo: string | null
   legalStatus: string | null
+  caretaker: string | null
   color: string
   latitude: number
   longitude: number
