@@ -330,9 +330,15 @@ export const TreeDetails = ({
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                     Trunk Size
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
-                    {selectedTree.dbh ? `${selectedTree.dbh} inches` : 'Not recorded'}
-                  </Typography>
+                  {selectedTree.dbh ? (
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
+                      {`${selectedTree.dbh} inches`}
+                    </Typography>
+                  ) : (
+                    <Typography variant="body2" sx={{ fontWeight: 400, color: 'text.disabled', fontStyle: 'italic' }}>
+                      Not recorded
+                    </Typography>
+                  )}
                 </Box>
               </Box>
 
@@ -342,15 +348,19 @@ export const TreeDetails = ({
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                     Date Planted
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
-                    {selectedTree.plantDate
-                      ? new Date(selectedTree.plantDate).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })
-                      : 'Unknown'}
-                  </Typography>
+                  {selectedTree.plantDate ? (
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
+                      {new Date(selectedTree.plantDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </Typography>
+                  ) : (
+                    <Typography variant="body2" sx={{ fontWeight: 400, color: 'text.disabled', fontStyle: 'italic' }}>
+                      Unknown
+                    </Typography>
+                  )}
                 </Box>
               </Box>
 
@@ -360,9 +370,15 @@ export const TreeDetails = ({
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                     Site Type
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
-                    {selectedTree.siteInfo || 'Standard'}
-                  </Typography>
+                  {selectedTree.siteInfo ? (
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
+                      {selectedTree.siteInfo}
+                    </Typography>
+                  ) : (
+                    <Typography variant="body2" sx={{ fontWeight: 400, color: 'text.disabled', fontStyle: 'italic' }}>
+                      Standard
+                    </Typography>
+                  )}
                 </Box>
               </Box>
 
@@ -372,9 +388,15 @@ export const TreeDetails = ({
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                     Maintenance
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
-                    {selectedTree.legalStatus || 'City Maintained'}
-                  </Typography>
+                  {selectedTree.legalStatus ? (
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
+                      {selectedTree.legalStatus}
+                    </Typography>
+                  ) : (
+                    <Typography variant="body2" sx={{ fontWeight: 400, color: 'text.disabled', fontStyle: 'italic' }}>
+                      City Maintained
+                    </Typography>
+                  )}
                 </Box>
               </Box>
             </Box>
