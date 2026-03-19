@@ -4,7 +4,7 @@ import { useTheme } from '@mui/material/styles'
 import { ChevronRight, Close as CloseIcon } from '@mui/icons-material'
 import { TreeInfo } from '../types/tree'
 
-const TOP_N = 8
+const TOP_N = 20
 
 export const ForestStats = ({
   totalTrees,
