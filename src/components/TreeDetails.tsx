@@ -386,15 +386,15 @@ export const TreeDetails = ({
                 <Policy sx={{ color: iconColor, fontSize: 18 }} />
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                    Maintenance
+                    Maintained by
                   </Typography>
-                  {selectedTree.legalStatus ? (
+                  {selectedTree.caretaker ? (
                     <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
-                      {selectedTree.legalStatus}
+                      {selectedTree.caretaker}
                     </Typography>
                   ) : (
                     <Typography variant="body2" sx={{ fontWeight: 400, color: 'text.disabled', fontStyle: 'italic' }}>
-                      City Maintained
+                      Unknown
                     </Typography>
                   )}
                 </Box>

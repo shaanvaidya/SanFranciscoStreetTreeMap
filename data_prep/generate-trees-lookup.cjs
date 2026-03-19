@@ -15,6 +15,7 @@ const simplified = raw.features.map((f) => {
         plantDate: p.plantDate,
         siteInfo: p.siteInfo,
         legalStatus: p.legalStatus,
+        caretaker: p.caretaker ?? null,
         color: p.color,
         latitude: p.latitude,
         longitude: p.longitude,

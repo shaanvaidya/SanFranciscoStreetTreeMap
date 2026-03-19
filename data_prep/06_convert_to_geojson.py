@@ -7,7 +7,7 @@ FeatureCollection with one point per tree, ready for Tippecanoe.
 Also filters out trees listed in cleaned_removal_notifications.csv (if present).
 
 Each feature carries: id, species, address, dbh, plantDate, siteInfo,
-legalStatus, neighborhood, neighborhood_name, color, latitude, longitude.
+legalStatus, caretaker, neighborhood, neighborhood_name, color, latitude, longitude.
 
 Usage:
     python 06_convert_to_geojson.py
@@ -100,6 +100,7 @@ def convert_to_geojson(trees_file: str) -> None:
                 "plantDate": str(row['Plant Date']) if pd.notna(row['Plant Date']) else None,
                 "siteInfo": str(row['Site Info']) if pd.notna(row['Site Info']) else None,
                 "legalStatus": str(row['Legal Status']) if pd.notna(row['Legal Status']) else None,
+                "caretaker": str(row['qCaretaker']) if pd.notna(row.get('qCaretaker')) else None,
                 "color": color,
                 "latitude": round(lat, 6),
                 "longitude": round(lng, 6),

@@ -109,7 +109,7 @@ def advanced_clean(input_file: str) -> None:
         'PlantDate': 'Plant Date',
     }, inplace=True)
 
-    drop_fields = ['SiteOrder', 'PlantType', 'qCaretaker', 'qCareAssistant', 'PlotSize', 'PermitNotes', 'XCoord', 'YCoord']
+    drop_fields = ['SiteOrder', 'PlantType', 'qCareAssistant', 'PlotSize', 'PermitNotes', 'XCoord', 'YCoord']
     df.drop(columns=[c for c in drop_fields if c in df.columns], inplace=True)
 
     # Normalize DBH: fill missing → 10, enforce min 1, cap at DBH_MAX_INCHES
