@@ -3,23 +3,28 @@ import type { Feature, FeatureCollection, Point, GeoJsonProperties } from 'geojs
 import mapboxgl from 'mapbox-gl'
 import { TreeInfo } from '../types/tree'
 
+type RemovalFilter = 'all' | 'only' | 'hide'
+
 export function useTreeFilters(
   map: RefObject<mapboxgl.Map | null>,
   allTrees: TreeInfo[]
 ) {
   const [selectedSpecies, setSelectedSpecies] = useState<string | null>(null)
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null)
+  const [removalFilter, setRemovalFilter] = useState<RemovalFilter>('all')
 
   useEffect(() => {
     if (!map.current) return
 
-    const hasActiveFilter = !!selectedSpecies || !!selectedNeighborhood
+    const hasActiveFilter = !!selectedSpecies || !!selectedNeighborhood || removalFilter !== 'all'
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const filters: any[] = []
       if (selectedSpecies) filters.push(['==', ['get', 'species'], selectedSpecies])
       if (selectedNeighborhood) filters.push(['==', ['get', 'neighborhood_name'], selectedNeighborhood])
+      if (removalFilter === 'only') filters.push(['==', ['get', 'markedForRemoval'], true])
+      if (removalFilter === 'hide') filters.push(['!=', ['get', 'markedForRemoval'], true])
 
       if (filters.length === 0) {
         map.current.setFilter('tree-points', null)
@@ -32,7 +37,8 @@ export function useTreeFilters(
       const filteredTrees = hasActiveFilter
         ? allTrees.filter(tree =>
             (!selectedSpecies || tree.species === selectedSpecies) &&
-            (!selectedNeighborhood || tree.neighborhood_name === selectedNeighborhood)
+            (!selectedNeighborhood || tree.neighborhood_name === selectedNeighborhood) &&
+            (removalFilter === 'all' || (removalFilter === 'only' ? tree.markedForRemoval : !tree.markedForRemoval))
           )
         : []
 
@@ -75,7 +81,7 @@ export function useTreeFilters(
         }
       }
     }
-  }, [selectedSpecies, selectedNeighborhood, allTrees, map])
+  }, [selectedSpecies, selectedNeighborhood, removalFilter, allTrees, map])
 
-  return { selectedSpecies, setSelectedSpecies, selectedNeighborhood, setSelectedNeighborhood }
+  return { selectedSpecies, setSelectedSpecies, selectedNeighborhood, setSelectedNeighborhood, removalFilter, setRemovalFilter }
 }

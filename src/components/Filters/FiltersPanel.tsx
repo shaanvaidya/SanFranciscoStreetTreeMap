@@ -1,5 +1,5 @@
-import { Box, Button, TextField, Autocomplete, Chip, Switch, Typography } from '@mui/material'
-import { Star } from '@mui/icons-material'
+import { Box, Button, TextField, Autocomplete, Chip, Switch, Typography, ToggleButtonGroup, ToggleButton } from '@mui/material'
+import { Star, WarningAmber } from '@mui/icons-material'
 import { useEffect, useState } from 'react'
 import { useTheme } from '@mui/material/styles'
 import mapboxgl from 'mapbox-gl'
@@ -9,6 +9,8 @@ type MapboxGeocodingFeature = {
   place_name: string
   center: [number, number]
 }
+
+type RemovalFilter = 'all' | 'only' | 'hide'
 
 type Props = {
   species: string[]
@@ -28,6 +30,8 @@ type Props = {
   showLandmarks: boolean
   setShowLandmarks: (v: boolean) => void
   landmarksEnabled: boolean
+  removalFilter: RemovalFilter
+  setRemovalFilter: (v: RemovalFilter) => void
 }
 
 const FiltersPanel = ({
@@ -48,6 +52,8 @@ const FiltersPanel = ({
   showLandmarks,
   setShowLandmarks,
   landmarksEnabled,
+  removalFilter,
+  setRemovalFilter,
 }: Props) => {
   const [addressResults, setAddressResults] = useState<MapboxGeocodingFeature[]>([])
   const theme = useTheme()
@@ -108,7 +114,7 @@ const FiltersPanel = ({
       >
         {showFilters ? 'Hide Filters' : 'Show Filters'}
       </Button>
-      {!showFilters && (selectedSpecies || selectedNeighborhood || addressQuery) && (
+      {!showFilters && (selectedSpecies || selectedNeighborhood || addressQuery || removalFilter !== 'all') && (
         <Box
           sx={{
             position: 'absolute',
@@ -124,6 +130,7 @@ const FiltersPanel = ({
           {selectedSpecies ? `Species: ${selectedSpecies}` : ''}
           {selectedNeighborhood ? `, Neighborhood: ${selectedNeighborhood}` : ''}
           {addressQuery ? `, Address: ${addressQuery}` : ''}
+          {removalFilter !== 'all' ? `, Removal: ${removalFilter}` : ''}
         </Box>
       )}
       {showFilters && (
@@ -238,17 +245,58 @@ const FiltersPanel = ({
             )}
           </Box>
 
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            pt: 1,
+            borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <WarningAmber sx={{ fontSize: 16, color: '#ed6c02' }} />
+              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
+                Removal Permits
+              </Typography>
+            </Box>
+            <ToggleButtonGroup
+              exclusive
+              size="small"
+              value={removalFilter}
+              onChange={(_, val) => { if (val !== null) setRemovalFilter(val) }}
+              sx={{
+                '& .MuiToggleButton-root': {
+                  fontSize: '0.7rem',
+                  py: 0.25,
+                  px: 1,
+                  textTransform: 'none',
+                  color: 'text.secondary',
+                  borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)',
+                },
+                '& .MuiToggleButton-root.Mui-selected': {
+                  color: '#ed6c02',
+                  backgroundColor: 'rgba(237, 108, 2, 0.1)',
+                  borderColor: 'rgba(237, 108, 2, 0.4)',
+                },
+              }}
+            >
+              <ToggleButton value="all">All</ToggleButton>
+              <ToggleButton value="only">Only</ToggleButton>
+              <ToggleButton value="hide">Hide</ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+
           <Button
             onClick={() => {
               setSelectedSpecies(null)
               setSelectedNeighborhood(null)
               setAddressQuery('')
+              setRemovalFilter('all')
               onClearAll()
             }}
             variant="outlined"
             size="small"
             fullWidth
-            disabled={!selectedSpecies && !selectedNeighborhood && !addressQuery}
+            disabled={!selectedSpecies && !selectedNeighborhood && !addressQuery && removalFilter === 'all'}
           >
             Clear All
           </Button>
