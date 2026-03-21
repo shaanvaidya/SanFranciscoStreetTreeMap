@@ -233,9 +233,13 @@ function App() {
     }
     setSelectedTree(enriched)
     setPanelView('tree')
-    const mobile = window.innerWidth < 600
-    const sidebarOffset: [number, number] = mobile ? [0, window.innerHeight * 0.1] : [-window.innerWidth * 0.2, 0]
-    map.current?.flyTo({ center: [tree.longitude, tree.latitude], zoom: 18, duration: 1000, essential: true, offset: sidebarOffset })
+    const w = window.innerWidth
+    const mobile = w < 600
+    const sidebarWidth = w >= 1200 ? 600 : w >= 900 ? 500 : 400
+    const padding = mobile
+      ? { top: 56, right: 0, bottom: Math.round(window.innerHeight * 0.4), left: 0 }
+      : { top: 56, right: sidebarWidth, bottom: 0, left: 0 }
+    map.current?.flyTo({ center: [tree.longitude, tree.latitude], zoom: 18, duration: 1000, essential: true, padding })
   }, [allTrees, mapReady])
 
   const [showFilters, setShowFilters] = useState(false)
@@ -301,17 +305,19 @@ function App() {
         setPanelView('tree')
         setMobileExpanded(false)
 
-        const mobile = window.innerWidth < 600
-        const sidebarOffset: [number, number] = mobile
-          ? [0, window.innerHeight * 0.1]
-          : [-window.innerWidth * 0.2, 0]
+        const w = window.innerWidth
+        const mobile = w < 600
+        const sidebarWidth = w >= 1200 ? 600 : w >= 900 ? 500 : 400
+        const padding = mobile
+          ? { top: 56, right: 0, bottom: Math.round(window.innerHeight * 0.4), left: 0 }
+          : { top: 56, right: sidebarWidth, bottom: 0, left: 0 }
 
         map.current?.flyTo({
           center: [props.longitude, props.latitude],
           zoom: 18,
           duration: 1000,
           essential: true,
-          offset: sidebarOffset,
+          padding,
         })
       })
 
@@ -343,9 +349,13 @@ function App() {
           setPanelView('landmark')
         }
 
-        const mobile = window.innerWidth < 600
-        const sidebarOffset: [number, number] = mobile ? [0, window.innerHeight * 0.1] : [-window.innerWidth * 0.2, 0]
-        map.current?.flyTo({ center: [landmark.longitude, landmark.latitude], zoom: 18, duration: 1000, essential: true, offset: sidebarOffset })
+        const w = window.innerWidth
+        const mobile = w < 600
+        const sidebarWidth = w >= 1200 ? 600 : w >= 900 ? 500 : 400
+        const padding = mobile
+          ? { top: 56, right: 0, bottom: Math.round(window.innerHeight * 0.4), left: 0 }
+          : { top: 56, right: sidebarWidth, bottom: 0, left: 0 }
+        map.current?.flyTo({ center: [landmark.longitude, landmark.latitude], zoom: 18, duration: 1000, essential: true, padding })
       })
 
       map.current.on('mouseenter', 'tree-points', () => {
