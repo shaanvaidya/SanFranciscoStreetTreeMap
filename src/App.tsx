@@ -139,6 +139,7 @@ function App() {
   const geolocateControlRef = useRef<mapboxgl.GeolocateControl | null>(null)
   const mapInitialized = useRef(false)
   const paddingInitialized = useRef(false)
+  const skipNextPaddingEaseTo = useRef(false)
   const [mapReady, setMapReady] = useState(false)
   const initialTreeId = useRef<string | null>(new URLSearchParams(window.location.search).get('tree'))
 
@@ -231,6 +232,7 @@ function App() {
       common_name: tree.common_name || speciesParts[0]?.trim() || tree.species || '',
       scientific_name: tree.scientific_name || speciesParts[1]?.replace(')', '') || '',
     }
+    skipNextPaddingEaseTo.current = true
     setSelectedTree(enriched)
     setPanelView('tree')
     const w = window.innerWidth
@@ -438,6 +440,10 @@ function App() {
     if (!map.current || !mapReady) return
     if (!paddingInitialized.current) {
       paddingInitialized.current = true
+      return
+    }
+    if (skipNextPaddingEaseTo.current) {
+      skipNextPaddingEaseTo.current = false
       return
     }
     const panelOpen = !isMobile && panelView !== 'closed'
