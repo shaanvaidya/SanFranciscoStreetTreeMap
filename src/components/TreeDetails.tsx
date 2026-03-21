@@ -16,6 +16,7 @@ export const TreeDetails = ({
   handleDrawerClose,
   setToastMessage,
   landmark,
+  birthdayDate,
 }: {
   selectedTree: TreeInfo
   speciesCounts: Record<string, number>
@@ -24,6 +25,7 @@ export const TreeDetails = ({
   handleDrawerClose: () => void
   setToastMessage: (message: string) => void
   landmark?: LandmarkInfo
+  birthdayDate?: Date | null
 }) => {
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
@@ -368,6 +370,62 @@ export const TreeDetails = ({
                   )}
                 </Box>
               </Box>
+
+              {/* Birthday age comparison */}
+              {birthdayDate && selectedTree.plantDate && (() => {
+                const plantDate = new Date(selectedTree.plantDate)
+                const diffMs = plantDate.getTime() - birthdayDate.getTime()
+                const diffDays = Math.round(Math.abs(diffMs) / 86400000)
+                const treePlantedAfter = diffMs > 0
+                const years = Math.floor(diffDays / 365)
+                const months = Math.floor((diffDays % 365) / 30)
+                const days = diffDays % 365 % 30
+
+                let sentence: string
+                if (diffDays === 0) {
+                  sentence = 'This tree was planted on the day you were born.'
+                } else {
+                  // Build a natural time phrase with the most significant unit bold
+                  let timePhrase: string
+                  if (years > 0) {
+                    timePhrase = `${years} year${years !== 1 ? 's' : ''}${months > 0 ? ` and ${months} month${months !== 1 ? 's' : ''}` : ''}`
+                  } else if (months > 0) {
+                    timePhrase = `${months} month${months !== 1 ? 's' : ''}${days > 0 ? ` and ${days} day${days !== 1 ? 's' : ''}` : ''}`
+                  } else {
+                    timePhrase = `${diffDays} day${diffDays !== 1 ? 's' : ''}`
+                  }
+
+                  if (treePlantedAfter) {
+                    sentence = `You were **${timePhrase} old** when this tree was planted.`
+                  } else {
+                    sentence = `This tree was **${timePhrase} old** when you were born.`
+                  }
+                }
+
+                // Parse **bold** markers into JSX
+                const parts = sentence.split(/\*\*(.*?)\*\*/)
+
+                return (
+                  <Box
+                    sx={{
+                      mt: 0.5,
+                      py: 1,
+                      px: 1.5,
+                      borderRadius: 2,
+                      backgroundColor: isDark ? 'rgba(76,175,80,0.08)' : 'rgba(46,125,50,0.04)',
+                      border: `1px solid ${cardBorder}`,
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ color: isDark ? '#c8e6c9' : '#33691e', lineHeight: 1.5 }}>
+                      {parts.map((part, i) =>
+                        i % 2 === 1
+                          ? <Typography key={i} component="span" variant="body2" sx={{ fontWeight: 800, color: accentColor }}>{part}</Typography>
+                          : <span key={i}>{part}</span>
+                      )}
+                    </Typography>
+                  </Box>
+                )
+              })()}
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <LocationOn sx={{ color: iconColor, fontSize: 18 }} />

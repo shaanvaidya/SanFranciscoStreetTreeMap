@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import { ThemeProvider } from '@mui/material/styles'
-import { Box, CssBaseline, IconButton, LinearProgress, Snackbar, Alert, useMediaQuery } from '@mui/material'
-import { MyLocation } from '@mui/icons-material'
+import { Box, Chip, CssBaseline, IconButton, LinearProgress, Snackbar, Alert, useMediaQuery } from '@mui/material'
+import { MyLocation, Cake } from '@mui/icons-material'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { createAppTheme } from './theme'
 import { TreeInfo } from './types/tree'
@@ -13,10 +13,12 @@ import HeaderBar from './components/HeaderBar'
 import FiltersPanel from './components/Filters/FiltersPanel'
 import LandmarkDetails from './components/LandmarkDetails'
 import ForestStats from './components/ForestStats'
+import BirthdayTreeFinder from './components/BirthdayTreeFinder'
 import { useTreeData } from './hooks/useTreeData'
 import { useTreeFilters } from './hooks/useTreeFilters'
 import { useLandmarks } from './hooks/useLandmarks'
 import { LANDMARKS_ENABLED } from './flags'
+import { BirthdayResults, findBirthdayTrees, findNearestTree } from './utils/birthdayMatch'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -37,6 +39,16 @@ function initMapLayers(mapInstance: mapboxgl.Map, isDark: boolean) {
   })
 
   mapInstance.addSource('filtered-trees', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: [] },
+  })
+
+  mapInstance.addSource('birthday-trees', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: [] },
+  })
+
+  mapInstance.addSource('birthday-exact-glow', {
     type: 'geojson',
     data: { type: 'FeatureCollection', features: [] },
   })
@@ -92,6 +104,41 @@ function initMapLayers(mapInstance: mapboxgl.Map, isDark: boolean) {
   mapInstance.addLayer({ id: 'tree-points', type: 'circle', source: 'trees', 'source-layer': 'trees', paint: treeCirclePaint })
   mapInstance.addLayer({ id: 'filtered-tree-points', type: 'circle', source: 'filtered-trees', paint: treeCirclePaint })
 
+  // Pulsing glow ring for exact-date birthday matches
+  mapInstance.addLayer({
+    id: 'birthday-exact-glow',
+    type: 'circle',
+    source: 'birthday-exact-glow',
+    paint: {
+      'circle-radius': 12,
+      'circle-color': '#F9A825',
+      'circle-opacity': 0.3,
+      'circle-stroke-width': 0,
+    },
+    layout: { visibility: 'none' },
+  })
+
+  // Birthday tree layers — DBH-scaled dots, slightly larger than normal
+  const birthdayCircleRadius = [
+    'interpolate', ['linear'], ['zoom'],
+    10, ['interpolate', ['linear'], ['min', ['coalesce', ['get', 'dbh'], 0], 60], 0, 3, 30, 3.5, 60, 4.5],
+    16, ['interpolate', ['linear'], ['min', ['coalesce', ['get', 'dbh'], 0], 60], 0, 7, 30, 9, 60, 11],
+  ]
+  mapInstance.addLayer({
+    id: 'birthday-tree-points',
+    type: 'circle',
+    source: 'birthday-trees',
+    paint: {
+      'circle-radius': birthdayCircleRadius as mapboxgl.Expression,
+      'circle-color': ['get', 'birthdayColor'],
+      'circle-opacity': 1,
+      'circle-stroke-width': 2,
+      'circle-stroke-color': isDark ? 'rgba(18, 18, 18, 0.8)' : '#ffffff',
+      'circle-stroke-opacity': 1,
+    },
+    layout: { visibility: 'none' },
+  })
+
   if (LANDMARKS_ENABLED) {
     mapInstance.addSource('landmarks', {
       type: 'geojson',
@@ -142,6 +189,7 @@ function App() {
   const skipNextPaddingEaseTo = useRef(false)
   const [mapReady, setMapReady] = useState(false)
   const initialTreeId = useRef<string | null>(new URLSearchParams(window.location.search).get('tree'))
+  const initialBirthday = useRef<string | null>(new URLSearchParams(window.location.search).get('birthday'))
 
   const isMobile = useMediaQuery('(max-width:600px)')
   const prefersDark = useMediaQuery('(prefers-color-scheme: dark)')
@@ -244,9 +292,31 @@ function App() {
     map.current?.flyTo({ center: [tree.longitude, tree.latitude], zoom: 18, duration: 1000, essential: true, padding })
   }, [allTrees, mapReady])
 
+  // On load: auto-activate birthday from URL once data is ready
+  useEffect(() => {
+    if (allTrees.length === 0 || !mapReady) return
+    const birthdayParam = initialBirthday.current
+    if (!birthdayParam) return
+    initialBirthday.current = null
+    const parts = birthdayParam.split('-')
+    if (parts.length !== 3) return
+    const [y, m, d] = parts.map(Number)
+    if (!y || !m || !d || m < 1 || m > 12 || d < 1 || d > 31) return
+    const birthday = new Date(y, m - 1, d)
+    const results = findBirthdayTrees(allTrees, m, d, y)
+    handleBirthdayResults(results, birthday)
+  }, [allTrees, mapReady])
+
   const [showFilters, setShowFilters] = useState(false)
   const [addressQuery, setAddressQuery] = useState('')
   const [toast, setToast] = useState<{ message: string; severity: 'success' | 'error' } | null>(null)
+
+  // Birthday tree mode
+  const [birthdayDialogOpen, setBirthdayDialogOpen] = useState(false)
+  const [birthdayActive, setBirthdayActive] = useState(false)
+  const [birthdayDate, setBirthdayDate] = useState<Date | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const birthdayFeaturesRef = useRef<any[]>([])
 
 
   // Initialize map
@@ -323,6 +393,51 @@ function App() {
         })
       })
 
+      // Click a birthday tree point
+      map.current.on('click', 'birthday-tree-points', (e) => {
+        if (!e.features?.[0]?.properties) return
+        const props = e.features[0].properties
+        const speciesParts = props.species?.split('(') ?? []
+        const scientificName = speciesParts[1]?.replace(')', '') ?? ''
+        const commonName = speciesParts[0]?.trim() ?? props.species ?? ''
+
+        setSelectedTree({
+          id: props.id,
+          species: props.species,
+          address: props.address,
+          dbh: props.dbh,
+          plantDate: props.plantDate,
+          siteInfo: props.siteInfo,
+          legalStatus: props.legalStatus,
+          caretaker: props.caretaker ?? null,
+          color: props.color,
+          latitude: props.latitude,
+          longitude: props.longitude,
+          neighborhood_name: props.neighborhood_name,
+          markedForRemoval: props.markedForRemoval ?? false,
+          common_name: commonName,
+          scientific_name: scientificName,
+          permitDate: props.permitDate ?? null,
+        })
+        setPanelView('tree')
+        setMobileExpanded(false)
+
+        const w = window.innerWidth
+        const mobile = w < 600
+        const sidebarWidth = w >= 1200 ? 600 : w >= 900 ? 500 : 400
+        const padding = mobile
+          ? { top: 56, right: 0, bottom: Math.round(window.innerHeight * 0.4), left: 0 }
+          : { top: 56, right: sidebarWidth, bottom: 0, left: 0 }
+
+        map.current?.flyTo({
+          center: [props.longitude, props.latitude],
+          zoom: 18,
+          duration: 1000,
+          essential: true,
+          padding,
+        })
+      })
+
       // Click a landmark marker
       if (LANDMARKS_ENABLED) map.current.on('click', 'landmark-points', (e) => {
         if (!e.features?.[0]?.properties) return
@@ -374,9 +489,17 @@ function App() {
           if (map.current) map.current.getCanvas().style.cursor = ''
         })
       }
+      map.current.on('mouseenter', 'birthday-tree-points', () => {
+        if (map.current) map.current.getCanvas().style.cursor = 'pointer'
+      })
+      map.current.on('mouseleave', 'birthday-tree-points', () => {
+        if (map.current) map.current.getCanvas().style.cursor = ''
+      })
       map.current.on('mousemove', (e) => {
         if (!map.current) return
-        const layers = LANDMARKS_ENABLED ? ['tree-points', 'landmark-points'] : ['tree-points']
+        const layers = LANDMARKS_ENABLED
+          ? ['tree-points', 'landmark-points', 'birthday-tree-points']
+          : ['tree-points', 'birthday-tree-points']
         const features = map.current.queryRenderedFeatures(e.point, { layers })
         map.current.getCanvas().style.cursor = features.length ? 'pointer' : ''
       })
@@ -395,6 +518,31 @@ function App() {
       initMapLayers(map.current, mode === 'dark')
       if (map.current.getLayer('highlighted-trees')) {
         map.current.setFilter('highlighted-trees', ['==', ['get', 'id'], selectedTreeRef.current?.id ?? -1])
+      }
+      // Restore birthday tree data after style change
+      if (birthdayFeaturesRef.current.length > 0) {
+        const src = map.current.getSource('birthday-trees')
+        if (src && 'setData' in src) {
+          (src as mapboxgl.GeoJSONSource).setData({
+            type: 'FeatureCollection',
+            features: birthdayFeaturesRef.current,
+          })
+        }
+        // Restore glow features (exact-date matches have gold color)
+        const glowFeatures = birthdayFeaturesRef.current
+          .filter((f: { properties: { birthdayColor: string } }) => f.properties.birthdayColor === '#F9A825')
+          .map((f: { geometry: { coordinates: number[] } }) => ({
+            type: 'Feature' as const,
+            geometry: f.geometry,
+            properties: {},
+          }))
+        const glowSrc = map.current.getSource('birthday-exact-glow')
+        if (glowSrc && 'setData' in glowSrc && glowFeatures.length > 0) {
+          (glowSrc as mapboxgl.GeoJSONSource).setData({
+            type: 'FeatureCollection',
+            features: glowFeatures,
+          })
+        }
       }
     })
   }, [mode])
@@ -434,6 +582,164 @@ function App() {
         : ['interpolate', ['linear'], ['zoom'], 10, 0.6, 15, 0.8, 20, 1])
     }
   }, [showLandmarks, mapReady])
+
+  // Birthday mode: hide trees, show birthday layer, pulse glow for exact matches
+  useEffect(() => {
+    if (!mapReady || !map.current) return
+    if (map.current.getLayer('birthday-tree-points')) {
+      map.current.setLayoutProperty('birthday-tree-points', 'visibility', birthdayActive ? 'visible' : 'none')
+    }
+    if (map.current.getLayer('birthday-exact-glow')) {
+      map.current.setLayoutProperty('birthday-exact-glow', 'visibility', birthdayActive ? 'visible' : 'none')
+    }
+    if (map.current.getLayer('tree-points') && !showLandmarks) {
+      map.current.setLayoutProperty('tree-points', 'visibility', birthdayActive ? 'none' : 'visible')
+      if (!birthdayActive) {
+        map.current.setPaintProperty('tree-points', 'circle-opacity',
+          ['interpolate', ['linear'], ['zoom'], 10, 0.6, 15, 0.8, 20, 1])
+      }
+    }
+
+    // Pulse animation for exact-date glow
+    if (!birthdayActive) return
+    let animId: number
+    const pulse = () => {
+      if (!map.current?.getLayer('birthday-exact-glow')) return
+      const t = (Math.sin(Date.now() / 500) + 1) / 2 // 0-1 oscillation
+      const radius = 14 + t * 10   // 14-24px
+      const opacity = 0.35 - t * 0.2 // 0.35-0.15
+      map.current.setPaintProperty('birthday-exact-glow', 'circle-radius', radius)
+      map.current.setPaintProperty('birthday-exact-glow', 'circle-opacity', opacity)
+      animId = requestAnimationFrame(pulse)
+    }
+    animId = requestAnimationFrame(pulse)
+    return () => cancelAnimationFrame(animId)
+  }, [birthdayActive, mapReady, showLandmarks])
+
+  const handleBirthdayResults = (results: BirthdayResults, birthday: Date) => {
+    if (!map.current) return
+    setBirthdayDate(birthday)
+
+    // Sync birthday to URL
+    const params = new URLSearchParams(window.location.search)
+    const m = birthday.getMonth() + 1
+    const d = birthday.getDate()
+    const y = birthday.getFullYear()
+    params.set('birthday', `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`)
+    const newUrl = `${window.location.pathname}?${params.toString()}`
+    window.history.replaceState(null, '', newUrl)
+
+    // Three bold, distinct colors per tier
+    const exactColor = '#F9A825'   // amber/gold — exact birth date
+    const sameDayColor = '#4caf50' // green — same month/day, any year
+    const weekColor = '#29b6f6'    // blue — within 7 days
+
+    // Build GeoJSON features with tier-based colors
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const features: any[] = []
+    const exactIds = new Set(results.exactDate.map(t => t.id))
+    const sameDayIds = new Set(results.sameDayAnyYear.map(t => t.id))
+
+    // Exact date matches get gold
+    for (const tree of results.exactDate) {
+      features.push({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [tree.longitude, tree.latitude] },
+        properties: { ...tree, birthdayColor: exactColor },
+      })
+    }
+    // Same day (non-exact) get green
+    for (const tree of results.sameDayAnyYear) {
+      if (!exactIds.has(tree.id)) {
+        features.push({
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [tree.longitude, tree.latitude] },
+          properties: { ...tree, birthdayColor: sameDayColor },
+        })
+      }
+    }
+    // Within week get blue
+    for (const tree of results.withinWeek) {
+      if (!sameDayIds.has(tree.id)) {
+        features.push({
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [tree.longitude, tree.latitude] },
+          properties: { ...tree, birthdayColor: weekColor },
+        })
+      }
+    }
+
+    birthdayFeaturesRef.current = features
+
+    const source = map.current.getSource('birthday-trees')
+    if (source && 'setData' in source) {
+      (source as mapboxgl.GeoJSONSource).setData({
+        type: 'FeatureCollection',
+        features,
+      })
+    }
+
+    // Populate glow source with exact-date matches
+    const glowSource = map.current.getSource('birthday-exact-glow')
+    if (glowSource && 'setData' in glowSource) {
+      (glowSource as mapboxgl.GeoJSONSource).setData({
+        type: 'FeatureCollection',
+        features: results.exactDate.map(tree => ({
+          type: 'Feature' as const,
+          geometry: { type: 'Point' as const, coordinates: [tree.longitude, tree.latitude] },
+          properties: {},
+        })),
+      })
+    }
+
+    setBirthdayActive(features.length > 0)
+
+    // Auto-fly to nearest birthday tree
+    if (features.length > 0) {
+      // Prefer same-day trees, fall back to within-week
+      const preferredTrees = results.sameDayAnyYear.length > 0 ? results.sameDayAnyYear : results.withinWeek
+      // Try to find nearest to user location, otherwise pick first
+      const mapCenter = map.current.getCenter()
+      const nearest = findNearestTree(preferredTrees, mapCenter.lat, mapCenter.lng)
+      if (nearest) {
+        const w = window.innerWidth
+        const sidebarWidth = w >= 1200 ? 600 : w >= 900 ? 500 : 400
+        const mobile = w < 600
+        const padding = mobile
+          ? { top: 56, right: 0, bottom: 0, left: 0 }
+          : { top: 56, right: sidebarWidth, bottom: 0, left: 0 }
+        map.current.flyTo({
+          center: [nearest.longitude, nearest.latitude],
+          zoom: 13,
+          duration: 1200,
+          essential: true,
+          padding,
+        })
+      }
+    }
+  }
+
+  const handleBirthdayClear = () => {
+    setBirthdayActive(false)
+    setBirthdayDate(null)
+    birthdayFeaturesRef.current = []
+    if (map.current) {
+      const source = map.current.getSource('birthday-trees')
+      if (source && 'setData' in source) {
+        (source as mapboxgl.GeoJSONSource).setData({ type: 'FeatureCollection', features: [] })
+      }
+      const glowSource = map.current.getSource('birthday-exact-glow')
+      if (glowSource && 'setData' in glowSource) {
+        (glowSource as mapboxgl.GeoJSONSource).setData({ type: 'FeatureCollection', features: [] })
+      }
+    }
+    // Clear URL param
+    const params = new URLSearchParams(window.location.search)
+    params.delete('birthday')
+    const newSearch = params.toString()
+    const newUrl = newSearch ? `${window.location.pathname}?${newSearch}` : window.location.pathname
+    window.history.replaceState(null, '', newUrl)
+  }
 
   // Sync map padding with sidebar open/close (skip initial run — handled by Map constructor)
   useEffect(() => {
@@ -604,6 +910,74 @@ function App() {
           <MyLocation />
         </IconButton>
 
+        {/* Birthday tree button */}
+        <IconButton
+          onClick={() => setBirthdayDialogOpen(true)}
+          sx={{
+            position: 'absolute',
+            bottom: { xs: showSummaryBar ? 120 : 30, sm: 40 },
+            right: {
+              xs: 76,
+              sm: (allTrees.length > 0 && desktopPanelOpen) ? 476 : 76,
+              md: (allTrees.length > 0 && desktopPanelOpen) ? 576 : 76,
+              lg: (allTrees.length > 0 && desktopPanelOpen) ? 676 : 76,
+            },
+            backgroundColor: birthdayActive
+              ? (isDark ? '#1b5e20' : '#2e7d32')
+              : (isDark ? '#1e1e1e' : 'white'),
+            color: birthdayActive ? '#fff' : undefined,
+            boxShadow: 2,
+            zIndex: 500,
+            width: 48,
+            height: 48,
+            '&:hover': {
+              backgroundColor: birthdayActive
+                ? (isDark ? '#2e7d32' : '#1b5e20')
+                : (isDark ? '#2a2a2a' : '#f5f5f5'),
+            },
+          }}
+        >
+          <Cake />
+        </IconButton>
+
+        {/* Birthday mode active chip */}
+        {birthdayActive && (
+          <Chip
+            label="Birthday Trees"
+            icon={<Cake sx={{ fontSize: 16 }} />}
+            onDelete={handleBirthdayClear}
+            sx={{
+              position: 'absolute',
+              bottom: { xs: showSummaryBar ? 176 : 86, sm: 96 },
+              right: {
+                xs: 20,
+                sm: (allTrees.length > 0 && desktopPanelOpen) ? 420 : 20,
+                md: (allTrees.length > 0 && desktopPanelOpen) ? 520 : 20,
+                lg: (allTrees.length > 0 && desktopPanelOpen) ? 620 : 20,
+              },
+              zIndex: 500,
+              backgroundColor: isDark ? 'rgba(18,18,18,0.95)' : 'rgba(255,255,255,0.95)',
+              backdropFilter: 'blur(10px)',
+              color: isDark ? '#81c784' : '#2e7d32',
+              fontWeight: 600,
+              border: `1px solid ${isDark ? 'rgba(76,175,80,0.25)' : 'rgba(46,125,50,0.15)'}`,
+              '& .MuiChip-icon': { color: isDark ? '#81c784' : '#2e7d32' },
+              '& .MuiChip-deleteIcon': { color: isDark ? 'rgba(129,199,132,0.5)' : 'rgba(46,125,50,0.4)', '&:hover': { color: isDark ? '#81c784' : '#2e7d32' } },
+              boxShadow: 2,
+            }}
+          />
+        )}
+
+        <BirthdayTreeFinder
+          open={birthdayDialogOpen}
+          onClose={() => setBirthdayDialogOpen(false)}
+          allTrees={allTrees}
+          onResults={handleBirthdayResults}
+          onClear={handleBirthdayClear}
+          hasResults={birthdayActive}
+          birthdayDate={birthdayDate}
+        />
+
         <>
           {showSummaryBar && (selectedTree || selectedLandmark) && (
             <TreeSummaryBar
@@ -703,6 +1077,7 @@ function App() {
                 handleDrawerClose={handleDrawerClose}
                 setToastMessage={(message) => setToast({ message, severity: 'success' })}
                 landmark={LANDMARKS_ENABLED ? (selectedLandmark ?? landmarksByTreeId.get(selectedTree.id)) : undefined}
+                birthdayDate={birthdayActive ? birthdayDate : null}
               />
             )}
             {panelView === 'landmark' && selectedLandmark && (
