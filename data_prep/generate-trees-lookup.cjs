@@ -21,6 +21,7 @@ const simplified = raw.features.map((f) => {
         longitude: p.longitude,
         neighborhood_name: p.neighborhood_name,
         markedForRemoval: p.markedForRemoval ?? false,
+        permitDate: p.permitDate ?? null,
     };
 });
 

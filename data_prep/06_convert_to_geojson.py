@@ -48,16 +48,21 @@ def convert_to_geojson(trees_file: str) -> None:
     # Load removal list
     try:
         removal_df = pd.read_csv('cleaned_removal_notifications.csv')
-        tree_ids_to_remove = set(removal_df['CleanedTreeID'].dropna().astype(int))
+        removal_df = removal_df.dropna(subset=['CleanedTreeID'])
+        removal_df['CleanedTreeID'] = removal_df['CleanedTreeID'].astype(int)
+        tree_ids_to_remove = set(removal_df['CleanedTreeID'])
+        permit_date_map = dict(zip(removal_df['CleanedTreeID'], removal_df.get('PostedDate', pd.Series(dtype=str))))
         print(f"Loaded {len(tree_ids_to_remove)} trees marked for removal")
     except FileNotFoundError:
         print("No removal notifications file found, skipping removal filter")
         tree_ids_to_remove = set()
+        permit_date_map = {}
 
     print(f"Reading {trees_file}...")
     df = pd.read_csv(trees_file)
 
     df['markedForRemoval'] = df['Tree ID'].isin(tree_ids_to_remove)
+    df['permitDate'] = df['Tree ID'].map(permit_date_map)
     print(f"Tagged {df['markedForRemoval'].sum()} trees as marked for removal")
 
     genus_color_map = build_genus_color_map()
@@ -106,6 +111,7 @@ def convert_to_geojson(trees_file: str) -> None:
                 "longitude": round(lng, 6),
                 "neighborhood_name": nhood,
                 "markedForRemoval": bool(row['markedForRemoval']),
+                "permitDate": str(row['permitDate']) if pd.notna(row.get('permitDate')) else None,
             }
         })
 
