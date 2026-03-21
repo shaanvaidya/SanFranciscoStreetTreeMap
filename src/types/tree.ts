@@ -12,6 +12,7 @@ export interface TreeInfo {
   longitude: number
   neighborhood_name: string | null
   markedForRemoval: boolean
+  permitDate: string | null
   common_name: string
   scientific_name: string
 }

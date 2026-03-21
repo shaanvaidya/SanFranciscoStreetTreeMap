@@ -214,6 +214,11 @@ export const TreeDetails = ({
             <WarningAmber sx={{ color: '#ed6c02', fontSize: 18 }} />
             <Typography variant="body2" sx={{ fontWeight: 600, color: '#b45309' }}>
               Removal permit filed
+              {selectedTree.permitDate && (
+                <Typography component="span" variant="caption" sx={{ ml: 1, fontWeight: 400, color: '#92400e' }}>
+                  {new Date(selectedTree.permitDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </Typography>
+              )}
             </Typography>
           </Box>
           <Typography variant="caption" sx={{ color: '#92400e', lineHeight: 1.5 }}>
