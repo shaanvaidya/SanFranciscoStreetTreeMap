@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Box, Typography, IconButton, Chip, Button, Tooltip } from '@mui/material'
 import { Nature, LocationOn, CalendarToday, Straighten, Policy, MapOutlined, ContentCopy, ChevronRight, Close as CloseIcon, Launch as LaunchIcon, WarningAmber, WaterDrop, ElectricBolt, Air, Park } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
@@ -7,6 +8,34 @@ import { SuggestEdit } from './SuggestEdit'
 import { LandmarkBanner } from './LandmarkBanner'
 import { calculateEcoBenefits } from '../utils/ecoBenefits'
 import { ECO_BENEFITS_ENABLED } from '../flags'
+
+function computeBearing(fromLat: number, fromLng: number, toLat: number, toLng: number): number {
+  const toRad = (d: number) => d * Math.PI / 180
+  const dLng = toRad(toLng - fromLng)
+  const lat1 = toRad(fromLat)
+  const lat2 = toRad(toLat)
+  const y = Math.sin(dLng) * Math.cos(lat2)
+  const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng)
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360
+}
+
+function useStreetViewPano(lat: number, lng: number, apiKey: string) {
+  const [src, setSrc] = useState('')
+  useEffect(() => {
+    const fallback = `https://www.google.com/maps/embed/v1/streetview?key=${apiKey}&location=${lat},${lng}&heading=0&pitch=10&fov=90`
+    setSrc(fallback)
+    if (!apiKey) return
+    fetch(`https://maps.googleapis.com/maps/api/streetview/metadata?location=${lat},${lng}&radius=50&key=${apiKey}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.status !== 'OK') return
+        const heading = computeBearing(data.location.lat, data.location.lng, lat, lng)
+        setSrc(`https://www.google.com/maps/embed/v1/streetview?key=${apiKey}&pano=${data.pano_id}&heading=${Math.round(heading)}&pitch=10&fov=90`)
+      })
+      .catch(() => {/* keep fallback src */})
+  }, [lat, lng, apiKey])
+  return src
+}
 
 export const TreeDetails = ({
   selectedTree,
@@ -50,6 +79,11 @@ export const TreeDetails = ({
   }
 
   const ecoBenefits = ECO_BENEFITS_ENABLED ? calculateEcoBenefits(selectedTree.dbh) : null
+  const streetViewSrc = useStreetViewPano(
+    selectedTree.latitude,
+    selectedTree.longitude,
+    import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+  )
 
   return (
     <Box sx={{
@@ -577,7 +611,7 @@ export const TreeDetails = ({
                 style={{ border: 0 }}
                 loading="lazy"
                 allowFullScreen
-                src={`https://www.google.com/maps/embed/v1/streetview?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&location=${selectedTree.latitude},${selectedTree.longitude}&heading=0&pitch=10&fov=90`}
+                src={streetViewSrc}
               ></iframe>
             </Box>
             <Typography
