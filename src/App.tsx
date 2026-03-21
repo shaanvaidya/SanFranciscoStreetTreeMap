@@ -177,7 +177,7 @@ function App() {
   }, [mode])
 
   const { allTrees, species, neighborhoods, speciesCounts, neighborhoodCounts, loading, error } = useTreeData()
-  const { selectedSpecies, setSelectedSpecies, selectedNeighborhood, setSelectedNeighborhood } = useTreeFilters(map, allTrees)
+  const { selectedSpecies, setSelectedSpecies, selectedNeighborhood, setSelectedNeighborhood, removalFilter, setRemovalFilter } = useTreeFilters(map, allTrees)
   const { landmarks, landmarksByTreeId } = useLandmarks(LANDMARKS_ENABLED)
 
   const landmarksRef = useRef<LandmarkInfo[]>([])
@@ -556,6 +556,8 @@ function App() {
           landmarksEnabled={LANDMARKS_ENABLED}
           showLandmarks={showLandmarks}
           setShowLandmarks={setShowLandmarks}
+          removalFilter={removalFilter}
+          setRemovalFilter={setRemovalFilter}
         />
 
         <IconButton
