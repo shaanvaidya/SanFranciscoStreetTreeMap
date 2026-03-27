@@ -1102,8 +1102,10 @@ function App() {
                 loading={loading}
                 setSelectedSpecies={(s) => {
                   setSelectedSpecies(s)
-                  setMobileExpanded(false)
-                  setPanelView('closed')
+                  if (isMobile) {
+                    setMobileExpanded(false)
+                    setPanelView('closed')
+                  }
                 }}
                 onClose={() => {
                   if (selectedTree) {
