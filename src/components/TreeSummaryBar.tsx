@@ -1,6 +1,5 @@
-import { Box, Typography, Button, IconButton } from '@mui/material'
-import { LocationOn, Close as CloseIcon } from '@mui/icons-material'
-import { useTheme } from '@mui/material/styles'
+import { MapPin, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { TreeInfo } from '../types/tree'
 
 export const TreeSummaryBar = ({
@@ -12,129 +11,65 @@ export const TreeSummaryBar = ({
   onMoreDetails: () => void;
   onClose: () => void;
 }) => {
-  const theme = useTheme()
-  const isDark = theme.palette.mode === 'dark'
+  const isDark = document.documentElement.classList.contains('dark')
 
   const bg = isDark ? 'rgba(18, 18, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)'
   const borderTop = isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(46, 125, 50, 0.2)'
-  const headingColor = isDark ? '#c8e6c9' : '#1b5e20'
-  const italicColor = isDark ? '#a5d6a7' : '#4caf50'
-  const accentColor = theme.palette.primary.main
 
   return (
-    <Box
-      sx={{
-        position: 'absolute',
-        bottom: 0,
-        width: '100%',
-        zIndex: 1100,
+    <div
+      className="absolute bottom-0 w-full z-[1100] backdrop-blur-[10px] px-4 py-3 flex items-center justify-between gap-2 min-h-[85px] overflow-hidden box-border"
+      style={{
         backgroundColor: bg,
-        backdropFilter: 'blur(10px)',
         borderTop: `2px solid ${borderTop}`,
-        px: 2,
-        py: 1.5,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 1,
-        minHeight: 85,
-        overflow: 'hidden',
-        boxSizing: 'border-box',
         boxShadow: '0 -4px 12px rgba(0,0,0,0.08)',
       }}
     >
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-          <Box
-            sx={{
-              width: 12,
-              height: 12,
-              borderRadius: '50%',
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <div
+            className="w-3 h-3 rounded-full shrink-0"
+            style={{
               backgroundColor: tree.color,
               boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-              flexShrink: 0,
             }}
           />
-          <Typography
-            variant="body1"
-            sx={{
-              fontWeight: 700,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              color: headingColor,
-              fontSize: '1rem',
-            }}
-          >
+          <p className="font-bold whitespace-nowrap overflow-hidden text-ellipsis text-base" style={{ color: 'var(--heading)' }}>
             {tree.common_name}
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
-        <Typography
-          variant="body2"
-          sx={{
-            fontStyle: 'italic',
-            color: italicColor,
-            lineHeight: 1.2,
-            fontSize: '0.8rem',
-            mb: 0.5,
-          }}
-        >
+        <p className="italic text-[0.8rem] leading-tight mb-1" style={{ color: isDark ? '#a5d6a7' : '#4caf50' }}>
           {tree.scientific_name}
-        </Typography>
+        </p>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <LocationOn sx={{ fontSize: 16, color: '#81c784' }} />
-          <Typography
-            variant="body2"
-            sx={{
-              fontSize: '0.75rem',
-              color: 'text.secondary',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              flex: 1,
-            }}
-          >
+        <div className="flex items-center gap-1">
+          <MapPin className="h-4 w-4 text-secondary shrink-0" />
+          <p className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap flex-1">
             {tree.address}
-          </Typography>
-        </Box>
-      </Box>
+          </p>
+        </div>
+      </div>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+      <div className="flex items-center gap-1">
         <Button
-          variant="text"
+          variant="ghost"
           onClick={onMoreDetails}
-          size="small"
-          sx={{
-            color: accentColor,
-            fontWeight: 500,
-            fontSize: '0.875rem',
-            px: 1.5,
-            py: 0.5,
-            textTransform: 'none',
-            '&:hover': {
-              backgroundColor: isDark ? 'rgba(76,175,80,0.08)' : 'rgba(46, 125, 50, 0.04)',
-            }
-          }}
+          className="text-primary font-medium text-sm px-3 py-1"
         >
           Details
         </Button>
 
-        <IconButton
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onClose}
-          size="small"
-          sx={{
-            color: 'text.secondary',
-            '&:hover': {
-              backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
-            }
-          }}
+          className="text-muted-foreground h-8 w-8"
         >
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </Box>
-    </Box>
+          <X className="h-5 w-5" />
+        </Button>
+      </div>
+    </div>
   )
 }
 
