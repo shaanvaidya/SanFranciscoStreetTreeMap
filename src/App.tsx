@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
-import { ThemeProvider } from '@mui/material/styles'
-import { Box, Chip, CssBaseline, IconButton, LinearProgress, Snackbar, Alert, useMediaQuery } from '@mui/material'
-import { MyLocation, Cake } from '@mui/icons-material'
+import { LocateFixed, Cake, X } from 'lucide-react'
+import { toast } from 'sonner'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { createAppTheme } from './theme'
+import { ThemeProvider } from './components/theme-provider'
+import { useThemeMode } from './components/theme-provider'
+import { Toaster } from './components/ui/sonner'
+import { Badge } from './components/ui/badge'
+import { useMediaQuery } from './hooks/useMediaQuery'
 import { TreeInfo } from './types/tree'
 import { LandmarkInfo } from './types/landmark'
 import TreeDetails from './components/TreeDetails'
@@ -180,7 +183,8 @@ function initMapLayers(mapInstance: mapboxgl.Map, isDark: boolean) {
   mapInstance.moveLayer('highlighted-trees')
 }
 
-function App() {
+function AppInner() {
+  const { resolvedTheme: mode, setTheme } = useThemeMode()
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const geolocateControlRef = useRef<mapboxgl.GeolocateControl | null>(null)
@@ -192,40 +196,15 @@ function App() {
   const initialBirthday = useRef<string | null>(new URLSearchParams(window.location.search).get('birthday'))
 
   const isMobile = useMediaQuery('(max-width:600px)')
-  const prefersDark = useMediaQuery('(prefers-color-scheme: dark)')
-
-  const [userOverride, setUserOverride] = useState<'light' | 'dark' | null>(() => {
-    const stored = localStorage.getItem('theme-mode')
-    return stored === 'light' || stored === 'dark' ? stored : null
-  })
-
-  // Follow system preference when no explicit override is set
-  useEffect(() => {
-    if (userOverride === null) return
-  }, [userOverride])
-
-  const mode: 'light' | 'dark' = userOverride ?? (prefersDark ? 'dark' : 'light')
   const modeRef = useRef(mode)
   modeRef.current = mode
 
   const toggleTheme = () => {
-    const next = mode === 'light' ? 'dark' : 'light'
-    setUserOverride(next)
-    localStorage.setItem('theme-mode', next)
+    setTheme(mode === 'light' ? 'dark' : 'light')
   }
 
-  const appTheme = useMemo(() => createAppTheme(mode), [mode])
-
-  // Sync color-scheme and meta theme-color with current mode
-  useEffect(() => {
-    document.documentElement.style.colorScheme = mode
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]')
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', mode === 'dark' ? '#121212' : '#2e7d32')
-    }
-  }, [mode])
-
   const { allTrees, species, neighborhoods, speciesCounts, neighborhoodCounts, loading, error } = useTreeData()
+  useEffect(() => { if (error) toast.error(error) }, [error])
   const { selectedSpecies, setSelectedSpecies, selectedNeighborhood, setSelectedNeighborhood, removalFilter, setRemovalFilter } = useTreeFilters(map, allTrees)
   const { landmarks, landmarksByTreeId } = useLandmarks(LANDMARKS_ENABLED)
 
@@ -309,7 +288,11 @@ function App() {
 
   const [showFilters, setShowFilters] = useState(false)
   const [addressQuery, setAddressQuery] = useState('')
-  const [toast, setToast] = useState<{ message: string; severity: 'success' | 'error' } | null>(null)
+  // Toast helper — uses sonner
+  const showToast = (message: string, severity: 'success' | 'error' = 'success') => {
+    if (severity === 'error') toast.error(message)
+    else toast.success(message)
+  }
 
   // Birthday tree mode
   const [birthdayDialogOpen, setBirthdayDialogOpen] = useState(false)
@@ -783,7 +766,7 @@ function App() {
     }
 
     if (!('geolocation' in navigator)) {
-      setToast({ message: 'Geolocation is not supported by your browser.', severity: 'error' })
+      showToast('Geolocation is not supported by your browser.', 'error')
       return
     }
 
@@ -795,7 +778,7 @@ function App() {
       },
       (err) => {
         console.error('Error getting location:', err)
-        setToast({ message: `Location error: ${err.message}`, severity: 'error' })
+        showToast(`Location error: ${err.message}`, 'error')
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
     )
@@ -804,8 +787,8 @@ function App() {
   const isDark = mode === 'dark'
 
   return (
-    <ThemeProvider theme={appTheme}>
-      <CssBaseline />
+    <>
+      <Toaster position="bottom-center" />
       <HeaderBar
         mode={mode}
         onToggleTheme={toggleTheme}
@@ -816,31 +799,16 @@ function App() {
       />
 
       {loading && (
-        <LinearProgress
-          sx={{
-            position: 'fixed',
-            top: 56,
-            left: 0,
-            right: 0,
-            zIndex: 1100,
-            height: 2,
-            backgroundColor: 'rgba(46, 125, 50, 0.1)',
-            '& .MuiLinearProgress-bar': { backgroundColor: appTheme.palette.primary.main },
-          }}
-        />
+        <div className="fixed top-14 left-0 right-0 z-[1100] h-0.5 bg-primary/10">
+          <div className="h-full bg-primary animate-pulse" style={{ width: '60%' }} />
+        </div>
       )}
 
-      <Box sx={{
-        height: '100dvh', width: '100vw', overflow: 'hidden', position: 'relative',
-        '& .mapboxgl-ctrl-geolocate': { display: 'none !important' },
-      }}>
-        <Box
+      <div className="h-dvh w-screen overflow-hidden relative [&_.mapboxgl-ctrl-geolocate]:hidden">
+        <div
           ref={mapContainer}
-          sx={{
-            position: 'absolute', top: 56, bottom: 0, width: '100%',
-            opacity: mapReady ? 1 : 0,
-            transition: 'opacity 0.3s ease-in-out',
-          }}
+          className="absolute top-14 bottom-0 w-full transition-opacity duration-300 ease-in-out"
+          style={{ opacity: mapReady ? 1 : 0 }}
         />
 
         <FiltersPanel
@@ -882,7 +850,7 @@ function App() {
           setRemovalFilter={setRemovalFilter}
         />
 
-        <IconButton
+        <button
           onClick={() => {
             if (geolocateControlRef.current) {
               geolocateControlRef.current.trigger()
@@ -890,82 +858,59 @@ function App() {
               handleLocationClick()
             }
           }}
-          sx={{
-            position: 'absolute',
-            bottom: { xs: showSummaryBar ? 120 : 30, sm: 40 },
-            right: {
-              xs: 20,
-              sm: (allTrees.length > 0 && desktopPanelOpen) ? 420 : 20,
-              md: (allTrees.length > 0 && desktopPanelOpen) ? 520 : 20,
-              lg: (allTrees.length > 0 && desktopPanelOpen) ? 620 : 20,
-            },
+          className="absolute z-[500] w-12 h-12 rounded-xl flex items-center justify-center shadow-md transition-colors border-none cursor-pointer"
+          style={{
+            bottom: isMobile ? (showSummaryBar ? 120 : 30) : 40,
+            right: isMobile ? 20
+              : (allTrees.length > 0 && desktopPanelOpen) ? (window.innerWidth >= 1024 ? 620 : window.innerWidth >= 768 ? 520 : 420) : 20,
             backgroundColor: isDark ? '#1e1e1e' : 'white',
-            boxShadow: 2,
-            zIndex: 500,
-            width: 48,
-            height: 48,
-            '&:hover': { backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5' },
+            color: isDark ? '#4caf50' : '#2e7d32',
           }}
         >
-          <MyLocation />
-        </IconButton>
+          <LocateFixed className="h-6 w-6" />
+        </button>
 
         {/* Birthday tree button */}
-        <IconButton
+        <button
           onClick={() => setBirthdayDialogOpen(true)}
-          sx={{
-            position: 'absolute',
-            bottom: { xs: showSummaryBar ? 120 : 30, sm: 40 },
-            right: {
-              xs: 76,
-              sm: (allTrees.length > 0 && desktopPanelOpen) ? 476 : 76,
-              md: (allTrees.length > 0 && desktopPanelOpen) ? 576 : 76,
-              lg: (allTrees.length > 0 && desktopPanelOpen) ? 676 : 76,
-            },
+          className="absolute z-[500] w-12 h-12 rounded-xl flex items-center justify-center shadow-md transition-colors border-none cursor-pointer"
+          style={{
+            bottom: isMobile ? (showSummaryBar ? 120 : 30) : 40,
+            right: isMobile ? 76
+              : (allTrees.length > 0 && desktopPanelOpen) ? (window.innerWidth >= 1024 ? 676 : window.innerWidth >= 768 ? 576 : 476) : 76,
             backgroundColor: birthdayActive
               ? (isDark ? '#1b5e20' : '#2e7d32')
               : (isDark ? '#1e1e1e' : 'white'),
-            color: birthdayActive ? '#fff' : undefined,
-            boxShadow: 2,
-            zIndex: 500,
-            width: 48,
-            height: 48,
-            '&:hover': {
-              backgroundColor: birthdayActive
-                ? (isDark ? '#2e7d32' : '#1b5e20')
-                : (isDark ? '#2a2a2a' : '#f5f5f5'),
-            },
+            color: birthdayActive ? '#fff' : (isDark ? '#4caf50' : '#2e7d32'),
           }}
         >
-          <Cake />
-        </IconButton>
+          <Cake className="h-6 w-6" />
+        </button>
 
         {/* Birthday mode active chip */}
         {birthdayActive && (
-          <Chip
-            label="Birthday Trees"
-            icon={<Cake sx={{ fontSize: 16 }} />}
-            onDelete={handleBirthdayClear}
-            sx={{
-              position: 'absolute',
-              bottom: { xs: showSummaryBar ? 176 : 86, sm: 96 },
-              right: {
-                xs: 20,
-                sm: (allTrees.length > 0 && desktopPanelOpen) ? 420 : 20,
-                md: (allTrees.length > 0 && desktopPanelOpen) ? 520 : 20,
-                lg: (allTrees.length > 0 && desktopPanelOpen) ? 620 : 20,
-              },
-              zIndex: 500,
+          <Badge
+            variant="outline"
+            className="absolute z-[500] h-8 gap-1.5 font-semibold backdrop-blur-[10px] shadow-md cursor-default"
+            style={{
+              bottom: isMobile ? (showSummaryBar ? 176 : 86) : 96,
+              right: isMobile ? 20
+                : (allTrees.length > 0 && desktopPanelOpen) ? (window.innerWidth >= 1024 ? 620 : window.innerWidth >= 768 ? 520 : 420) : 20,
               backgroundColor: isDark ? 'rgba(18,18,18,0.95)' : 'rgba(255,255,255,0.95)',
-              backdropFilter: 'blur(10px)',
               color: isDark ? '#81c784' : '#2e7d32',
-              fontWeight: 600,
-              border: `1px solid ${isDark ? 'rgba(76,175,80,0.25)' : 'rgba(46,125,50,0.15)'}`,
-              '& .MuiChip-icon': { color: isDark ? '#81c784' : '#2e7d32' },
-              '& .MuiChip-deleteIcon': { color: isDark ? 'rgba(129,199,132,0.5)' : 'rgba(46,125,50,0.4)', '&:hover': { color: isDark ? '#81c784' : '#2e7d32' } },
-              boxShadow: 2,
+              borderColor: isDark ? 'rgba(76,175,80,0.25)' : 'rgba(46,125,50,0.15)',
             }}
-          />
+          >
+            <Cake className="h-4 w-4" />
+            Birthday Trees
+            <button
+              onClick={handleBirthdayClear}
+              className="bg-transparent border-none cursor-pointer p-0 hover:opacity-100"
+              style={{ color: isDark ? 'rgba(129,199,132,0.5)' : 'rgba(46,125,50,0.4)' }}
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </Badge>
         )}
 
         <BirthdayTreeFinder
@@ -1005,67 +950,35 @@ function App() {
 
           {/* Reopen tab — shown on desktop when panel is closed */}
           {!isMobile && !desktopPanelOpen && (
-            <Box
+            <div
               onClick={() => setPanelView('stats')}
-              sx={{
-                display: { xs: 'none', sm: 'flex' },
-                position: 'absolute',
-                top: 'calc(50% + 28px)',
-                right: 0,
-                transform: 'translateY(-50%)',
-                zIndex: 999,
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 28,
-                height: 64,
-                borderRadius: '6px 0 0 6px',
+              className="hidden sm:flex absolute top-[calc(50%+28px)] right-0 -translate-y-1/2 z-[999] items-center justify-center w-7 h-16 rounded-l-md cursor-pointer text-xs backdrop-blur-[10px] transition-colors hover:text-[var(--heading)]"
+              style={{
                 backgroundColor: isDark ? 'rgba(18,18,18,0.95)' : 'rgba(248,249,250,0.95)',
                 border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'}`,
                 borderRight: 'none',
                 boxShadow: '-2px 0 8px rgba(0,0,0,0.1)',
-                cursor: 'pointer',
                 color: isDark ? '#a5d6a7' : '#4caf50',
-                fontSize: 12,
-                backdropFilter: 'blur(10px)',
-                '&:hover': { color: isDark ? '#c8e6c9' : '#1b5e20' },
-                transition: 'color 0.2s',
               }}
             >
               ‹
-            </Box>
+            </div>
           )}
 
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: { xs: 0, sm: 'auto' },
-              top: { xs: 'auto', sm: 56 },
-              left: { xs: 0, sm: 'auto' },
-              right: 0,
-              width: { xs: '100%', sm: 400, md: 500, lg: 600 },
-              height: { xs: '100%', sm: 'calc(100% - 56px)' },
+          <div
+            className="absolute right-0 z-[1000] flex flex-col backdrop-blur-[10px] transition-all duration-300 ease-in-out
+              bottom-0 sm:bottom-auto sm:top-14 left-0 sm:left-auto
+              w-full sm:w-[400px] md:w-[500px] lg:w-[600px]
+              h-full sm:h-[calc(100%-56px)]"
+            style={{
               backgroundColor: isDark ? 'rgba(18, 18, 18, 0.95)' : 'rgba(248, 249, 250, 0.95)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              borderLeft: { sm: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'}` },
-              zIndex: 1000,
-              display: 'flex',
-              flexDirection: 'column',
-              p: { xs: 0, sm: 0 },
-              transform: {
-                xs: mobilePanelOpen ? 'translateY(0%)' : 'translateY(100%)',
-                sm: desktopPanelOpen ? 'translateX(0)' : 'translateX(100%)',
-              },
-              opacity: {
-                xs: mobilePanelOpen ? 1 : 0,
-                sm: desktopPanelOpen ? 1 : 0,
-              },
-              transition: 'transform 0.35s ease-in-out, opacity 0.3s ease-in-out',
-              pointerEvents: {
-                xs: mobilePanelOpen ? 'auto' : 'none',
-                sm: desktopPanelOpen ? 'auto' : 'none',
-              },
+              borderLeft: !isMobile ? `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'}` : undefined,
+              transform: isMobile
+                ? (mobilePanelOpen ? 'translateY(0%)' : 'translateY(100%)')
+                : (desktopPanelOpen ? 'translateX(0)' : 'translateX(100%)'),
+              opacity: isMobile ? (mobilePanelOpen ? 1 : 0) : (desktopPanelOpen ? 1 : 0),
+              pointerEvents: isMobile ? (mobilePanelOpen ? 'auto' : 'none') : (desktopPanelOpen ? 'auto' : 'none'),
             }}
           >
             {panelView === 'tree' && selectedTree && (
@@ -1075,7 +988,7 @@ function App() {
                 setSelectedSpecies={setSelectedSpecies}
                 setSelectedNeighborhood={setSelectedNeighborhood}
                 handleDrawerClose={handleDrawerClose}
-                setToastMessage={(message) => setToast({ message, severity: 'success' })}
+                setToastMessage={(message) => showToast(message)}
                 landmark={LANDMARKS_ENABLED ? (selectedLandmark ?? landmarksByTreeId.get(selectedTree.id)) : undefined}
                 birthdayDate={birthdayActive ? birthdayDate : null}
               />
@@ -1120,37 +1033,17 @@ function App() {
                 }}
               />
             )}
-          </Box>
+          </div>
         </>
-      </Box>
+      </div>
+    </>
+  )
+}
 
-      {error && (
-        <Snackbar open anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-          <Alert severity="error" sx={{ width: '100%' }}>{error}</Alert>
-        </Snackbar>
-      )}
-
-      <Snackbar
-        open={!!toast}
-        autoHideDuration={3000}
-        onClose={() => setToast(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setToast(null)}
-          severity={toast?.severity ?? 'success'}
-          sx={{
-            width: '100%',
-            ...(toast?.severity === 'success' && {
-              backgroundColor: appTheme.palette.primary.main,
-              color: 'white',
-              '& .MuiAlert-icon': { color: 'white' },
-            }),
-          }}
-        >
-          {toast?.message}
-        </Alert>
-      </Snackbar>
+function App() {
+  return (
+    <ThemeProvider defaultTheme="system">
+      <AppInner />
     </ThemeProvider>
   )
 }
