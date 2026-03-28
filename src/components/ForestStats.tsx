@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { Box, Typography, LinearProgress, IconButton } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
-import { ChevronRight, Close as CloseIcon } from '@mui/icons-material'
+import { ChevronRight, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
 import { TreeInfo } from '../types/tree'
 
 const TOP_N = 20
@@ -23,15 +23,14 @@ export const ForestStats = ({
   setSelectedSpecies: (s: string) => void
   onClose: () => void
 }) => {
-  const theme = useTheme()
-  const isDark = theme.palette.mode === 'dark'
+  const isDark = document.documentElement.classList.contains('dark')
 
-  const headingColor = isDark ? '#c8e6c9' : '#1b5e20'
-  const accentColor = theme.palette.primary.main
-  const subtleText = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)'
-  const cardBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.9)'
-  const cardBorder = isDark ? 'rgba(76,175,80,0.15)' : 'rgba(46, 125, 50, 0.12)'
-  const dividerColor = isDark ? 'rgba(76,175,80,0.15)' : 'rgba(46, 125, 50, 0.15)'
+  const headingColor = 'var(--heading)'
+  const accentColor = isDark ? '#4caf50' : '#2e7d32'
+  const subtleText = 'var(--subtle-text)'
+  const cardBg = 'var(--card-bg)'
+  const cardBorder = 'var(--card-border)'
+  const dividerColor = 'var(--divider)'
 
   const speciesCommonName = useMemo(() => {
     const map: Record<string, string> = {}
@@ -75,177 +74,126 @@ export const ForestStats = ({
   }, [neighborhoodCounts])
 
   return (
-    <Box sx={{
-      p: 3,
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      overflowY: 'auto',
-      '&::-webkit-scrollbar': { width: '6px' },
-      '&::-webkit-scrollbar-track': { background: isDark ? 'rgba(255,255,255,0.06)' : '#f1f1f1' },
-      '&::-webkit-scrollbar-thumb': { background: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)', borderRadius: '3px' },
-    }}>
+    <div className="p-6 h-full flex flex-col overflow-y-auto scrollbar-thin">
 
       {/* Header */}
-      <Box sx={{ mb: 3, pb: 3, borderBottom: `1px solid ${dividerColor}` }}>
-        <IconButton
+      <div className="mb-6 pb-6" style={{ borderBottom: `1px solid ${dividerColor}` }}>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onClose}
-          sx={{
-            color: accentColor,
-            '&:hover': { backgroundColor: isDark ? 'rgba(76,175,80,0.12)' : 'rgba(46, 125, 50, 0.08)' },
-            position: 'absolute',
-            top: 10,
-            right: 10,
-          }}
+          className="absolute top-2.5 right-2.5 text-primary"
         >
-          <Box component="span" sx={{ display: { xs: 'none', sm: 'flex' } }}><ChevronRight /></Box>
-          <Box component="span" sx={{ display: { xs: 'flex', sm: 'none' } }}><CloseIcon /></Box>
-        </IconButton>
+          <ChevronRight className="hidden sm:block h-5 w-5" />
+          <X className="block sm:hidden h-5 w-5" />
+        </Button>
 
-        <Typography variant="h5" sx={{
-          fontWeight: 700,
-          color: headingColor,
-          fontSize: { xs: '1.4rem', sm: '1.65rem' },
-          lineHeight: 1.2,
-          mb: 1,
-          pr: 4,
-        }}>
+        <h2
+          className="font-bold text-2xl sm:text-[1.65rem] leading-tight mb-2 pr-8"
+          style={{ color: headingColor }}
+        >
           San Francisco's Urban Forest
-        </Typography>
-        <Typography variant="body2" sx={{ color: subtleText, lineHeight: 1.6 }}>
+        </h2>
+        <p className="text-sm leading-relaxed" style={{ color: subtleText }}>
           San Francisco's streets are lined with over 195,000 city-maintained trees — planted in sidewalks,
           medians, and public right-of-ways across every neighborhood. This map covers trees managed by SF
           Public Works. Click any tree to explore its species, planting history, and more.
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {loading && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: subtleText }}>
-          <LinearProgress sx={{ flex: 1, borderRadius: 1, height: 3 }} />
-          <Typography variant="caption">Loading tree data…</Typography>
-        </Box>
+        <div className="flex items-center gap-3" style={{ color: subtleText }}>
+          <Progress className="flex-1 h-[3px]" value={undefined} />
+          <span className="text-xs">Loading tree data…</span>
+        </div>
       )}
 
       {!loading && <>
 
       {/* Stat grid */}
-      <Box sx={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 2,
-        mb: 2,
-      }}>
+      <div className="grid grid-cols-2 gap-4 mb-4">
         {[
           { value: totalTrees.toLocaleString(), label: 'Trees Mapped' },
           { value: speciesCount.toLocaleString(), label: 'Species' },
         ].map(({ value, label }) => (
-          <Box key={label} sx={{
-            backgroundColor: cardBg,
-            border: `1px solid ${cardBorder}`,
-            borderRadius: 3,
-            p: 2.5,
-            backdropFilter: 'blur(8px)',
-          }}>
-            <Typography sx={{
-              fontSize: '1.8rem',
-              fontWeight: 700,
-              color: headingColor,
-              lineHeight: 1,
-              mb: 0.5,
-            }}>
+          <div
+            key={label}
+            className="rounded-xl p-5 backdrop-blur-[8px]"
+            style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
+          >
+            <div className="text-[1.8rem] font-bold leading-none mb-1" style={{ color: headingColor }}>
               {value}
-            </Typography>
-            <Typography variant="caption" sx={{ color: subtleText, fontWeight: 500 }}>
+            </div>
+            <span className="text-xs font-medium" style={{ color: subtleText }}>
               {label}
-            </Typography>
-          </Box>
+            </span>
+          </div>
         ))}
-      </Box>
+      </div>
 
       {/* Extra stats row */}
       {topNeighborhood && (
-        <Box sx={{ mb: 3 }}>
-          <Box sx={{
-            backgroundColor: cardBg,
-            border: `1px solid ${cardBorder}`,
-            borderRadius: 3,
-            p: 2,
-            backdropFilter: 'blur(8px)',
-          }}>
-            <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: headingColor, lineHeight: 1.3, mb: 0.25 }}>
+        <div className="mb-6">
+          <div
+            className="rounded-xl p-4 backdrop-blur-[8px]"
+            style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
+          >
+            <div className="text-[0.85rem] font-bold leading-tight mb-0.5" style={{ color: headingColor }}>
               {topNeighborhood[0]}
-            </Typography>
-            <Typography variant="caption" sx={{ color: subtleText }}>
+            </div>
+            <span className="text-xs" style={{ color: subtleText }}>
               Most trees — {topNeighborhood[1].toLocaleString()} street trees
-            </Typography>
-          </Box>
-        </Box>
+            </span>
+          </div>
+        </div>
       )}
 
       {/* Top species */}
-      <Box sx={{
-        backgroundColor: cardBg,
-        border: `1px solid ${cardBorder}`,
-        borderRadius: 3,
-        p: 2.5,
-        backdropFilter: 'blur(8px)',
-        flex: 1,
-      }}>
-        <Typography variant="subtitle2" sx={{
-          color: accentColor,
-          fontWeight: 600,
-          letterSpacing: '0.5px',
-          mb: 2,
-        }}>
+      <div
+        className="rounded-xl p-5 backdrop-blur-[8px] flex-1"
+        style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
+      >
+        <h3
+          className="text-sm font-semibold tracking-wide mb-4"
+          style={{ color: accentColor }}
+        >
           Most Common Species
-        </Typography>
+        </h3>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
+        <div className="flex flex-col gap-3.5">
           {topSpecies.map(({ species, commonName, count, pct }) => (
-            <Box
+            <div
               key={species}
               onClick={() => setSelectedSpecies(species)}
-              sx={{ cursor: 'pointer', '&:hover .species-name': { color: headingColor } }}
+              className="cursor-pointer group"
             >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.5 }}>
-                <Typography
-                  className="species-name"
-                  variant="body2"
-                  sx={{
-                    fontWeight: 600,
-                    color: accentColor,
-                    fontSize: '0.85rem',
-                    transition: 'color 0.15s',
-                    flex: 1,
-                    pr: 1,
-                  }}
+              <div className="flex justify-between items-baseline mb-1">
+                <span
+                  className="font-semibold text-[0.85rem] transition-colors flex-1 pr-2 group-hover:text-[var(--heading)]"
+                  style={{ color: accentColor }}
                 >
                   {commonName}
-                </Typography>
-                <Typography variant="caption" sx={{ color: subtleText, whiteSpace: 'nowrap' }}>
+                </span>
+                <span className="text-xs whitespace-nowrap" style={{ color: subtleText }}>
                   {count.toLocaleString()} · {pct.toFixed(1)}%
-                </Typography>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={pct}
-                sx={{
-                  height: 4,
-                  borderRadius: 2,
-                  backgroundColor: isDark ? 'rgba(76,175,80,0.12)' : 'rgba(46,125,50,0.1)',
-                  '& .MuiLinearProgress-bar': {
-                    borderRadius: 2,
-                    backgroundColor: accentColor,
-                  },
-                }}
-              />
-            </Box>
+                </span>
+              </div>
+              <div
+                className="h-1 rounded-full overflow-hidden"
+                style={{ backgroundColor: isDark ? 'rgba(76,175,80,0.12)' : 'rgba(46,125,50,0.1)' }}
+              >
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{ width: `${pct}%`, backgroundColor: accentColor }}
+                />
+              </div>
+            </div>
           ))}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       </>}
-    </Box>
+    </div>
   )
 }
 

@@ -1,8 +1,6 @@
-import { Box, Typography, IconButton, Chip, Button } from '@mui/material'
-import {
-  Star, LocationOn, Nature, Launch as LaunchIcon, Close as CloseIcon,
-} from '@mui/icons-material'
-import { useTheme } from '@mui/material/styles'
+import { Star, MapPin, TreePine, ExternalLink, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { LandmarkInfo } from '../types/landmark'
 
 export const LandmarkDetails = ({
@@ -12,177 +10,158 @@ export const LandmarkDetails = ({
   landmark: LandmarkInfo
   onClose: () => void
 }) => {
-  const theme = useTheme()
-  const isDark = theme.palette.mode === 'dark'
+  const isDark = document.documentElement.classList.contains('dark')
 
   const goldColor = isDark ? '#FFD700' : '#a07800'
   const goldBg = isDark ? 'rgba(255, 215, 0, 0.07)' : 'rgba(255, 215, 0, 0.1)'
   const goldBorder = isDark ? 'rgba(255, 215, 0, 0.25)' : 'rgba(160, 120, 0, 0.25)'
-  const headingColor = isDark ? '#c8e6c9' : '#1b5e20'
+  const headingColor = 'var(--heading)'
   const italicColor = isDark ? '#a5d6a7' : '#4caf50'
-  const cardBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.95)'
-  const cardBorder = isDark ? 'rgba(76,175,80,0.15)' : 'rgba(46, 125, 50, 0.1)'
-  const dividerColor = isDark ? 'rgba(76,175,80,0.2)' : 'rgba(46, 125, 50, 0.2)'
-  const scrollTrack = isDark ? 'rgba(255,255,255,0.06)' : '#f1f1f1'
-  const accentColor = theme.palette.primary.main
+  const cardBg = 'var(--card-bg)'
+  const cardBorder = 'var(--card-border)'
+  const dividerColor = 'var(--divider)'
+  const accentColor = isDark ? '#4caf50' : '#2e7d32'
 
   return (
-    <Box sx={{
-      p: 3,
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      overflowY: 'auto',
-      '&::-webkit-scrollbar': { width: '6px' },
-      '&::-webkit-scrollbar-track': { background: scrollTrack },
-      '&::-webkit-scrollbar-thumb': { background: accentColor, borderRadius: '3px' },
-    }}>
+    <div className="p-6 h-full flex flex-col overflow-y-auto scrollbar-thin">
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, pb: 3, borderBottom: `1px solid ${dividerColor}` }}>
-        <Box sx={{ flex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <Star sx={{ color: '#FFD700', fontSize: 18 }} />
-            <Chip
-              label="Notable Tree"
-              size="small"
-              sx={{
-                backgroundColor: goldBg,
-                color: goldColor,
-                border: `1px solid ${goldBorder}`,
-                fontWeight: 600,
-                fontSize: '0.75rem',
-              }}
-            />
-          </Box>
+      <div className="flex justify-between items-start mb-6 pb-6" style={{ borderBottom: `1px solid ${dividerColor}` }}>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <Star className="h-[18px] w-[18px]" style={{ color: '#FFD700' }} />
+            <Badge
+              variant="outline"
+              className="font-semibold text-[0.75rem]"
+              style={{ backgroundColor: goldBg, color: goldColor, borderColor: goldBorder }}
+            >
+              Notable Tree
+            </Badge>
+          </div>
 
-          <Typography variant="h5" sx={{ fontWeight: 700, color: headingColor, mb: 0.5, fontSize: { xs: '1.5rem', sm: '2.0rem' }, lineHeight: 1.2 }}>
+          <h2 className="font-bold text-2xl sm:text-[2rem] leading-tight mb-1" style={{ color: headingColor }}>
             {landmark.common_name || landmark.scientific_name}
-          </Typography>
+          </h2>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-            <Nature sx={{ fontSize: 18, color: italicColor }} />
-            <Typography variant="body1" sx={{ color: italicColor, fontStyle: 'italic', fontSize: { xs: '0.9rem', sm: '1.1rem' } }}>
+          <div className="flex items-center gap-1 mb-2">
+            <TreePine className="h-[18px] w-[18px]" style={{ color: italicColor }} />
+            <span className="italic text-base sm:text-lg" style={{ color: italicColor }}>
               {landmark.scientific_name}
-            </Typography>
-          </Box>
+            </span>
+          </div>
 
-          <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+          <span className="text-xs text-muted-foreground">
             Private or park tree — not in the city street tree dataset
-          </Typography>
-        </Box>
+          </span>
+        </div>
 
-        <IconButton
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onClose}
-          sx={{ color: accentColor, position: 'absolute', top: 10, right: 10, '&:hover': { backgroundColor: isDark ? 'rgba(76,175,80,0.12)' : 'rgba(46,125,50,0.08)' } }}
+          className="absolute top-2.5 right-2.5 text-primary"
         >
-          <CloseIcon />
-        </IconButton>
-      </Box>
+          <X className="h-5 w-5" />
+        </Button>
+      </div>
 
       {/* Cards */}
-      <Box sx={{ display: 'grid', gap: 2.5 }}>
+      <div className="grid gap-5">
         {/* Location */}
-        <Box sx={{ backgroundColor: cardBg, p: 2.5, borderRadius: 3, border: `1px solid ${cardBorder}` }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-            <LocationOn sx={{ color: '#81c784', fontSize: 18, mt: 0.2 }} />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                Location
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor, mt: 0.5 }}>
+        <div className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
+          <div className="flex items-start gap-3">
+            <MapPin className="h-[18px] w-[18px] mt-0.5 text-secondary shrink-0" />
+            <div className="flex-1">
+              <span className="text-xs text-muted-foreground">Location</span>
+              <p className="font-semibold mt-1" style={{ color: headingColor }}>
                 {landmark.address || 'See description below'}
-              </Typography>
+              </p>
               {landmark.latitude && (
-                <Button
-                  variant="text"
-                  size="small"
-                  component="a"
+                <a
                   href={`https://www.google.com/maps?q=${landmark.latitude},${landmark.longitude}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  startIcon={<LaunchIcon sx={{ fontSize: 14 }} />}
-                  sx={{ color: accentColor, fontSize: '0.75rem', mt: 0.5, p: 0, minHeight: 'auto' }}
+                  className="inline-flex items-center gap-1 text-[0.75rem] font-medium mt-1 hover:underline"
+                  style={{ color: accentColor }}
                 >
+                  <ExternalLink className="h-3.5 w-3.5" />
                   View on Google Maps
-                </Button>
+                </a>
               )}
-            </Box>
-          </Box>
-        </Box>
+            </div>
+          </div>
+        </div>
 
         {/* Mike's notes */}
         {(landmark.description || landmark.detail) && (
-          <Box sx={{ backgroundColor: goldBg, p: 2.5, borderRadius: 3, border: `1px solid ${goldBorder}` }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Star sx={{ color: '#FFD700', fontSize: 16 }} />
-              <Typography variant="subtitle2" sx={{ color: goldColor, fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.5px' }}>
+          <div className="rounded-xl p-5" style={{ backgroundColor: goldBg, border: `1px solid ${goldBorder}` }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Star className="h-4 w-4" style={{ color: '#FFD700' }} />
+              <h3 className="text-[0.8rem] font-semibold tracking-wide" style={{ color: goldColor }}>
                 MIKE'S NOTES
-              </Typography>
-            </Box>
-            <Typography variant="body2" sx={{ color: 'text.primary', lineHeight: 1.7 }}>
+              </h3>
+            </div>
+            <p className="text-sm leading-relaxed text-foreground">
               {landmark.description || landmark.detail}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
 
         {/* Photos */}
         {(landmark.image_url || landmark.closeup_url) && (
-          <Box sx={{ backgroundColor: cardBg, p: 2.5, borderRadius: 3, border: `1px solid ${cardBorder}` }}>
-            <Typography variant="subtitle2" sx={{ color: accentColor, fontWeight: 600, mb: 1.5, fontSize: '0.8rem', letterSpacing: '0.5px' }}>
+          <div className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
+            <h3
+              className="text-[0.8rem] font-semibold tracking-wide mb-3"
+              style={{ color: accentColor }}
+            >
               PHOTOS
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            </h3>
+            <div className="flex gap-2 flex-wrap">
               {landmark.image_url && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  component="a"
+                <a
                   href={landmark.image_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  startIcon={<LaunchIcon sx={{ fontSize: 13 }} />}
-                  sx={{ fontSize: '0.8rem', borderColor: goldBorder, color: goldColor }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium hover:opacity-80"
+                  style={{ borderColor: goldBorder, color: goldColor }}
                 >
+                  <ExternalLink className="h-3.5 w-3.5" />
                   View photo
-                </Button>
+                </a>
               )}
               {landmark.closeup_url && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  component="a"
+                <a
                   href={landmark.closeup_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  startIcon={<LaunchIcon sx={{ fontSize: 13 }} />}
-                  sx={{ fontSize: '0.8rem', borderColor: goldBorder, color: goldColor }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium hover:opacity-80"
+                  style={{ borderColor: goldBorder, color: goldColor }}
                 >
+                  <ExternalLink className="h-3.5 w-3.5" />
                   Closeup
-                </Button>
+                </a>
               )}
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
 
         {/* Credit */}
-        <Box sx={{ p: 2, borderRadius: 2, backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
-          <Typography variant="caption" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
+        <div className="rounded-lg p-4" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
+          <span className="text-xs text-muted-foreground leading-relaxed">
             Curated by{' '}
-            <Typography
-              component="a"
+            <a
               href="https://www.sftrees.com/landmark-trees"
               target="_blank"
               rel="noopener noreferrer"
-              variant="caption"
-              sx={{ color: accentColor, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+              className="no-underline hover:underline"
+              style={{ color: accentColor }}
             >
               Mike Sullivan / sftrees.com
-            </Typography>
+            </a>
             {' '}— an independent list of notable SF trees. This tree is not in the city's official street tree dataset.
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
+          </span>
+        </div>
+      </div>
+    </div>
   )
 }
 

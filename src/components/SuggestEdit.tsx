@@ -1,7 +1,23 @@
 import { useState } from 'react'
-import { Box, Typography, Button, TextField, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from '@mui/material'
-import { EditNote, Close as CloseIcon } from '@mui/icons-material'
-import { useTheme } from '@mui/material/styles'
+import { PenLine } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { TreeInfo } from '../types/tree'
 
 const ISSUE_TYPES = [
@@ -18,18 +34,6 @@ export const SuggestEdit = ({ tree }: { tree: TreeInfo }) => {
   const [open, setOpen] = useState(false)
   const [issueType, setIssueType] = useState('')
   const [notes, setNotes] = useState('')
-  const theme = useTheme()
-  const isDark = theme.palette.mode === 'dark'
-
-  const accentColor = theme.palette.primary.main
-  const headingColor = isDark ? '#c8e6c9' : '#1b5e20'
-  const cardBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.95)'
-  const cardBorder = isDark ? 'rgba(76,175,80,0.15)' : 'rgba(46, 125, 50, 0.1)'
-
-  const focusGreen = {
-    '& .MuiOutlinedInput-root': { '&.Mui-focused fieldset': { borderColor: accentColor } },
-    '& .MuiInputLabel-root.Mui-focused': { color: accentColor },
-  }
 
   const handleClose = () => {
     setOpen(false)
@@ -56,114 +60,92 @@ export const SuggestEdit = ({ tree }: { tree: TreeInfo }) => {
 
   return (
     <>
-      <Box sx={{
-        p: 2.5,
-        borderRadius: 3,
-        border: `1px solid ${cardBorder}`,
-        backgroundColor: cardBg,
-        boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.08)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
-        <Box>
-          <Typography variant="body2" sx={{ fontWeight: 600, color: headingColor }}>
+      <div
+        className="rounded-xl p-5 flex items-center justify-between"
+        style={{
+          backgroundColor: 'var(--card-bg)',
+          border: '1px solid var(--card-border)',
+          boxShadow: document.documentElement.classList.contains('dark')
+            ? '0 2px 8px rgba(0,0,0,0.3)'
+            : '0 2px 8px rgba(0,0,0,0.08)',
+        }}
+      >
+        <div>
+          <p className="text-sm font-semibold" style={{ color: 'var(--heading)' }}>
             Something look wrong?
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
+          </p>
+          <span className="text-xs text-muted-foreground">
             Help us improve the data
-          </Typography>
-        </Box>
+          </span>
+        </div>
         <Button
-          variant="outlined"
-          size="small"
-          startIcon={<EditNote />}
+          variant="outline"
+          size="sm"
           onClick={() => setOpen(true)}
-          sx={{
-            borderColor: accentColor,
-            color: accentColor,
-            textTransform: 'none',
-            fontWeight: 600,
-            borderRadius: 2,
-            '&:hover': { borderColor: accentColor, backgroundColor: isDark ? 'rgba(76,175,80,0.08)' : 'rgba(46, 125, 50, 0.04)' },
-          }}
+          className="text-primary border-primary font-semibold"
         >
+          <PenLine className="h-4 w-4 mr-1.5" />
           Suggest Edit
         </Button>
-      </Box>
+      </div>
 
-      <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth
-        PaperProps={{ sx: { borderRadius: 3 } }}
-      >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: headingColor }}>
-                Suggest an Edit
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Tree #{tree.id} · {tree.common_name} · {tree.address}
-              </Typography>
-            </Box>
-            <IconButton size="small" onClick={handleClose} sx={{ color: 'text.secondary', mt: -0.5 }}>
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        </DialogTitle>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-bold" style={{ color: 'var(--heading)' }}>
+              Suggest an Edit
+            </DialogTitle>
+            <DialogDescription>
+              Tree #{tree.id} · {tree.common_name} · {tree.address}
+            </DialogDescription>
+          </DialogHeader>
 
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
-          <TextField
-            select
-            label="What's the issue?"
-            value={issueType}
-            onChange={e => setIssueType(e.target.value)}
-            size="small"
-            fullWidth
-            sx={focusGreen}
-          >
-            {ISSUE_TYPES.map(t => (
-              <MenuItem key={t} value={t}>{t}</MenuItem>
-            ))}
-          </TextField>
+          <div className="flex flex-col gap-4 py-2">
+            <div className="space-y-2">
+              <Label>What's the issue?</Label>
+              <Select value={issueType} onValueChange={setIssueType}>
+                <SelectTrigger className="focus:ring-primary">
+                  <SelectValue placeholder="Select an issue type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ISSUE_TYPES.map(t => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <TextField
-            label="Notes"
-            placeholder="Any additional details..."
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            multiline
-            rows={4}
-            size="small"
-            fullWidth
-            sx={focusGreen}
-          />
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                placeholder="Any additional details..."
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                rows={4}
+                className="focus-visible:ring-primary"
+              />
+            </div>
 
-          <Typography variant="caption" color="text.secondary" sx={{ mt: -1 }}>
-            Clicking "Open in Mail" will open a pre-filled email in your mail client.
-          </Typography>
+            <p className="text-xs text-muted-foreground -mt-1">
+              Clicking "Open in Mail" will open a pre-filled email in your mail client.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={handleClose} className="text-muted-foreground">
+              Cancel
+            </Button>
+            <Button
+              disabled={!issueType}
+              onClick={handleSubmit}
+            >
+              Open in Mail
+            </Button>
+          </DialogFooter>
         </DialogContent>
-
-        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
-          <Button onClick={handleClose} sx={{ color: 'text.secondary', textTransform: 'none' }}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            disabled={!issueType}
-            onClick={handleSubmit}
-            sx={{
-              backgroundColor: accentColor,
-              '&:hover': { backgroundColor: theme.palette.primary.dark },
-              '&:disabled': { backgroundColor: isDark ? 'rgba(76,175,80,0.3)' : 'rgba(46, 125, 50, 0.3)' },
-              borderRadius: 2,
-              textTransform: 'none',
-              fontWeight: 600,
-            }}
-          >
-            Open in Mail
-          </Button>
-        </DialogActions>
       </Dialog>
     </>
   )
 }
+
+export default SuggestEdit
