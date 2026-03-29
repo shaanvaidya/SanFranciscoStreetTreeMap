@@ -154,6 +154,17 @@ export default function BirthdayTreeFinder({
             <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
               Find trees planted on your birthday
             </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+              Inspired by Stephen Braitsch's{' '}
+              <a
+                href="https://transpomaps.org/projects/san-francisco/birthday-trees"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'inherit', textDecoration: 'underline' }}
+              >
+                work on TranspoMaps
+              </a>
+            </Typography>
           </Box>
           <IconButton
             onClick={onClose}
