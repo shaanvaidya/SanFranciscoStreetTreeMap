@@ -377,6 +377,10 @@ function App() {
         setPanelView('tree')
         setMobileExpanded(false)
 
+        const urlParams = new URLSearchParams(window.location.search)
+        urlParams.set('tree', String(props.id))
+        window.history.replaceState(null, '', `${window.location.pathname}?${urlParams.toString()}`)
+
         const w = window.innerWidth
         const mobile = w < 600
         const sidebarWidth = w >= 1200 ? 600 : w >= 900 ? 500 : 400
@@ -421,6 +425,10 @@ function App() {
         })
         setPanelView('tree')
         setMobileExpanded(false)
+
+        const urlParams = new URLSearchParams(window.location.search)
+        urlParams.set('tree', String(props.id))
+        window.history.replaceState(null, '', `${window.location.pathname}?${urlParams.toString()}`)
 
         const w = window.innerWidth
         const mobile = w < 600
