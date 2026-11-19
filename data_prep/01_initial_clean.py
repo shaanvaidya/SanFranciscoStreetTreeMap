@@ -25,7 +25,7 @@ def clean_trees_data(input_file: str) -> None:
 
     # Standardize species names
     if 'qSpecies' in df.columns:
-        df['qSpecies'] = df['qSpecies'].astype(str).str.strip().str.title()
+        df['qSpecies'] = df['qSpecies'].astype('string').str.strip().str.title()
 
     # Strip whitespace from address fields
     for col in ['qAddress', 'SiteOrder', 'qSiteInfo']:

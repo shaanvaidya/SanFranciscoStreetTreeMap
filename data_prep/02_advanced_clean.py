@@ -126,7 +126,7 @@ def advanced_clean(input_file: str) -> None:
     df = df[df['Species'] != 'Potential Site :: Potential Site']
 
     # Reformat species names: "scientific :: common" → "common (scientific)"
-    df['Species'] = df['Species'].apply(convert_species_format)
+    df['Species'] = df['Species'].map(convert_species_format, na_action='ignore')
 
     # Deduplicate species: same scientific name, pick most frequent common name
     remapping = build_species_canonical_map(df)
